@@ -30,11 +30,13 @@ public class SessionService {
     private final LoginEvents events;
     private final SessionIssuer issuer;
     private final SessionManager manager;
+    private final com.sma.admin.config.ParameterQuery settings;
     public SessionService(SessionMapper mapper,AccountQuery accounts,RoleAccessQuery scopes,PermissionQuery permissions,NavigationQuery navigation,
-            CaptchaService captchas,LoginThrottle throttle,AuthProperties properties,LoginEvents events,SessionIssuer issuer,SessionManager manager) {
+            CaptchaService captchas,LoginThrottle throttle,AuthProperties properties,LoginEvents events,SessionIssuer issuer,SessionManager manager,com.sma.admin.config.ParameterQuery settings) {
         this.mapper=mapper; this.accounts=accounts; this.scopes=scopes; this.permissions=permissions; this.navigation=navigation;
         this.captchas=captchas; this.throttle=throttle; this.properties=properties; this.events=events; this.issuer=issuer;
         this.manager=manager;
+        this.settings=settings;
     }
     public record LoginResult(String token,Instant expiresAt) {}
     public record Resolved(SessionEntity session,SmaPrincipal principal) {}
@@ -44,13 +46,16 @@ public class SessionService {
     public LoginResult login(String username,String password,String portal,String captchaId,String captcha,boolean remember,String ip,String userAgent) {
         String key=throttle.key(ip,username);
         throttle.check(key);
-        try { captchas.verify(captchaId,captcha); }
+        try { if(settings.booleanValue("login.captchaEnabled",true))captchas.verify(captchaId,captcha); }
         catch(BizException ex) { throttle.fail(key); publish(null,username,portal,"CAPTCHA_FAILURE",ip,userAgent); throw ex; }
         var account=accounts.authenticate(username,password,portal);
         if(account.isEmpty()) { throttle.fail(key); publish(null,username,portal,"PASSWORD_FAILURE",ip,userAgent); throw new BizException(AuthErrorCode.INVALID_CREDENTIALS); }
         throttle.success(key);
         AccountView user=account.get();
-        return asIdentity(user,() -> issuer.issue(user,properties.singleTerminal(),remember?properties.rememberTtl():properties.sessionTtl(),ip,userAgent));
+        return asIdentity(user,() -> issuer.issue(user,settings.booleanValue("auth.singleTerminal",properties.singleTerminal()),
+                Duration.ofSeconds(settings.longValue(remember?"auth.rememberTtlSeconds":"auth.sessionTtlSeconds",
+                        (remember?properties.rememberTtl():properties.sessionTtl()).toSeconds())),ip,userAgent,
+                remember&&settings.booleanValue("auth.lockAfterRemember",false)));
     }
     public Optional<Resolved> resolve(String token) {
         if(token==null||!token.matches("[A-Za-z0-9_-]{43}")) return Optional.empty();
@@ -61,7 +66,8 @@ public class SessionService {
                 ||account.get().credentialVersion()!=row.getCredentialVersion()) return Optional.empty();
         var user=account.get();
         return asIdentity(user,() -> {
-            if(!properties.autoLockAfter().isZero() && !row.getLocked() && row.getLastSeenAt().plus(properties.autoLockAfter()).isBefore(Instant.now())) {
+            Duration idle=Duration.ofSeconds(settings.longValue("auth.autoLockSeconds",properties.autoLockAfter().toSeconds()));
+            if(!idle.isZero() && !row.getLocked() && row.getLastSeenAt().plus(idle).isBefore(Instant.now())) {
                 row.setLocked(true); mapper.updateById(row);
             }
             var principal=new SmaPrincipal(user.id(),user.username(),user.tenantId(),user.portal(),user.departmentId(),user.superAdmin(),
@@ -80,7 +86,8 @@ public class SessionService {
         var session=mapper.selectById(sessionId);
         return new Me(user.id(),user.username(),user.name(),user.portal(),user.departmentId(),user.superAdmin(),principal.permissions(),menus,
                 navigation.visible(menus.stream().map(MenuView::id).collect(java.util.stream.Collectors.toSet())),user.locale(),user.timeZone(),
-                session!=null&&session.getLocked(),user.passwordChangedAt(),properties.passwordNoticeDays()>0&&user.passwordChangedAt().plus(Duration.ofDays(properties.passwordNoticeDays())).isBefore(Instant.now()));
+                session!=null&&session.getLocked(),user.passwordChangedAt(),settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays())>0
+                        &&user.passwordChangedAt().plus(Duration.ofDays(settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays()))).isBefore(Instant.now()));
     }
     public void logout(long sessionId) { manager.logout(sessionId); }
     private void publish(Long userId,String username,String portal,String status,String ip,String userAgent) {

@@ -52,7 +52,7 @@ spring Modulith/
 | 模块 id | 名称 | 职责 | 允许依赖（allowedDependencies） | 状态 |
 |---|---|---|---|---|
 | common | 共享内核 | 统一响应、业务异常、访问控制注解、序列化、全局异常处理 | 无 | 已建 |
-| auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security、common :: persistence、iam | P1 完成 |
+| auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security、common :: persistence、iam、config | P1 完成 |
 | iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围 | common、common :: security、common :: persistence | P1 完成 |
 | config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 进行中 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、auth、iam（仅引用事件类型） | 规划 |
@@ -137,6 +137,8 @@ com.sma.admin.<module>
 认证使用 256 位随机 Bearer 令牌，数据库仅存 SHA-256 哈希；普通会话 8 小时、保持登录 7 天，均可配置。验证码两分钟且尝试即消费；单终端登录由账号行锁和事务保证。每个请求重新计算当前账号的有效权限和数据范围。账号凭据版本与会话绑定，改密/账号管理更新会使旧会话立即失效，不能依赖时间戳比较。登录事件在事务中发布以接入 Modulith 审计；首版登录限流在单实例内存中，集群部署时需迁移到共享存储。账号查询不会向其他模块返回密码哈希。
 
 锁屏由服务端会话状态执行，锁定时仅允许 me、解锁、退出；接口返回 423。`sma.auth.auto-lock-after` 默认零（关闭），`password-notice-days` 默认零（关闭提醒）。异步模块监听使用 `TenantScope.within(event.tenantId(), ...)` 恢复可信事件的租户，凭据版本小于事件版本的会话才被清理，避免误删较新的登录。
+
+系统参数由 Config 模块的 `ParameterQuery` 提供类型化查询。数据库配置优先于认证属性默认值；会话时长只影响新签发的会话。缓存带租户和版本，保存提交后刷新；公开接口只返回 `public_readable=true AND secret=false` 的值，管理列表的敏感值返回空，编辑时空值表示保留。参数名称可翻译，参数值保持原始业务数据。
 
 规则对“还没有出现的代码”放行，一旦出现对应类型就开始约束。R0～R12 以及 R13 中的字段注入、标准输出两项，都用故意违规的代码验证过会报错（验证代码已删除）；R13 其余三项直接使用 ArchUnit 内置规则。
 

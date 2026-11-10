@@ -42,7 +42,7 @@ class SecurityConfiguration {
 						.accessDeniedHandler((request, response, e) -> errors.write(request, response, CommonErrorCode.FORBIDDEN)))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/actuator/health/**", "/actuator/info", "/error").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/captcha").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/captcha", "/api/config/parameters/public").permitAll()
 						.anyRequest().authenticated())
                 .addFilterBefore(new TokenAuthenticationFilter(sessions, errors), UsernamePasswordAuthenticationFilter.class)
 				.build();

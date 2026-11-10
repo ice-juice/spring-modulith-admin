@@ -15,7 +15,7 @@ final class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final ErrorResponseWriter errors;
     TokenAuthenticationFilter(SessionService sessions,ErrorResponseWriter errors) { this.sessions=sessions; this.errors=errors; }
     @Override protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().equals("/api/auth/login")||request.getRequestURI().equals("/api/auth/captcha");
+        return java.util.Set.of("/api/auth/login","/api/auth/captcha","/api/config/parameters/public").contains(request.getRequestURI());
     }
     @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain) throws ServletException,IOException {
         String authorization=request.getHeader("Authorization");
