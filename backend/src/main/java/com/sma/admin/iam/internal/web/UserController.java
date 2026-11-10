@@ -27,5 +27,6 @@ public class UserController {
     public ApiResponse<Void> resetPassword(@PathVariable long id,@Valid @RequestBody Password input) { service.resetPassword(id,input.password()); return ApiResponse.ok(); }
     public record OwnPassword(@NotBlank String oldPassword,@NotBlank String newPassword) {}
     @PutMapping("/me/password") @PermitLoggedIn
+    @AuditAction("iam:user:change-password")
     public ApiResponse<Void> changeOwnPassword(@Valid @RequestBody OwnPassword input) { service.changeOwnPassword(input.oldPassword(),input.newPassword()); return ApiResponse.ok(); }
 }

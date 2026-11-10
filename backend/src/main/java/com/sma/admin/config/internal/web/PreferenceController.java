@@ -11,6 +11,6 @@ public class PreferenceController {
  private final PreferenceService service;
  public PreferenceController(PreferenceService service){this.service=service;}
  @GetMapping public ApiResponse<PreferenceView> get(){return ApiResponse.ok(service.get(CurrentUser.require().userId(),null,null));}
- @PutMapping public ApiResponse<PreferenceView> save(@Valid @RequestBody PreferenceService.Input input){return ApiResponse.ok(service.save(input));}
- @DeleteMapping public ApiResponse<Void> reset(){service.reset();return ApiResponse.ok();}
+ @PutMapping @AuditAction(value="config:preference:update",path="/preferences") public ApiResponse<PreferenceView> save(@Valid @RequestBody PreferenceService.Input input){return ApiResponse.ok(service.save(input));}
+ @DeleteMapping @AuditAction(value="config:preference:reset",path="/preferences") public ApiResponse<Void> reset(){service.reset();return ApiResponse.ok();}
 }

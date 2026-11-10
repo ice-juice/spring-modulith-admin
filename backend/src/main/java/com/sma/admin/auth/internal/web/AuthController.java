@@ -28,9 +28,11 @@ public class AuthController {
     @PostMapping("/logout") @PermitLoggedIn
     public ApiResponse<Void> logout(@RequestAttribute("sma.session-id") long sessionId) { sessions.logout(sessionId); return ApiResponse.ok(); }
     @PostMapping("/lock") @PermitLoggedIn
+    @AuditAction("auth:session:lock")
     public ApiResponse<Void> lock(@RequestAttribute("sma.session-id") long sessionId) { manager.lock(sessionId); return ApiResponse.ok(); }
     public record Unlock(@NotBlank @Size(max=128) String password) {}
     @PostMapping("/unlock") @PermitLoggedIn
+    @AuditAction("auth:session:unlock")
     public ApiResponse<Void> unlock(@RequestAttribute("sma.session-id") long sessionId,@Valid @RequestBody Unlock input,HttpServletRequest request) {
         manager.unlock(sessionId,input.password(),request.getRemoteAddr()); return ApiResponse.ok();
     }
