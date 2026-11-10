@@ -1,0 +1,8 @@
+# Test profile: integration tests use a dedicated database that is wiped (Flyway clean) once per JVM
+# by com.sma.admin.support.CleanTestDatabaseListener before the first Spring context starts.
+spring:
+  datasource:
+    url: ${SMA_TEST_DB_URL:jdbc:mysql://127.0.0.1:3306/springboot_modulith_admin_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true}
+    username: ${SMA_TEST_DB_USERNAME:springboot_modulith_admin}
+    password: ${SMA_TEST_DB_PASSWORD:sma_dev}
+
