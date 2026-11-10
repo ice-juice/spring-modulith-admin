@@ -52,9 +52,9 @@ spring Modulith/
 | 模块 id | 名称 | 职责 | 允许依赖（allowedDependencies） | 状态 |
 |---|---|---|---|---|
 | common | 共享内核 | 统一响应、业务异常、访问控制注解、序列化、全局异常处理 | 无 | 已建 |
-| auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security；实现时加入 iam | 已建（安全基线） |
-| iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围 | common、common :: security | 规划 |
-| config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | 规划 |
+| auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security、common :: persistence、iam | P1 完成 |
+| iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围 | common、common :: security、common :: persistence | P1 完成 |
+| config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 进行中 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、auth、iam（仅引用事件类型） | 规划 |
 | message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、iam | 规划 |
 | file | 文件 | 文件元数据、本地/对象存储适配 | common、common :: security | 规划 |
@@ -90,6 +90,8 @@ com.sma.admin.<module>
 ```
 
 需要对外多暴露一组类型时，在子包的 `package-info.java` 上加 `@NamedInterface("名称")`，依赖方写成 `"模块 :: 名称"`（如 `common :: security`）。
+
+组件扫描与 Mapper 扫描统一使用 `FullyQualifiedAnnotationBeanNameGenerator`，允许不同模块有同名的内部类；显式 `@Bean` 方法仍应使用唯一名称，不开启 Bean 覆盖。
 
 ## 5. 框架约束清单
 

@@ -9,7 +9,9 @@ import org.springframework.modulith.Modulithic;
  * {@code common} is a shared module that every module may depend on.
  */
 @Modulithic(systemName = "Springboot Modulith Admin", sharedModules = "common")
-@SpringBootApplication(exclude = org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration.class)
+@SpringBootApplication(
+        exclude = org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration.class,
+        nameGenerator = org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator.class)
 public class SpringbootModulithAdminApplication {
 
 	public static void main(String[] args) {

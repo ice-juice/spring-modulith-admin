@@ -20,7 +20,8 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 
 @Configuration(proxyBeanMethods = false)
-@MapperScan(basePackages = "com.sma.admin", annotationClass = org.apache.ibatis.annotations.Mapper.class)
+@MapperScan(basePackages = "com.sma.admin", annotationClass = org.apache.ibatis.annotations.Mapper.class,
+        nameGenerator = org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator.class)
 class PersistenceConfiguration {
     @Bean
     MybatisPlusInterceptor mybatisPlusInterceptor() {
