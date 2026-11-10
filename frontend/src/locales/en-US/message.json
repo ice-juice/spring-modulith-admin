@@ -1,0 +1,41 @@
+{
+  "notices": "System notices",
+  "publish": "Publish notice",
+  "editNotice": "Edit notice",
+  "title": "Title",
+  "content": "Content",
+  "type": "Type",
+  "priority": "Priority",
+  "audience": "Audience",
+  "recipients": "Recipients",
+  "attachments": "Attachments",
+  "readStats": "Read / recipients",
+  "readRatio": "{read} / {total}",
+  "readers": "Read receipts",
+  "readAt": "Read at",
+  "unread": "Unread",
+  "read": "Read",
+  "recycleBin": "Recycle bin",
+  "recycle": "Recycle",
+  "restore": "Restore",
+  "recycleSelected": "Recycle selected",
+  "restoreSelected": "Restore selected",
+  "recycleConfirm": "Move the selected notices to the recycle bin?",
+  "restoreConfirm": "Restore the selected notices?",
+  "audiences": {
+    "ALL": "All visible users",
+    "ROLE": "Roles",
+    "DEPARTMENT": "Departments",
+    "POST": "Posts",
+    "USER": "Selected users"
+  },
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "list": "Bullet list",
+    "link": "Link",
+    "linkHint": "Enter an http:// or https:// URL; leave blank to remove",
+    "undo": "Undo",
+    "redo": "Redo"
+  }
+}

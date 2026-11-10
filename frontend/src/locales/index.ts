@@ -6,6 +6,7 @@ import type zhIam from './zh-CN/iam.json'
 import type zhConfig from './zh-CN/config.json'
 import type zhAudit from './zh-CN/audit.json'
 import type zhFile from './zh-CN/file.json'
+import type zhMessage from './zh-CN/message.json'
 
 export const supportedLocales = ['zh-CN', 'en-US'] as const
 export type AppLocale = (typeof supportedLocales)[number]
@@ -16,6 +17,7 @@ export interface MessageSchema {
   config: typeof zhConfig
   audit: typeof zhAudit
   file: typeof zhFile
+  message: typeof zhMessage
 }
 declare module 'vue-i18n' {
   export interface DefineLocaleMessage {
@@ -25,13 +27,14 @@ declare module 'vue-i18n' {
     config: MessageSchema['config']
     audit: MessageSchema['audit']
     file: MessageSchema['file']
+    message: MessageSchema['message']
   }
 }
 
 export function normalizeLocale(value?: string | null): AppLocale {
   return value?.toLowerCase().startsWith('en') ? 'en-US' : 'zh-CN'
 }
-export const i18n = createI18n({
+export const i18n = createI18n<[Partial<MessageSchema>], AppLocale, false>({
   legacy: false,
   locale: normalizeLocale(localStorage.getItem('sma.locale') || navigator.language),
   fallbackLocale: 'zh-CN',

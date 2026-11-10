@@ -394,3 +394,35 @@ html.dark {
   place-items: center;
   margin-bottom: 20px;
 }
+.rich-editor {
+  width: 100%;
+  border: 1px solid var(--el-border-color);
+  border-radius: 6px;
+}
+.rich-toolbar {
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--el-border-color);
+}
+.rich-editor .tiptap {
+  min-height: 180px;
+  padding: 12px;
+  outline: none;
+  line-height: 1.7;
+}
+.notice-content {
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  margin-bottom: 20px;
+}
+.attachment-list {
+  width: 100%;
+}
+.attachment-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

@@ -19,6 +19,15 @@ const router = createRouter({
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
         {
+          path: 'message/notices',
+          component: () => import('@/views/message/NoticesView.vue'),
+          meta: {
+            module: 'message',
+            titleKey: 'message.notices',
+            permission: 'message:notice:view',
+          },
+        },
+        {
           path: 'profile',
           component: () => import('@/views/iam/ProfileView.vue'),
           meta: { module: 'iam', titleKey: 'common.profile' },

@@ -1,0 +1,41 @@
+{
+  "notices": "系统通知",
+  "publish": "发布通知",
+  "editNotice": "编辑通知",
+  "title": "标题",
+  "content": "内容",
+  "type": "类型",
+  "priority": "优先级",
+  "audience": "接收范围",
+  "recipients": "接收人",
+  "attachments": "附件",
+  "readStats": "已读 / 接收人数",
+  "readRatio": "{read} / {total}",
+  "readers": "阅读情况",
+  "readAt": "阅读时间",
+  "unread": "未读",
+  "read": "已读",
+  "recycleBin": "回收站",
+  "recycle": "回收",
+  "restore": "恢复",
+  "recycleSelected": "回收选中",
+  "restoreSelected": "恢复选中",
+  "recycleConfirm": "确定将选中的通知移入回收站吗？",
+  "restoreConfirm": "确定恢复选中的通知吗？",
+  "audiences": {
+    "ALL": "全部可见用户",
+    "ROLE": "角色",
+    "DEPARTMENT": "部门",
+    "POST": "岗位",
+    "USER": "指定用户"
+  },
+  "editor": {
+    "bold": "加粗",
+    "italic": "斜体",
+    "list": "项目列表",
+    "link": "链接",
+    "linkHint": "输入 http:// 或 https:// 链接；留空移除",
+    "undo": "撤销",
+    "redo": "重做"
+  }
+}
