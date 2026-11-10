@@ -18,13 +18,16 @@ import com.sma.admin.config.*;
 import com.sma.admin.config.internal.persistence.*;
 
 @Service @Transactional(readOnly=true)
-public class ParameterService implements ParameterQuery {
+public class ParameterService implements ParameterQuery,com.sma.admin.common.security.CacheRegion {
  private final ParameterMapper mapper;private final ParameterGroupMapper groups;private final ConfigNames names;private final WriteLockMapper lock;
  private final ApplicationEventPublisher events;private final JsonMapper json;
  private record CacheKey(long tenant,String key) {}
  private record Cached(Optional<String> value,long generation,Instant until) {}
  private final ConcurrentHashMap<CacheKey,Cached> cache=new ConcurrentHashMap<>();
- private final AtomicLong generation=new AtomicLong();
+ private final ConcurrentHashMap<Long,AtomicLong> generations=new ConcurrentHashMap<>();
+ private final ConcurrentHashMap<Long,java.util.concurrent.atomic.LongAdder[]> counts=new ConcurrentHashMap<>();
+ private java.util.concurrent.atomic.LongAdder[] counters(){return counts.computeIfAbsent(CurrentUser.tenantId(),id->new java.util.concurrent.atomic.LongAdder[]{new java.util.concurrent.atomic.LongAdder(),new java.util.concurrent.atomic.LongAdder()});}
+ private AtomicLong generation(){return generations.computeIfAbsent(CurrentUser.tenantId(),id->new AtomicLong());}
  public ParameterService(ParameterMapper mapper,ParameterGroupMapper groups,ConfigNames names,WriteLockMapper lock,ApplicationEventPublisher events,JsonMapper json) {
   this.mapper=mapper;this.groups=groups;this.names=names;this.lock=lock;this.events=events;this.json=json;
  }
@@ -88,8 +91,9 @@ public class ParameterService implements ParameterQuery {
   }catch(Exception ex){throw new BizException(ConfigErrorCode.INVALID_VALUE);}
  }
  @Override public String stringValue(String key,String fallback) {
-  var cacheKey=new CacheKey(CurrentUser.tenantId(),key);long revision=generation.get();var entry=cache.get(cacheKey);
-  if(entry!=null&&entry.generation()==revision&&entry.until().isAfter(Instant.now()))return entry.value().orElse(fallback);
+  var cacheKey=new CacheKey(CurrentUser.tenantId(),key);long revision=generation().get();var entry=cache.get(cacheKey);
+  if(entry!=null&&entry.generation()==revision&&entry.until().isAfter(Instant.now())){counters()[0].increment();return entry.value().orElse(fallback);}
+  counters()[1].increment();
   var row=mapper.selectOne(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,key));
   var result=Optional.ofNullable(row==null?null:row.getParamValue());
   if(cache.size()>10000)cache.clear();
@@ -102,7 +106,12 @@ public class ParameterService implements ParameterQuery {
   Map<String,String> values=new LinkedHashMap<>();
   mapper.selectList(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getPublicReadable,true).eq(ParameterEntity::getSecret,false)).forEach(row -> values.put(row.getParamKey(),row.getParamValue()));return Map.copyOf(values);
  }
- public void refresh(){generation.incrementAndGet();cache.clear();}
+ public void refresh(){long tenant=CurrentUser.tenantId();generation().incrementAndGet();cache.keySet().removeIf(key->key.tenant()==tenant);}
+ @Override public String id(){return "config.parameters";}
+ @Override public com.sma.admin.common.security.CacheRegion.Snapshot snapshot(){long tenant=CurrentUser.tenantId();long revision=generation().get();var now=Instant.now();
+  long size=cache.entrySet().stream().filter(entry->entry.getKey().tenant()==tenant&&entry.getValue().generation()==revision&&entry.getValue().until().isAfter(now)).count();
+  var stats=counters();return new com.sma.admin.common.security.CacheRegion.Snapshot(id(),"config.cache.parameters",size,stats[0].sum(),stats[1].sum());}
+ @Override public void clear(){refresh();}
  private void changed(String key){
   events.publishEvent(new ConfigurationChangedEvent(CurrentUser.tenantId(),"parameter",key));
   if(TransactionSynchronizationManager.isSynchronizationActive())TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){@Override public void afterCommit(){refresh();}});
