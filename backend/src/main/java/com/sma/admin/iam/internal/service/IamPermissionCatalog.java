@@ -1,0 +1,27 @@
+package com.sma.admin.iam.internal.service;
+
+import java.util.List;
+import java.util.ArrayList;
+import org.springframework.stereotype.Component;
+import com.sma.admin.common.security.*;
+
+@Component
+public class IamPermissionCatalog implements PermissionCatalog {
+    @Override
+    public List<PermissionSpec> permissions() {
+        var specs=new ArrayList<PermissionSpec>();
+        specs.add(new PermissionSpec("iam:organization",null,"iam.menu.organization","组织与权限","DIRECTORY",null,"Setting",10,"admin",true));
+        String[] resources={"department","post","role","permission"};
+        String[] names={"部门管理","岗位管理","角色管理","权限资源"};
+        String[] paths={"/iam/departments","/iam/posts","/iam/roles","/iam/permissions"};
+        for(int i=0;i<resources.length;i++) {
+            String resource=resources[i];
+            String key="iam:"+resource+":view";
+            specs.add(new PermissionSpec(key,"iam:organization","iam.menu."+resource,names[i],"MENU",paths[i],null,i*10,"admin",true));
+            for(String action:List.of("create","update","delete")) {
+                specs.add(new PermissionSpec("iam:"+resource+":"+action,key,"iam.action."+action,action,"BUTTON",null,null,10,"admin",true));
+            }
+        }
+        return specs;
+    }
+}
