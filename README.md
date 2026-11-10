@@ -26,6 +26,7 @@ Springboot Modulith Admin 是一套前后端分离的后台管理系统，产品
 | 时间 | 数据库统一存 UTC；接口输出带偏移的 ISO-8601；用户有自己的时区（个人偏好 > 租户默认 > 浏览器），前端按用户时区显示，后端导出等服务端渲染按请求时区转换 | 跨国家用户看到本地时间 |
 | 多语言 | 首批 zh-CN（默认）、en-US；用户录入数据首版只翻译菜单、字典、参数名称 | 见 P03 |
 | 本版不做 | UReport 报表设计器、微信公众平台、七牛账号、敏感词词库、代码生成平台 | 按需求范围裁剪 |
+| 另期实施 | hiprint 打印设计器、AI 数智化中心 | 先完成既有 P0～P4，2026-11-10 用户确认 |
 
 ## 2. 工程结构
 
@@ -53,11 +54,11 @@ spring Modulith/
 |---|---|---|---|---|
 | common | 共享内核 | 统一响应、业务异常、访问控制注解、序列化、全局异常处理 | 无 | 已建 |
 | auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security、common :: persistence、iam、config | P1 完成 |
-| iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围 | common、common :: security、common :: persistence | P1 完成 |
+| iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围、个人资料与头像 | common、common :: security、common :: persistence、file | P1 完成，P3 扩展 |
 | config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 完成 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、common :: persistence、auth | P2 完成 |
 | message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、iam | 规划 |
-| file | 文件 | 文件元数据、本地/对象存储适配 | common、common :: security | 规划 |
+| file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 实施 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试） | common、common :: security | 规划 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
 | openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security | 规划 |
@@ -65,6 +66,7 @@ spring Modulith/
 ```mermaid
 flowchart LR
   auth --> iam
+  iam --> file
   message --> iam
   devtools --> iam
   audit -. 监听事件 .-> auth
@@ -141,6 +143,8 @@ com.sma.admin.<module>
 系统参数由 Config 模块的 `ParameterQuery` 提供类型化查询。数据库配置优先于认证属性默认值；会话时长只影响新签发的会话。缓存带租户和版本，保存提交后刷新；公开接口只返回 `public_readable=true AND secret=false` 的值，管理列表的敏感值返回空，编辑时空值表示保留。参数名称可翻译，参数值保持原始业务数据。
 
 个人偏好由 Config 独立维护，认证通过 `PreferenceQuery` 返回有效设置，保存偏好不改变账号凭据版本。个人时区优先于 IAM 中的账号默认；可选 `system.timeZone` 参数提供租户默认，未设置时由前端使用浏览器时区再回退 UTC。国家不是时区的唯一依据，使用 IANA 时区以正确处理多时区国家和夏令时。
+
+文件二进制使用服务端随机存储键，原文件名只作展示；默认 20 MiB 上限。PNG/JPEG/GIF 必须成功解码且不超过 2500 万像素才可预览，其他文件一律附件下载。所有下载要求登录并校验租户、portal、所有者/管理数据范围或引用模块贡献的 `FileAccessPolicy`；禁止公开直连存储目录。上传回滚清理二进制，逻辑删除保留二进制但立即阻止下载。引用前经 FileQuery 验证所有权并锁住文件记录，删除同样锁记录并检查引用。头像由 IAM 保存文件 ID、贡献读取及引用保护策略；策略只查询本模块 Mapper，避免与文件服务形成依赖循环。个人资料更新不提升凭据版本。
 
 关键操作日志由 Common 的 MVC 拦截器捕获带 `@RequiresPermission` 的写请求；登录即可的关键写操作显式加 `@AuditAction`。只记录操作者、动作、目标 ID、路径、结果码、耗时和设备，不记录请求体、查询参数、认证头或响应内容。事件在独立事务中发布，由 Audit 的 `@ApplicationModuleListener` 幂等写入。文案使用 `<模块>.audit.<资源>.<动作>` 与目标 ID 参数，保存中文快照，查询时按语言重新渲染；目标回跳地址仅由受控路径和 ID 构成。
 

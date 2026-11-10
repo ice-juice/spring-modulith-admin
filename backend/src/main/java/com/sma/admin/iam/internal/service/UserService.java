@@ -149,7 +149,7 @@ public class UserService implements AccountQuery {
     private AccountView account(UserEntity row) {
         var roleIds=userRoles.selectList(new LambdaQueryWrapper<UserRoleEntity>().eq(UserRoleEntity::getUserId,row.getId())).stream().map(UserRoleEntity::getRoleId).collect(java.util.stream.Collectors.toSet());
         var postIds=userPosts.selectList(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getUserId,row.getId())).stream().map(UserPostEntity::getPostId).collect(java.util.stream.Collectors.toSet());
-        return new AccountView(row.getId(),row.getTenantId(),row.getUsername(),row.getName(),row.getPortal(),row.getDeptId(),row.getSuperAdmin(),row.getEnabled(),roleIds,postIds,row.getLocale(),row.getTimeZone(),row.getPasswordChangedAt(),row.getCredentialVersion());
+        return new AccountView(row.getId(),row.getTenantId(),row.getUsername(),row.getName(),row.getPortal(),row.getDeptId(),row.getSuperAdmin(),row.getEnabled(),roleIds,postIds,row.getLocale(),row.getTimeZone(),row.getPasswordChangedAt(),row.getCredentialVersion(),row.getAvatarFileId());
     }
 
     @Transactional

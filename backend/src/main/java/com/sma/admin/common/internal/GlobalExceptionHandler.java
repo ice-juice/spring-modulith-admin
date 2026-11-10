@@ -30,6 +30,10 @@ import com.sma.admin.common.ErrorCode;
  */
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    ResponseEntity<ApiResponse<Void>> handleUploadLimit(Exception ex){return status(CommonErrorCode.PAYLOAD_TOO_LARGE);}
+    @ExceptionHandler(java.nio.file.NoSuchFileException.class)
+    ResponseEntity<ApiResponse<Void>> handleMissingFile(Exception ex){return status(CommonErrorCode.NOT_FOUND);}
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 

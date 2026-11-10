@@ -6,3 +6,7 @@ spring:
     username: ${SMA_TEST_DB_USERNAME:springboot_modulith_admin}
     password: ${SMA_TEST_DB_PASSWORD:sma_dev}
 
+sma:
+  file:
+    directory: target/test-storage
+
