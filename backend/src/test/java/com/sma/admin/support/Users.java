@@ -18,6 +18,8 @@ public final class Users {
         context.setAuthentication(new UsernamePasswordAuthenticationToken(user, null,
                 user.permissions().stream().map(SimpleGrantedAuthority::new).toList()));
         SecurityContextHolder.setContext(context);
-        try { return action.get(); } finally { SecurityContextHolder.setContext(previous); }
+        org.springframework.security.test.context.TestSecurityContextHolder.setContext(context);
+        try { return action.get(); }
+        finally { org.springframework.security.test.context.TestSecurityContextHolder.setContext(previous); }
     }
 }
