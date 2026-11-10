@@ -1,4 +1,6 @@
 {
+  "viewMembers": "View users",
+  "roleMembers": "Role members: {name}",
   "department": "Departments",
   "post": "Posts",
   "role": "Roles",

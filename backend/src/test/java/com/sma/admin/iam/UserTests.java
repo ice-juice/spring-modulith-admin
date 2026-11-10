@@ -30,6 +30,7 @@ class UserTests {
             assertThat(users.authenticate("alice","wrong","admin")).isEmpty();
             assertThat(users.authenticate("alice","Alice@Secure2026","admin")).get().extracting(AccountView::id).isEqualTo(row.id());
             assertThat(row.roleIds()).containsExactly(role.id());
+            assertThat(users.page(new PageQuery(1,20,null,null),null,null,null,role.id(),post.id()).items()).extracting(UserService.View::id).containsExactly(row.id());
             assertThatThrownBy(() -> departments.delete(dept.id())).isInstanceOf(BizException.class);
             assertThatThrownBy(() -> roles.delete(role.id())).isInstanceOf(BizException.class);
             assertThatThrownBy(() -> posts.delete(post.id())).isInstanceOf(BizException.class);

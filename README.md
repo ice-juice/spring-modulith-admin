@@ -6,6 +6,8 @@ Springboot Modulith Admin 是一套前后端分离的后台管理系统，产品
 
 > 方案与决策记录见 [docs/proposals](docs/proposals/README.md)（P01 改名、P02 mvnd 已实施；P03 i18n 已确认），开发计划与逐项验证记录见 [docs/development-progress.md](docs/development-progress.md)。
 
+P0～P4 的范围内代码与自动验证已完成；最终功能对照与待人工验收项见 [docs/acceptance.md](docs/acceptance.md)，部署与主密钥持久化见 [docs/deployment.md](docs/deployment.md)。P4-4 仍保留登录后浏览器人工巡检，不将自动测试等同于人工验收。
+
 ## 1. 底座基调
 
 | 决策 | 内容 | 理由 |
@@ -151,6 +153,8 @@ com.sma.admin.<module>
 认证使用 256 位随机 Bearer 令牌，数据库仅存 SHA-256 哈希；普通会话 8 小时、保持登录 7 天，均可配置。验证码两分钟且尝试即消费；单终端登录由账号行锁和事务保证。每个请求重新计算当前账号的有效权限和数据范围。账号凭据版本与会话绑定，改密/账号管理更新会使旧会话立即失效，不能依赖时间戳比较。登录事件在事务中发布以接入 Modulith 审计；首版登录限流在单实例内存中，集群部署时需迁移到共享存储。账号查询不会向其他模块返回密码哈希。
 
 锁屏由服务端会话状态执行，锁定时仅允许 me、解锁、退出；接口返回 423。`sma.auth.auto-lock-after` 默认零（关闭），`password-notice-days` 默认零（关闭提醒）。异步模块监听使用 `TenantScope.within(event.tenantId(), ...)` 恢复可信事件的租户，凭据版本小于事件版本的会话才被清理，避免误删较新的登录。
+
+会话维护每分钟按可信租户清理最多 200 条过期会话，发布 EXPIRED 事件供实时连接关闭；默认注册首版租户 1，签发其他租户会话时登记。角色列表可跳转角色用户，用户分页同时支持角色/岗位筛选，仍与用户数据范围和租户过滤取交集。
 
 系统参数由 Config 模块的 `ParameterQuery` 提供类型化查询。数据库配置优先于认证属性默认值；会话时长只影响新签发的会话。缓存带租户和版本，保存提交后刷新；公开接口只返回 `public_readable=true AND secret=false` 的值，管理列表的敏感值返回空，编辑时空值表示保留。参数名称可翻译，参数值保持原始业务数据。
 

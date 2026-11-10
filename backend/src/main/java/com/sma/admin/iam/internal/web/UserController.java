@@ -13,7 +13,7 @@ public class UserController {
     public UserController(UserService service) { this.service=service; }
     @GetMapping @RequiresPermission("iam:user:view")
     public ApiResponse<PageResult<UserService.View>> page(@ModelAttribute PageQuery page,@RequestParam(required=false) String keyword,
-            @RequestParam(required=false) Long departmentId,@RequestParam(required=false) Boolean enabled) { return ApiResponse.ok(service.page(page,keyword,departmentId,enabled)); }
+            @RequestParam(required=false) Long departmentId,@RequestParam(required=false) Boolean enabled,@RequestParam(required=false)Long roleId,@RequestParam(required=false)Long postId) { return ApiResponse.ok(service.page(page,keyword,departmentId,enabled,roleId,postId)); }
     @GetMapping("/{id}") @RequiresPermission("iam:user:view")
     public ApiResponse<UserService.View> get(@PathVariable long id) { return ApiResponse.ok(service.get(id)); }
     @PostMapping @RequiresPermission("iam:user:create")

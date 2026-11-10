@@ -1,4 +1,6 @@
 {
+  "viewMembers": "查看用户",
+  "roleMembers": "角色用户：{name}",
   "department": "部门管理",
   "post": "岗位管理",
   "role": "角色管理",

@@ -9,7 +9,10 @@ import { permission } from '@/directives/permission'
 import { get, put } from '@/api/http'
 import ManagementView from '@/views/iam/ManagementView.vue'
 
-vi.mock('vue-router', () => ({ useRoute: () => ({ meta: { resource: 'roles' } }) }))
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ meta: { resource: 'roles' }, query: {} }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}))
 vi.mock('@/api/http', () => ({ get: vi.fn(), post: vi.fn(), put: vi.fn(), remove: vi.fn() }))
 
 beforeEach(async () => {

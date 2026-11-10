@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   ElMessage,
   ElMessageBox,
@@ -20,6 +20,16 @@ import {
   type Option,
 } from '@/features/iam/resources'
 const route = useRoute()
+const router = useRouter()
+function members(row: Row) {
+  void router.push({ path: '/iam/users', query: { roleId: row.id, roleName: String(row.name) } })
+}
+function clearRole() {
+  const query = { ...route.query }
+  delete query.roleId
+  delete query.roleName
+  void router.replace({ query })
+}
 const props = withDefaults(
   defineProps<{
     resourceId?: string
@@ -122,6 +132,10 @@ async function load() {
             page: page.value,
             size: size.value,
             keyword: keyword.value || undefined,
+            roleId:
+              resource.value.id === 'users' && typeof route.query.roleId === 'string'
+                ? route.query.roleId
+                : undefined,
             ...props.filters,
           })
     rows.value = Array.isArray(result)
@@ -319,6 +333,7 @@ watch(
     locale,
     () => props.filters,
     () => route.query?.focus,
+    () => route.query?.roleId,
   ],
   () => {
     page.value = 1
@@ -347,6 +362,9 @@ watch(
         >{{ t('common.create') }}</el-button
       >
       <el-button @click="load">{{ t('common.refresh') }}</el-button>
+      <el-tag v-if="resource.id === 'users' && route.query.roleId" closable @close="clearRole">{{
+        t('iam.roleMembers', { name: String(route.query.roleName || route.query.roleId) })
+      }}</el-tag>
     </div>
     <el-alert
       v-if="error"
@@ -408,6 +426,13 @@ watch(
             type="primary"
             @click="openGrant(row)"
             >{{ t('iam.grant') }}</el-button
+          >
+          <el-button
+            v-if="resource.id === 'roles'"
+            v-permission="'iam:user:view'"
+            link
+            @click="members(row)"
+            >{{ t('iam.viewMembers') }}</el-button
           >
           <el-button
             v-if="resource.id === 'users' && canEdit(row)"

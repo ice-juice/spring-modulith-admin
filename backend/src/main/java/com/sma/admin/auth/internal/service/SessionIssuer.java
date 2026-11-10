@@ -12,7 +12,8 @@ public class SessionIssuer {
     private final SessionGuardMapper guard;
     private final LoginEvents events;
     private final org.springframework.context.ApplicationEventPublisher publisher;
-    public SessionIssuer(SessionMapper mapper,SessionGuardMapper guard,LoginEvents events,org.springframework.context.ApplicationEventPublisher publisher) { this.mapper=mapper; this.guard=guard; this.events=events;this.publisher=publisher; }
+    private final SessionMaintenance maintenance;
+    public SessionIssuer(SessionMapper mapper,SessionGuardMapper guard,LoginEvents events,org.springframework.context.ApplicationEventPublisher publisher,SessionMaintenance maintenance) { this.mapper=mapper; this.guard=guard; this.events=events;this.publisher=publisher;this.maintenance=maintenance; }
     @Transactional
     public SessionService.LoginResult issue(AccountView user,boolean singleTerminal,Duration ttl,String ip,String userAgent) {
         return issue(user,singleTerminal,ttl,ip,userAgent,false);
@@ -20,6 +21,7 @@ public class SessionIssuer {
     @Transactional
     public SessionService.LoginResult issue(AccountView user,boolean singleTerminal,Duration ttl,String ip,String userAgent,boolean locked) {
         guard.lock(user.id(),user.tenantId());
+        maintenance.seen();
         if(singleTerminal){
             var query=new LambdaQueryWrapper<SessionEntity>().eq(SessionEntity::getUserId,user.id()).eq(SessionEntity::getPortal,user.portal());
             var previous=mapper.selectList(query);mapper.delete(query);

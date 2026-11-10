@@ -7,7 +7,10 @@ import { get, put } from '@/api/http'
 import { useAuth, type CurrentUser } from '@/stores/auth'
 import { permission } from '@/directives/permission'
 import ManagementView from '@/views/iam/ManagementView.vue'
-vi.mock('vue-router', () => ({ useRoute: () => ({ meta: {}, query: {} }) }))
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ meta: {}, query: {} }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}))
 vi.mock('@/api/http', () => ({ get: vi.fn(), put: vi.fn(), post: vi.fn(), remove: vi.fn() }))
 beforeEach(async () => {
   setActivePinia(createPinia())

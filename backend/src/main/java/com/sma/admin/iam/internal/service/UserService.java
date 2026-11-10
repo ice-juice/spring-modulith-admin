@@ -46,11 +46,17 @@ public class UserService implements AccountQuery {
             boolean enabled,boolean superAdmin,Set<Long> roleIds,Set<Long> postIds,String locale,String timeZone,Instant passwordChangedAt) {}
 
     public PageResult<View> page(PageQuery page,String keyword,Long departmentId,Boolean enabled) {
+        return page(page,keyword,departmentId,enabled,null,null);
+    }
+    public PageResult<View> page(PageQuery page,String keyword,Long departmentId,Boolean enabled,Long roleId,Long postId) {
+        var paging=page.<UserEntity>toPage(Map.of("username","username","name","name","createdAt","created_at"));
         var query=new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getPortal,CurrentUser.portal()).orderByDesc(UserEntity::getId);
         if(keyword!=null&&!keyword.isBlank()) query.and(q -> q.like(UserEntity::getUsername,keyword).or().like(UserEntity::getName,keyword));
         if(departmentId!=null) query.eq(UserEntity::getDeptId,departmentId);
         if(enabled!=null) query.eq(UserEntity::getEnabled,enabled);
-        return PageResult.of(mapper.selectPage(page.toPage(Map.of("username","username","name","name","createdAt","created_at")),query),this::view);
+        if(roleId!=null){roles.require(roleId);var ids=userRoles.selectList(new LambdaQueryWrapper<UserRoleEntity>().eq(UserRoleEntity::getRoleId,roleId)).stream().map(UserRoleEntity::getUserId).toList();if(ids.isEmpty())return new PageResult<>(List.of(),0,paging.getCurrent(),paging.getSize());query.in(UserEntity::getId,ids);}
+        if(postId!=null){posts.require(postId);var ids=userPosts.selectList(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getPostId,postId)).stream().map(UserPostEntity::getUserId).toList();if(ids.isEmpty())return new PageResult<>(List.of(),0,paging.getCurrent(),paging.getSize());query.in(UserEntity::getId,ids);}
+        return PageResult.of(mapper.selectPage(paging,query),this::view);
     }
     public View get(long id) { return view(require(id)); }
     private UserEntity require(long id) {
