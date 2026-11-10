@@ -10,5 +10,7 @@ public class MessagePermissionCatalog implements PermissionCatalog {
   new PermissionSpec("message:notice:create","message:notice:view","message.action.create","发布通知","BUTTON",null,null,0,"admin",true),
   new PermissionSpec("message:notice:update","message:notice:view","message.action.update","编辑通知","BUTTON",null,null,0,"admin",true),
   new PermissionSpec("message:notice:delete","message:notice:view","message.action.delete","回收通知","BUTTON",null,null,0,"admin",true),
-  new PermissionSpec("message:notice:restore","message:notice:view","message.action.restore","恢复通知","BUTTON",null,null,0,"admin",true));}
+  new PermissionSpec("message:notice:restore","message:notice:view","message.action.restore","恢复通知","BUTTON",null,null,0,"admin",true),
+  new PermissionSpec("message:todo:view","message:center","message.menu.todos","待办管理","MENU","/message/todos",null,10,"admin",true),
+  new PermissionSpec("message:todo:assign","message:todo:view","message.action.assign","分配待办","BUTTON",null,null,0,"admin",true));}
 }

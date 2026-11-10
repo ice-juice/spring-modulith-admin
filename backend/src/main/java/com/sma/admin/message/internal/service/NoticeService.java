@@ -79,10 +79,7 @@ public class NoticeService {
  private Set<Long> fileIds(long id){return attachments.selectList(new LambdaQueryWrapper<NoticeAttachmentEntity>().eq(NoticeAttachmentEntity::getNoticeId,id)).stream().map(NoticeAttachmentEntity::getFileId).collect(Collectors.toSet());}
  private NoticeRecipientEntity receiver(long id){return recipients.selectOne(new LambdaQueryWrapper<NoticeRecipientEntity>().eq(NoticeRecipientEntity::getNoticeId,id).eq(NoticeRecipientEntity::getUserId,CurrentUser.require().userId()));}
  public PageResult<View> inbox(PageQuery page,Boolean unread){
-  var query=new LambdaQueryWrapper<NoticeEntity>().eq(NoticeEntity::getPortal,CurrentUser.portal())
-   .inSql(NoticeEntity::getId,"SELECT notice_id FROM message_notice_recipient WHERE tenant_id="+CurrentUser.tenantId()+" AND deleted=0 AND user_id="+CurrentUser.require().userId()+(Boolean.TRUE.equals(unread)?" AND read_at IS NULL":""))
-   .orderByDesc(NoticeEntity::getPriority).orderByDesc(NoticeEntity::getId);
-  return PageResult.of(lookup.selectPage(page.toPage(Map.of()),query),this::view);
+  return PageResult.of(lookup.inbox(page.toPage(Map.of()),CurrentUser.portal(),CurrentUser.require().userId(),Boolean.TRUE.equals(unread)),this::view);
  }
  @Transactional public View read(long id){
   var row=lookup.selectOne(new LambdaQueryWrapper<NoticeEntity>().eq(NoticeEntity::getId,id).eq(NoticeEntity::getPortal,CurrentUser.portal()).last("FOR UPDATE"));
