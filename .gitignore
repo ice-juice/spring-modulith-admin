@@ -1,0 +1,20 @@
+# build outputs
+target/
+dist/
+node_modules/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# local setup artifacts (installers, logs)
+tools/setup/downloads/
+tools/setup/logs/
+
+# research artifacts generated from the closed-source jbolt_core.jar (local use only)
+docs/jbolt-research/jbolt-core-classes.json
+

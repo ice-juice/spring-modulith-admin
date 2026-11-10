@@ -1,0 +1,6054 @@
+[
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/app",
+  "controller": "AiAppAdminController",
+  "view": "/_view/admin/ai/aiapp",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aiapp/AiAppAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_APP)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/app\", viewPath = \"/_view/admin/ai/aiapp\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "count",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "copy",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "downloadAppJson",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addByJson",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "designer",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateCustomCssStyle",
+    "params": "Long id, String customCssStyle",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateCustomJavascript",
+    "params": "Long id, String customJavascript",
+    "annotations": []
+   },
+   {
+    "action": "knowledgeConfigTopPortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "knowledgeDatasPortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "functionCallDatasPortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "chooseFunctions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "chooseKnowledgeBases",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "linkKnowledgeBaseDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "linkFunctionCallDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "unbindKnowledgeBase",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "unbindFunctionCall",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "logout",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "publishConfigDialog",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "publishConfigPortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "linkFunctionDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "permissions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiKnowledgeBases",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiFunctions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiFunctionChooseDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitFunctions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiKnowledgeBaseChooseDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitKnowledgeBases",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateOneColumn",
+    "params": "@Para(\"\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsChatLlmEnableThinking",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsFunctionLlmEnableThinking",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsFuncResultLlmEnableThinking",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsKbResultLlmEnableThinking",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiKnowledgeCall",
+    "params": "@Para(\"id\"",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "sessionHistory",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "removeLinkKnowledgeBases",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "removeLinkFunctionCall",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "designerTest",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "test",
+    "params": "@Para(value = \"isDesignerMode\",defaultValue = \"false\"",
+    "annotations": []
+   },
+   {
+    "action": "clearSessionMsgs",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "open",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "genTableBySql",
+    "params": "@Para(\"datasource\"",
+    "annotations": []
+   },
+   {
+    "action": "jdadHistorySession",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "jboltDatabaseAiDesigner",
+    "params": "@Para(value = \"datasource\",defaultValue = DbKit.MAIN_CONFIG_NAME",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiApp\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "qrcode",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "initPublish",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "publish",
+    "params": "@Para(\"id\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "cancelPublish",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiApp\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initSortRank",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsNeedRewriteQuery",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowReference",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowAiMsgBottomOptBtnTts",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowAiMsgBottomOptBtnReChat",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowRefFragment",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowFileDownload",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsOnlyKnowledgeMode",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsOnlyFunctionCallMode",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsKeepContext",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsLeftBoxExtends",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsRightBoxExtends",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsAiMsgInputBoxExtends",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsTopBoxExtends",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "getUiExtendCode",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delCustomJavascriptFile",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "loadCustomJavascriptCode",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "loadCustomDefaultJavascriptCode",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateUiExtendCode",
+    "params": "String dir,String code,Long id",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsBottomBoxExtends",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "uploadIcon",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadAiAvatar",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadBgImg",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadChatEmptyBgImg",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiCotClassAutocompleteDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "refreshAICotClass",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "runIframePreview",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeDownload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeCode",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/appMessage",
+  "controller": "AiAppMessageAdminController",
+  "view": "",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aiappmessage/AiAppMessageAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheck",
+   "@Path(value = \"/admin/ai/appMessage\")"
+  ],
+  "actions": [
+   {
+    "action": "userHistoryDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiAppMessage\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiAppMessage\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/appSession",
+  "controller": "AiAppSessionAdminController",
+  "view": "",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aiappsession/AiAppSessionAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheck",
+   "@Path(value = \"/admin/ai/appSession\")"
+  ],
+  "actions": [
+   {
+    "action": "userHistoryDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiAppSession\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiAppSession\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/common",
+  "controller": "JBoltAICommonController",
+  "view": "",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/rescenter/JBoltAICommonController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheck",
+   "@Path(value = \"/admin/ai/common\")"
+  ],
+  "actions": [
+   {
+    "action": "llmTypes",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "embeddingTypes",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "vdbTypes",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "getAiModelBySn",
+    "params": "String sn",
+    "annotations": []
+   },
+   {
+    "action": "getEmbeddingModelBySn",
+    "params": "String sn",
+    "annotations": []
+   },
+   {
+    "action": "aiRateLimitTypes",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "llmUseForOptions",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/config",
+  "controller": "JBoltAIConfigController",
+  "view": "/_view/_admin/globalconfig",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/rescenter/JBoltAIConfigController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_CONFIG)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/config\", viewPath = \"/_view/_admin/globalconfig\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/dashboard",
+  "controller": "AiDashboardAdminController",
+  "view": "",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/dashboard/AiDashboardAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Path(\"/admin/ai/dashboard\")",
+   "@UnCheckIfSystemAdmin",
+   "@CheckPermission(PermissionKey.DASHBOARD)"
+  ],
+  "actions": [
+   {
+    "action": "summarys",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/doc",
+  "controller": "AiDocAdminController",
+  "view": "/_view/admin/ai/aidoc",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aidoc/AiDocAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_DOC)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/doc\", viewPath = \"/_view/admin/ai/aidoc\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiDoc\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiDoc\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "linkFileDocs",
+    "params": "@Para(\"aiAppId\"",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/embedding",
+  "controller": "AiEmbeddingAdminController",
+  "view": "/_view/admin/ai/embedding",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/rescenter/embedding/AiEmbeddingAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_EMBEDDING)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/embedding\", viewPath = \"/_view/admin/ai/embedding\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiEmbedding\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "getEmbeddingModelDimension",
+    "params": "@Para(\"aiEmbedding\"",
+    "annotations": []
+   },
+   {
+    "action": "formTest",
+    "params": "@Para(\"aiEmbedding\"",
+    "annotations": []
+   },
+   {
+    "action": "testById",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiEmbedding\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsLocal",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/file",
+  "controller": "AiFileAdminController",
+  "view": "/_view/admin/ai/aifile",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aifile/AiFileAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_FILE)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/file\", viewPath = \"/_view/admin/ai/aifile\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "pdfViewer",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "addQa",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addWebsite",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addWebsiteQa",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "urlToMd",
+    "params": "@Para(\"url\"",
+    "annotations": []
+   },
+   {
+    "action": "reTrain",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitMulti",
+    "params": "@Para(\"aiKnowledgeBaseId\"",
+    "annotations": []
+   },
+   {
+    "action": "submitByWebsite",
+    "params": "@Para(\"aiFile\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "upload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadFiles",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiFile\"",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiFile\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/fileTag",
+  "controller": "AiFileTagAdminController",
+  "view": "/_view/admin/ai/aifiletag",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aifiletag/AiFileTagAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_FILE_TAG)",
+   "@UnCheckIfSystemAdmin",
+   "@Before(JBoltAdminAuthInterceptor.class)",
+   "@Path(value = \"/admin/ai/fileTag\", viewPath = \"/_view/admin/ai/aifiletag\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiFileTag\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiFileTag\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/functionParam",
+  "controller": "AiFunctionParamAdminController",
+  "view": "/_view/admin/ai/aifunctionparam",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aifunctionparam/AiFunctionParamAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_TOOLS)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/functionParam\", viewPath = \"/_view/admin/ai/aifunctionparam\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiFunctionParam\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiFunctionParam\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsRequired",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateColumn",
+    "params": "@Para(\"\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "sync",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/genUI",
+  "controller": "JBoltAIGenUIController",
+  "view": "/_view/admin/ai/genui",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/genui/JBoltAIGenUIController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_APP)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/genUI\",viewPath = \"/_view/admin/ai/genui\")"
+  ],
+  "actions": [
+   {
+    "action": "preview",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clear",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/knowledgeBase",
+  "controller": "AiKnowledgeBaseAdminController",
+  "view": "/_view/admin/ai/aiknowledgebase",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aiknowledgebase/AiKnowledgeBaseAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_KB)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/knowledgeBase\", viewPath = \"/_view/admin/ai/aiknowledgebase\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "count",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiKnowledgeBase\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiKnowledgeBase\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/llm",
+  "controller": "AILlmAdminController",
+  "view": "/_view/admin/ai/llm",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/rescenter/llm/AILlmAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_LLM)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/llm\", viewPath = \"/_view/admin/ai/llm\")"
+  ],
+  "actions": [
+   {
+    "action": "enableList",
+    "params": "",
+    "annotations": [
+     "@CheckPermission({PermissionKey.ADMIN_AI_LLM,PermissionKey.ADMIN_AI_APP})"
+    ]
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "testById",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "formTest",
+    "params": "@Para(\"aiLlm\"",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiLlm\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiLlm\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/page",
+  "controller": "AiPageAdminController",
+  "view": "/_view/admin/ai/aipage",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aipage/AiPageAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_PAGE)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/page\", viewPath = \"/_view/admin/ai/aipage\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearVDB",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitAllEnableToVDB",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "processAllEmptyRoles",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "processAllRoles",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "detail",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "permissionAdd",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "permissions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "aiApps",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "permissionsAutocomplete",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitPermissions",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "submitAiApps",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "aiAppAdd",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datasAdd",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiPage\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiPage\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/smartSearch",
+  "controller": "JBoltAiSmartSearchAdminController",
+  "view": "/_view/admin/ai/smartsearch",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/smartsearch/JBoltAiSmartSearchAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/smartSearch\", viewPath = \"/_view/admin/ai/smartsearch\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "@Para(\"q\"",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/test/render",
+  "controller": "TestAiRenderController",
+  "view": "",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aifunction/test/TestAiRenderController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Path(\"/admin/ai/test/render\")"
+  ],
+  "actions": [
+   {
+    "action": "formSubmit",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/tools",
+  "controller": "AiToolsAdminController",
+  "view": "/_view/admin/ai/aifunction",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/aifunction/AiToolsAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_TOOLS)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/tools\", viewPath = \"/_view/admin/ai/aifunction\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "reloadServices",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "services",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addForm",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addApiFunctionForm",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "serviceMethods",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiFunction\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "saveApiFunction",
+    "params": "@Para(\"aiFunction\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateApiFunction",
+    "params": "@Para(\"aiFunction\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiFunction\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "updateColumn",
+    "params": "@Para(\"\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "detail",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "json",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "test",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/ai/vdb",
+  "controller": "AiVdbAdminController",
+  "view": "/_view/admin/ai/vdb",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/admin/rescenter/vdb/AiVdbAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_AI_VDB)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/ai/vdb\", viewPath = \"/_view/admin/ai/vdb\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "collections",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "listCollections",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "checkAndInitBuildInCollections",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "formTest",
+    "params": "@Para(\"aiVdb\"",
+    "annotations": []
+   },
+   {
+    "action": "testById",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"aiVdb\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"aiVdb\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsMain",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/customBusiness",
+  "controller": "CustomBusinessAdminController",
+  "view": "/_view/_admin/customtablerender/custombusiness",
+  "interceptors": [],
+  "file": "cn/jbolt/_admin/customtablerender/custombusiness/CustomBusinessAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ADMIN_CUSTOM_BUSINESS)",
+   "@UnCheckIfSystemAdmin",
+   "@Path(value = \"/admin/customBusiness\", viewPath = \"/_view/_admin/customtablerender/custombusiness\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "@Para(\"customBusiness\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "@Para(\"customBusiness\"",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/admin/jboltfileChange",
+  "controller": "JboltFileChangeAdminController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/common/controller/JboltFileChangeAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Path(value = \"/admin/jboltfileChange\")",
+   "@UnCheck"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/ai/app/guest",
+  "controller": "AiAppGuestController",
+  "view": "/_view/ai/aiapp",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/app/AiAppGuestController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Before(JBoltWebsocketGuestUseHeaderInterceptor.class)",
+   "@Path(value = \"/ai/app/guest\", viewPath = \"/_view/ai/aiapp\")"
+  ],
+  "actions": [
+   {
+    "action": "clearSessionMsgs",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "downloadFile",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "sessionHistory",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "userHistorySessionDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "userHistoryMessageDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "linkFileDocs",
+    "params": "@Para(\"aiAppId\"",
+    "annotations": []
+   },
+   {
+    "action": "runIframePreview",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeDownload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeCode",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/ai/app/pwd",
+  "controller": "AiAppPwdController",
+  "view": "/_view/ai/aiapp",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/app/AiAppPwdController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Before(JBoltWebsocketGuestInterceptor.class)",
+   "@Path(value = \"/ai/app/pwd\", viewPath = \"/_view/ai/aiapp\")"
+  ],
+  "actions": [
+   {
+    "action": "clearSessionMsgs",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "login",
+    "params": "String sn,String pwd",
+    "annotations": [
+     "@JBoltHttpPost"
+    ]
+   },
+   {
+    "action": "sessionHistory",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "userHistorySessionDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "userHistoryMessageDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "linkFileDocs",
+    "params": "@Para(\"aiAppId\"",
+    "annotations": []
+   },
+   {
+    "action": "runIframePreview",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeDownload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeCode",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/ai/app/system",
+  "controller": "AiAppSystemController",
+  "view": "/_view/ai/aiapp",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/app/AiAppSystemController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Path(value = \"/ai/app/system\", viewPath = \"/_view/ai/aiapp\")"
+  ],
+  "actions": [
+   {
+    "action": "clearSessionMsgs",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "downloadFile",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframePreview",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeDownload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeCode",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/ai/app/systemIframe",
+  "controller": "AiAppSystemIFrameController",
+  "view": "/_view/ai/aiapp",
+  "interceptors": [],
+  "file": "com/jboltai/platform/ai/app/AiAppSystemIFrameController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@Path(value = \"/ai/app/systemIframe\", viewPath = \"/_view/ai/aiapp\")",
+   "@Before(JBoltCrossOriginInterceptor.class)",
+   "@CrossOrigin"
+  ],
+  "actions": [
+   {
+    "action": "clearSessionMsgs",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltAiAppSystemIframeInterceptor.class)"
+    ]
+   },
+   {
+    "action": "userHistoryMessageDatas",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltAiAppSystemIframeInterceptor.class)"
+    ]
+   },
+   {
+    "action": "sessionHistory",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "userHistorySessionDatas",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltAiAppSystemIframeInterceptor.class)"
+    ]
+   },
+   {
+    "action": "login",
+    "params": "String username, String password",
+    "annotations": []
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframePreview",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeDownload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "runIframeCode",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/api/jwt/refresh",
+  "controller": "JBoltRefreshJwtApiController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/api/common/controller/JBoltRefreshJwtApiController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [
+   "@CrossOrigin",
+   "@Path(\"/api/jwt/refresh\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@JBoltApplyJWT",
+     "@JBoltHttpGet"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/api/user",
+  "controller": "JBoltUserInfoApiController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/api/common/controller/JBoltUserInfoApiController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [
+   "@CrossOrigin",
+   "@Path(\"/api/user\")"
+  ],
+  "actions": [
+   {
+    "action": "mineInfo",
+    "params": "",
+    "annotations": [
+     "@JBoltHttpGet"
+    ]
+   },
+   {
+    "action": "updateMineInfo",
+    "params": "JBoltPara para",
+    "annotations": [
+     "@JBoltHttpPost"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/api/user/auth",
+  "controller": "JBoltUserAuthApiController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/api/common/controller/JBoltUserAuthApiController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [
+   "@CrossOrigin",
+   "@Path(\"/api/user/auth\")"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "@Para(\"userName\"",
+    "annotations": [
+     "@JBoltApplyJWT",
+     "@JBoltHttpMethod({HttpMethod.GET,HttpMethod.POST})"
+    ]
+   },
+   {
+    "action": "permissionKeys",
+    "params": "",
+    "annotations": [
+     "@JBoltHttpGet"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/api/ws/guest/token",
+  "controller": "JBoltWebsocketGuestTokenApiController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/api/common/controller/JBoltWebsocketGuestTokenApiController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [
+   "@CrossOrigin",
+   "@Path(\"/api/ws/guest/token\")"
+  ],
+  "actions": [
+   {
+    "action": "gen",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltWebsocketGuestInterceptor.class)",
+     "@OpenAPI"
+    ]
+   },
+   {
+    "action": "check",
+    "params": "",
+    "annotations": [
+     "@OpenAPI"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "@Path-scan",
+  "path": "/api/ws/guest/token/v2",
+  "controller": "JBoltWebsocketGuestTokenApiV2Controller",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/api/common/controller/JBoltWebsocketGuestTokenApiV2Controller.java",
+  "parent": "Controller",
+  "classAnnotations": [
+   "@Before(JBoltCrossOriginInterceptor.class)",
+   "@CrossOrigin",
+   "@Path(\"/api/ws/guest/token/v2\")"
+  ],
+  "actions": [
+   {
+    "action": "gen",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltWebsocketGuestUseHeaderInterceptor.class)"
+    ]
+   },
+   {
+    "action": "check",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin",
+  "controller": "AdminIndexController",
+  "view": "/_view/_admin/index",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/index/AdminIndexController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "menu",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "lockSystem",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "unLockSystem",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "dashboard",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(\"dashboard\")",
+     "@UnCheckIfSystemAdmin"
+    ]
+   },
+   {
+    "action": "relogin",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "logout",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "terminalOffline",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "forcedOffline",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "login",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "redirectToScreenLock",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "captcha",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "myToken",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/dept",
+  "controller": "DeptAdminController",
+  "view": "/_view/_admin/dept",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/dept/DeptAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.DEPT)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "crudJsTreeDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "enableOptions",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "enableJsTreeDatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addInDialog",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "processAllDeptPath",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "move",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/dictionary",
+  "controller": "DictionaryAdminController",
+  "view": "/_view/_admin/dictionary",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/dictionary/DictionaryAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission({PermissionKey.DICTIONARY})",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "poptions",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "soptions",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "soptionsByPsn",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "checkandinit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "mgr",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "show",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "select",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addItem",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "editItem",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearByType",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/dictionarytype",
+  "controller": "DictionaryTypeAdminController",
+  "view": "/_view/_admin/dictionary/type",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/dictionary/DictionaryTypeAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission({PermissionKey.DICTIONARY})",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "mgr",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "codeGenOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/globalconfig",
+  "controller": "GlobalConfigAdminController",
+  "view": "/_view/_admin/globalconfig",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/globalconfig/GlobalConfigAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.GLOBALCONFIG)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "String keywords,Boolean builtIn,Long type",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "changeAssetsVersion",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "editCustomConfig",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateCustomConfig",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "saveCustomConfig",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleBooleanValue",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "deleteCustomConfig",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearCacheByType",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearCache",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearReset",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addCustomConfig",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/globalconfig/type",
+  "controller": "GlobalConfigTypeAdminController",
+  "view": "/_view/_admin/globalconfig/type",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/globalconfig/GlobalConfigTypeAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.GLOBALCONFIG)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "options",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/hiprint",
+  "controller": "HiprintAdminController",
+  "view": "/_view/_admin/hiprint",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/hiprint/HiprintAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.HIPRINT_DESIGN)",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "designer",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/designer\")"
+    ]
+   },
+   {
+    "action": "tpl",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tplContent",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@ActionKey(\"tpl/content\")"
+    ]
+   },
+   {
+    "action": "tplDatas",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/datas\")"
+    ]
+   },
+   {
+    "action": "tplJsonDataEditor",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/jsonDataEditor\")"
+    ]
+   },
+   {
+    "action": "tplLoad",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/load\")"
+    ]
+   },
+   {
+    "action": "tplTestJsonData",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/testJsonData\")"
+    ]
+   },
+   {
+    "action": "tplAdd",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/add\")"
+    ]
+   },
+   {
+    "action": "tplEdit",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/edit\")"
+    ]
+   },
+   {
+    "action": "submitTpl",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/submit\")"
+    ]
+   },
+   {
+    "action": "tplDelete",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"tpl/delete\")"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/jboltstyle",
+  "controller": "JBoltStyleAdminController",
+  "view": "/_view/_admin",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/common/style/JBoltStyleAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "change",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/loginlog",
+  "controller": "LoginLogAdminController",
+  "view": "/_view/_admin/loginlog",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/loginlog/LoginLogAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.JBOLT_LOGIN_LOG)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/msgcenter",
+  "controller": "JBoltMsgCenterAdminController",
+  "view": "/_view/_admin/msgcenter",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/msgcenter/JBoltMsgCenterAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheck"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "layer",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "sysNoticePortalDatas",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/sysnotice/portalDatas\")"
+    ]
+   },
+   {
+    "action": "sysNoticeDetail",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/sysnotice/detail\")"
+    ]
+   },
+   {
+    "action": "todoMarkAsRead",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/todo/markAsRead\")"
+    ]
+   },
+   {
+    "action": "sysNoticeMarkAsRead",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/sysnotice/markAsRead\")"
+    ]
+   },
+   {
+    "action": "sysNoticeMarkAllAsRead",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "sysNoticeMarkMultiAsRead",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/sysnotice/markMultiAsRead\")",
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "userSysNoticeDatas",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/sysnotice/userDatas\")"
+    ]
+   },
+   {
+    "action": "userTodoDatas",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/todo/userDatas\")"
+    ]
+   },
+   {
+    "action": "privateMessagePortalDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "todoPortalDatas",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/todo/portalDatas\")"
+    ]
+   },
+   {
+    "action": "userUnreadInfo",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/unreadInfo\")"
+    ]
+   },
+   {
+    "action": "todoDetail",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/admin/msgcenter/todo/detail\")"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/neditor/preview",
+  "controller": "NeditorPreviewAdminController",
+  "view": "/_view/_admin",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/common/controller/NeditorPreviewAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheck"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/neditor/upload",
+  "controller": "NeditorUploadAdminController",
+  "view": "/_view/_admin",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/common/controller/NeditorUploadAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(NoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "wordimg",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "image",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "catchImage",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "video",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/onlineuser",
+  "controller": "OnlineUserAdminController",
+  "view": "/_view/_admin/onlineuser",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/onlineuser/OnlineUserAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ONLINE_USER)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "stateOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "forcedOffline",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/permission",
+  "controller": "PermissionAdminController",
+  "view": "/_view/_admin/permission",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/permission/PermissionAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.PERMISSION)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "insert",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleSystemAdminDefault",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "modules",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/pjaxerror",
+  "controller": "PjaxErrorController",
+  "view": "/_view/_admin",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/index/PjaxErrorController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "error",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/post",
+  "controller": "PostAdminController",
+  "view": "/_view/_admin/post",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/post/PostAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.POST)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "enableOptions",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/qiniu",
+  "controller": "QiniuAdminController",
+  "view": "/_view/_admin/qiniu",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/qiniu/QiniuAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.QINIU)",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "uploadParas",
+    "params": "@Para(\"sn\"",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@CheckPermission({PermissionKey.QINIU,PermissionKey.QINIU_BUCKET})"
+    ]
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "checkDefaultExist",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsDefault",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/qiniu/bucket",
+  "controller": "QiniuBucketAdminController",
+  "view": "/_view/_admin/qiniu/bucket",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/qiniu/QiniuBucketAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.QINIU_BUCKET)",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "syncAllQiniuBuckets",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "syncFromQiniu",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsDefault",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/redis",
+  "controller": "RedisAdminController",
+  "view": "/_view/_admin",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/redis/RedisAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.JBOLT_SERVER_MONITOR)",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "removeCurrentDatabaseAllDatas",
+    "params": "@Para(\"cacheName\"",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/role",
+  "controller": "RoleAdminController",
+  "view": "/_view/_admin/role",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/role/RoleAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ROLE)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "users",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "userDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addItem",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "clearUsers",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/rolepermission",
+  "controller": "RolePermissionAdminController",
+  "view": "/_view/_admin/rolepermission",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/rolepermission/RolePermissionAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.ROLE)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "setting",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "settingTree",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "getCheckeds",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clear",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/sensitiveword",
+  "controller": "SensitiveWordAdminController",
+  "view": "/_view/_admin/sensitiveword",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/sensitiveword/SensitiveWordAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.SENSITIVE_WORD)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "counts",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "reload",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "test",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "mgr",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/servermonitor",
+  "controller": "ServerMonitorAdminController",
+  "view": "/_view/_admin/servermonitor",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/monitor/ServerMonitorAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.JBOLT_SERVER_MONITOR)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "disk",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "memory",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "server",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "jvm",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "cpu",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "cache",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/summernote/upload",
+  "controller": "SummernoteUploadAdminController",
+  "view": "/_view/_admin",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/common/controller/SummernoteUploadAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(NoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "image",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/sysnotice",
+  "controller": "SysNoticeAdminController",
+  "view": "/_view/_admin/msgcenter/sysnotice",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/msgcenter/SysNoticeAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.SYS_NOTICE)"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "files",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateFiles",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadFiles",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "pdfViewer",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "download",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "batchDelete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "batchRestore",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "chooseReceiver",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/systemlog",
+  "controller": "SystemLogAdminController",
+  "view": "/_view/_admin/systemlog",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/systemlog/SystemLogAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.SYSTEMLOG)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/todo",
+  "controller": "TodoAdminController",
+  "view": "/_view/_admin/msgcenter/todo",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/msgcenter/TodoAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheck"
+  ],
+  "actions": [
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateState",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "batchUpdateState",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "dashboardDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/topnav",
+  "controller": "TopnavAdminController",
+  "view": "/_view/_admin/topnav",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/topnav/TopnavAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.TOPNAV)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "clearMenus",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearAllMenus",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/topnav/menu",
+  "controller": "TopnavMenuAdminController",
+  "view": "/_view/_admin/topnav/menu",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/topnav/TopnavMenuAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.TOPNAV)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "setting",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "getChecked",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clear",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearAll",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submit",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/user",
+  "controller": "UserAdminController",
+  "view": "/_view/_admin/user",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/user/UserAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.USER)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "options",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "sysnoticeUsers",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.SYS_NOTICE)"
+    ]
+   },
+   {
+    "action": "autocomplete",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "uploadAvatar",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadMyAvatar",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "sexOptions",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltCacheInterceptor.class)",
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "pwd",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "avatar",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "editpwd",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.USER)"
+    ]
+   },
+   {
+    "action": "submitpwd",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.USER)"
+    ]
+   },
+   {
+    "action": "updatepwd",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "extendForm",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "extendDetail",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteRole",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "processAllDeptPath",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "modules",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AdminRoutes",
+  "path": "/admin/userconfig",
+  "controller": "UserConfigAdminController",
+  "view": "/_view/_admin/userconfig",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/userconfig/UserConfigAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "toggleBooleanConfig",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "changeStringValue",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "ApiTestRoutes",
+  "path": "/api/test",
+  "controller": "ApiTestController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/apitest/ApiTestController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [
+   "@CrossOrigin"
+  ],
+  "actions": [
+   {
+    "action": "paycallback",
+    "params": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "unifiedorder",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "go",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "floor",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadImgUseOpenApi",
+    "params": "",
+    "annotations": [
+     "@OpenAPI"
+    ]
+   },
+   {
+    "action": "uploadImage",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "login",
+    "params": "",
+    "annotations": [
+     "@JBoltApplyJWT"
+    ]
+   },
+   {
+    "action": "refreshJwt",
+    "params": "",
+    "annotations": [
+     "@JBoltApplyJWT",
+     "@JBoltHttpGet"
+    ]
+   },
+   {
+    "action": "applyJwt",
+    "params": "",
+    "annotations": [
+     "@JBoltApplyJWT"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "AppDevCenterAdminRoutes",
+  "path": "/admin/app",
+  "controller": "ApplicationAdminController",
+  "view": "/_view/_admin/_app_dev_center/app",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/appdevcenter/ApplicationAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.APPLICATION)",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "appinfo",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "enableOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "types",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "typesInForm",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before({Tx.class,ApplicationValidator.class})"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "toggleNeedCheckSign",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "changeAppSecret",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "linkTarget",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "removeLinkTarget",
+    "params": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "DevDocAdminRoutes",
+  "path": "/admin/devdoc/database",
+  "controller": "JBoltDatabaseDevDocController",
+  "view": "/_view/_admin/_dev_doc/database",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/devdoc/database/JBoltDatabaseDevDocController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.APPLICATION)",
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datasources",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tableLayer",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tables",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "refreshTables",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "JBoltCodeGenRoutes",
+  "path": "/admin/codegen",
+  "controller": "CodeGenAdminController",
+  "view": "/_view/_admin/_jbolt_code_gen/",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/codegen/CodeGenAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.JBOLT_CODE_GEN)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "autocompletedemodatas",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "types",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "refreshEnumsCache",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "enums",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "refreshCachesCache",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "refreshServicesCache",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "caches",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datasources",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "styles",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "states",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "addSubTable",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateBase",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "recoverByIds",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "realDelete",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "tablesAutocomplete",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "reloadTables",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadImg",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "createCodeGenDialog",
+    "params": "@Para(\"datasource\"",
+    "annotations": []
+   },
+   {
+    "action": "getLastCodegenId",
+    "params": "@Para(\"datasource\"",
+    "annotations": []
+   },
+   {
+    "action": "editCodeGenConfig",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "keyCacheColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "autocompleteColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "optionsTextColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "optionsValueColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "keyCacheBindColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "intSortColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "permissionPortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "unbindPermission",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "keywordsMatchColumns",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "formPortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "testAjax",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "formPortalEditMode",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "formPortalTest",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tablePortalEditMode",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tablePortal",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tablePortalDatas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "initSortRankInform",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initSortRankIntable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "formDictionaryOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "searchDictionaryOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "routesOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "refreshRoutesCache",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "genAll",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "genModel",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "genMainLogic",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "downloadTpl",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "initImportExcel",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "importExcel",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "exportExcel",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "staticMethodClasses",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "javaPackageAutocomplete",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "services",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "initBindPermission",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "bindPermission",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "syncProjectPath",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "updateProjectPath",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "JBoltCodeGenRoutes",
+  "path": "/admin/codegen/modelattr",
+  "controller": "CodeGenModelAttrAdminController",
+  "view": "/_view/_admin/_jbolt_code_gen/modelattr",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/_admin/codegen/modelattr/CodeGenModelAttrAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.JBOLT_CODE_GEN)",
+   "@UnCheckIfSystemAdmin"
+  ],
+  "actions": [
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsPkey",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsNeedCheckExists",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsTableCol",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsImportCol",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsExportCol",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsNeedTranslate",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsSortable",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsSearchEle",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsFuzzyQuery",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsFormEle",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsRequired",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsSearchRequired",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsKeywordsColumn",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsSingleLine",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsTableSwitchbtn",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateColumn",
+    "params": "@Para(\"\"",
+    "annotations": [
+     "@Before(TxReadCommitted.class)"
+    ]
+   },
+   {
+    "action": "moveFormEle",
+    "params": "Long codeGenId,Long id,Long prevId,Long nextId",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "moveTableEle",
+    "params": "Long codeGenId,Long id,Long prevId,Long nextId",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "sync",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateFormEleConfig",
+    "params": "JBoltPara para",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "colEditorData",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitColConfig",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tableColUp",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "tableColDown",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "WebRoutes",
+  "path": "/",
+  "controller": "IndexController",
+  "view": "/_view/_web",
+  "interceptors": [],
+  "file": "cn/jbolt/index/IndexController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/autoreply",
+  "controller": "WechatAutoReplyAdminController",
+  "view": "/_view/_admin/_wechat/autoreply",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/autoreply/WechatAutoReplyAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@UnCheckIfSystemAdmin",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "subscribeReplyMgr",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_AUTOREPLY_SUBSCRIBE)",
+     "@Before(WechatAutoReplyMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "keywordsReplyMgr",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_AUTOREPLY_KEYWORDS)",
+     "@Before(WechatAutoReplyMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "defaultReplyMgr",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_AUTOREPLY_SUBSCRIBE)",
+     "@Before(WechatAutoReplyMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatAutoReplyMpIdAndTypeValidator.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatAutoReplyMpIdAndTypeValidator.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before({WechatAutoReplyMpIdAndTypeValidator.class,Tx.class})"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatAutoReplyMpIdAndTypeValidator.class)"
+    ]
+   },
+   {
+    "action": "replyTypes",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatAutoReplyMpIdAndTypeValidator.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatAutoReplyMpIdAndTypeValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/config",
+  "controller": "WechatConfigAdminController",
+  "view": "/_view/_admin/_wechat/config",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/config/WechatConfigAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "baseMgr",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_BASEMGR)"
+    ]
+   },
+   {
+    "action": "extraMgr",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_EXTRAMGR)"
+    ]
+   },
+   {
+    "action": "uploadWechatMusicImgMedia",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_BASEMGR)"
+    ]
+   },
+   {
+    "action": "submitBaseConfig",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_BASEMGR)",
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "submitExtraConfig",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_EXTRAMGR)",
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "payMgr",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_PAYMGR)"
+    ]
+   },
+   {
+    "action": "submitPayConfig",
+    "params": "",
+    "annotations": [
+     "@CheckPermission(PermissionKey.WECHAT_CONFIG_PAYMGR)",
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/keywords",
+  "controller": "WechatKeywordsAdminController",
+  "view": "/_view/_admin/_wechat/autoreply/keywords",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/autoreply/WechatKeywordsAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.WECHAT_AUTOREPLY_KEYWORDS)",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@Before(WechatKeywordsMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": [
+     "@Before(WechatKeywordsMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": [
+     "@Before(WechatKeywordsMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "types",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@Before(WechatKeywordsMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@Before(WechatKeywordsMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@Before(WechatKeywordsMgrValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/media",
+  "controller": "WechatMediaAdminController",
+  "view": "/_view/_admin/_wechat/media",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/media/WechatMediaAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.WECHAT_MEDIA)",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@Before(WechatMediaMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "download",
+    "params": "",
+    "annotations": [
+     "@Before(WechatMediaMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "choose",
+    "params": "",
+    "annotations": [
+     "@CheckPermission({PermissionKey.WECHAT_AUTOREPLY_DEFAULT,PermissionKey.WECHAT_AUTOREPLY_KEYWORDS,PermissionKey.WECHAT_AUTOREPLY_SUBSCRIBE})"
+    ]
+   },
+   {
+    "action": "chooseIt",
+    "params": "",
+    "annotations": [
+     "@CheckPermission({PermissionKey.WECHAT_AUTOREPLY_DEFAULT,PermissionKey.WECHAT_AUTOREPLY_KEYWORDS,PermissionKey.WECHAT_AUTOREPLY_SUBSCRIBE})",
+     "@Before(WechatMediaMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "types",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "syncAll",
+    "params": "",
+    "annotations": [
+     "@Before(WechatMediaMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "syncNewDatas",
+    "params": "",
+    "annotations": [
+     "@Before(WechatMediaMgrValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/menu",
+  "controller": "WechatMenuAdminController",
+  "view": "/_view/_admin/_wechat/menu",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/menu/WechatMenuAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.WECHAT_MENU)",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "mgr",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "level1List",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "level2List",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "publish",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "types",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/mpinfo",
+  "controller": "WechatMpinfoAdminController",
+  "view": "/_view/_admin/_wechat/mpinfo",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/mpinfo/WechatMpinfoAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.WECHAT_MPINFO)",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "uploadImage",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "editLinkApp",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "apps",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "clearAllConfigs",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleAuthenticated",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "enableOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "isAuthenticatedOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "typeOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "subjectTypeOptions",
+    "params": "",
+    "annotations": []
+   },
+   {
+    "action": "submitLinkApp",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "removeLinkApp",
+    "params": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/replycontent",
+  "controller": "WechatReplyContentAdminController",
+  "view": "/_view/_admin/_wechat/autoreply/replycontent",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/autoreply/WechatReplyContentAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "add",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "types",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "uploadImage",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "save",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "params": "",
+    "annotations": [
+     "@UnCheck",
+     "@Before(WechatReplyContentMgrValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatAdminRoutes",
+  "path": "/admin/wechat/user",
+  "controller": "WechatUserAdminController",
+  "view": "/_view/_admin/_wechat/user",
+  "interceptors": [
+   "JBoltAdminAuthInterceptor"
+  ],
+  "file": "cn/jbolt/admin/wechat/user/WechatUserAdminController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [
+   "@CheckPermission(PermissionKey.WECHAT_USER)",
+   "@OnlySaasPlatform"
+  ],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": [
+     "@Before(WechatUserMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "sexOptions",
+    "params": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "sync",
+    "params": "",
+    "annotations": [
+     "@Before(WechatUserMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "params": "",
+    "annotations": [
+     "@Before(WechatUserMgrValidator.class)"
+    ]
+   },
+   {
+    "action": "syncUser",
+    "params": "",
+    "annotations": [
+     "@Before(WechatUserMgrValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatApiRoutes",
+  "path": "/api/wechat",
+  "controller": "JBoltWechatApiController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/wechat/api/JBoltWechatApiController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "authorize",
+    "params": "@Para(value =\"scope\", defaultValue = \"snsapi_userinfo\"",
+    "annotations": [
+     "@UnCheckJBoltApi"
+    ]
+   },
+   {
+    "action": "authCallback",
+    "params": "@Para(\"code\"",
+    "annotations": [
+     "@UnCheckJBoltApi"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatApiRoutes",
+  "path": "/api/wxa",
+  "controller": "JBoltWxaApiController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/wxa/api/JBoltWxaApiController.java",
+  "parent": "JBoltApiBaseController",
+  "classAnnotations": [
+   "@CrossOrigin"
+  ],
+  "actions": [
+   {
+    "action": "login",
+    "params": "String code",
+    "annotations": [
+     "@JBoltApplyJWT",
+     "@JBoltHttpPost"
+    ]
+   },
+   {
+    "action": "refreshJwt",
+    "params": "",
+    "annotations": [
+     "@JBoltApplyJWT",
+     "@JBoltHttpGet"
+    ]
+   },
+   {
+    "action": "decryptUserInfo",
+    "params": "JBoltPara param",
+    "annotations": []
+   },
+   {
+    "action": "decryptPhoneNumber",
+    "params": "JBoltPara param",
+    "annotations": []
+   },
+   {
+    "action": "bindOtherUser",
+    "params": "JBoltPara param",
+    "annotations": [
+     "@JBoltHttpPost",
+     "@JBoltReApplyJWT"
+    ]
+   },
+   {
+    "action": "loginSystemUser",
+    "params": "JBoltPara param",
+    "annotations": [
+     "@JBoltHttpPost",
+     "@JBoltReApplyJWT"
+    ]
+   },
+   {
+    "action": "unbindOtherUser",
+    "params": "JBoltPara param",
+    "annotations": [
+     "@JBoltHttpPost",
+     "@JBoltReApplyJWT"
+    ]
+   },
+   {
+    "action": "myWechatUserInfo",
+    "params": "",
+    "annotations": [
+     "@ActionKey(\"/api/wxa/user/me\")"
+    ]
+   },
+   {
+    "action": "updateMyWechatUserInfo",
+    "params": "JBoltPara para",
+    "annotations": [
+     "@JBoltHttpPost"
+    ]
+   }
+  ]
+ },
+ {
+  "routesFile": "WechatRoutes",
+  "path": "/wx/msg",
+  "controller": "WechatMsgController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/admin/wechat/autoreply/WechatMsgController.java",
+  "parent": "MsgControllerAdapter",
+  "classAnnotations": [],
+  "actions": []
+ },
+ {
+  "routesFile": "WechatRoutes",
+  "path": "/wxa/msg",
+  "controller": "WechatWxaMsgController",
+  "view": "",
+  "interceptors": [],
+  "file": "cn/jbolt/admin/wechat/autoreply/WechatWxaMsgController.java",
+  "parent": "WxaMsgController",
+  "classAnnotations": [],
+  "actions": []
+ },
+ {
+  "routesFile": "WechatTestRoutes",
+  "path": "/test/wechat",
+  "controller": "JBoltWechatTestApiController",
+  "view": "/_view/_test/wechat/",
+  "interceptors": [],
+  "file": "cn/jbolt/wechat/api/test/JBoltWechatTestApiController.java",
+  "parent": "JBoltBaseController",
+  "classAnnotations": [],
+  "actions": [
+   {
+    "action": "index",
+    "params": "",
+    "annotations": []
+   }
+  ]
+ }
+]

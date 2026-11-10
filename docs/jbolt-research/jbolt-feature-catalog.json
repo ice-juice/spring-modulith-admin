@@ -1,0 +1,4763 @@
+[
+ {
+  "path": "操作台",
+  "key": "dashboard",
+  "url": "admin/dashboard",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统管理",
+  "key": "systemmgr",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统管理 / 用户管理",
+  "key": "user",
+  "url": "admin/user",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "UserAdminController",
+  "page": {
+   "title": "用户管理",
+   "search": [
+    "输入关键字搜索"
+   ],
+   "toolbar": [
+    "查询",
+    "新增"
+   ],
+   "columns": [
+    "序号",
+    "姓名",
+    "头像",
+    "性别",
+    "角色",
+    "用户名",
+    "手机号",
+    "是否为超管",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑"
+   ],
+   "formFields": [
+    "姓名",
+    "编号",
+    "性别",
+    "年龄",
+    "手机号",
+    "E-Mail",
+    "用户名",
+    "密码",
+    "角色",
+    "部门",
+    "岗位"
+   ]
+  },
+  "actions": [
+   {
+    "action": "options",
+    "doc": "用户表数作为选项数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "index",
+    "doc": "管理首页",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "表格数据接口",
+    "annotations": []
+   },
+   {
+    "action": "sysnoticeUsers",
+    "doc": "系统通知 可用 选择用户数据接口",
+    "annotations": [
+     "@CheckPermission(PermissionKey.SYS_NOTICE)"
+    ]
+   },
+   {
+    "action": "autocomplete",
+    "doc": "获取用户列表 通过关键字匹配 autocomplete组件使用",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "uploadAvatar",
+    "doc": "上传头像",
+    "annotations": []
+   },
+   {
+    "action": "uploadMyAvatar",
+    "doc": "上传头像",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "sexOptions",
+    "doc": "",
+    "annotations": [
+     "@Before(JBoltCacheInterceptor.class)",
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "pwd",
+    "doc": "进入自身密码修改界面",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "avatar",
+    "doc": "进入自身头像修改界面",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "editpwd",
+    "doc": "进入重置用户密码界面",
+    "annotations": [
+     "@CheckPermission(PermissionKey.USER)"
+    ]
+   },
+   {
+    "action": "submitpwd",
+    "doc": "重置用户密码",
+    "annotations": [
+     "@CheckPermission(PermissionKey.USER)"
+    ]
+   },
+   {
+    "action": "updatepwd",
+    "doc": "修改用户自己的密码",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "extendForm",
+    "doc": "查看扩展信息",
+    "annotations": []
+   },
+   {
+    "action": "extendDetail",
+    "doc": "查看扩展信息",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteRole",
+    "doc": "删除角色",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "processAllDeptPath",
+    "doc": "处理deptPath",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "modules",
+    "doc": "列出模块",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 部门管理",
+  "key": "dept",
+  "url": "admin/dept",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "DeptAdminController",
+  "page": {
+   "title": "部门管理",
+   "search": [
+    "输入关键字 进行过滤"
+   ],
+   "toolbar": [
+    "新增",
+    "初始化排序",
+    "刷新"
+   ],
+   "columns": [
+    "部门名称",
+    "部门全称",
+    "部门类型",
+    "负责人",
+    "备注",
+    "启用/禁用",
+    "操作"
+   ],
+   "rowActions": [
+    "新增下级部门",
+    "编辑",
+    "删除",
+    "上移",
+    "下移"
+   ],
+   "formFields": [
+    "上级部门",
+    "部门名称",
+    "部门全称",
+    "部门代码",
+    "负责人",
+    "邮政编码",
+    "电子邮箱",
+    "联系地址",
+    "联系电话",
+    "备注信息"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "/ public class DeptAdminController extends JBoltBaseController { private DeptSer",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "crudJsTreeDatas",
+    "doc": "crud树的数据源",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "doc": "select数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "enableOptions",
+    "doc": "select数据源 只需要enable=true的",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "enableJsTreeDatas",
+    "doc": "JSTree树形数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "addInDialog",
+    "doc": "新增Dialog",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "doc": "排序 上移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "doc": "排序 下移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "doc": "排序 初始化",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "processAllDeptPath",
+    "doc": "处理所有部门的deptPath",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "move",
+    "doc": "jstree 节点move",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 岗位管理",
+  "key": "post",
+  "url": "admin/post",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "PostAdminController",
+  "page": {
+   "title": "岗位管理",
+   "search": [
+    "输入关键字搜索"
+   ],
+   "toolbar": [
+    "查询",
+    "新增",
+    "初始化排序"
+   ],
+   "columns": [
+    "序号",
+    "岗位名称",
+    "岗位类型",
+    "编码",
+    "备注信息",
+    "启用/禁用",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑",
+    "删除",
+    "上移",
+    "下移"
+   ],
+   "formFields": [
+    "岗位名称",
+    "岗位类型",
+    "编码",
+    "备注信息"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "/ public class PostAdminController extends JBoltBaseController { private PostSer",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "enableOptions",
+    "doc": "select数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "doc": "select数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": []
+   },
+   {
+    "action": "up",
+    "doc": "排序 上移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "doc": "排序 下移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "doc": "排序 初始化",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 权限配置",
+  "key": "role_permission_menu",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统管理 / 权限配置 / 角色管理",
+  "key": "role",
+  "url": "admin/role",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "RoleAdminController",
+  "page": {
+   "title": "角色管理",
+   "search": [],
+   "toolbar": [
+    "新增",
+    "刷新"
+   ],
+   "columns": [
+    "角色",
+    "编码",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑"
+   ],
+   "formFields": [
+    "请输入名称:",
+    "请输入编码:"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "管理首页",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "doc": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "users",
+    "doc": "查询role上所有用户列表进入页面",
+    "annotations": []
+   },
+   {
+    "action": "userDatas",
+    "doc": "角色下用户数据查询",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "addItem",
+    "doc": "新增Item",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "clearUsers",
+    "doc": "清空角色上的用户列表",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 权限配置 / 顶部导航",
+  "key": "topnav",
+  "url": "admin/topnav",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "TopnavAdminController",
+  "page": {
+   "title": "顶部导航管理",
+   "search": [
+    "输入关键字搜索"
+   ],
+   "toolbar": [
+    "查询",
+    "新增",
+    "初始化排序"
+   ],
+   "columns": [
+    "序号",
+    "名称",
+    "图标",
+    "分配菜单",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑",
+    "删除",
+    "上移",
+    "下移"
+   ],
+   "formFields": [
+    "名称",
+    "图标"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "/ public class TopnavAdminController extends JBoltBaseController { private Topna",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "doc": "options 数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "doc": "排序 上移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "doc": "排序 下移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initRank",
+    "doc": "排序 初始化",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "clearMenus",
+    "doc": "清空一个顶部导航下的菜单配置",
+    "annotations": []
+   },
+   {
+    "action": "clearAllMenus",
+    "doc": "清空所有顶部导航下的菜单配置",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 权限配置 / 权限资源",
+  "key": "permission",
+  "url": "admin/permission",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "PermissionAdminController",
+  "page": {
+   "title": "系统资源权限管理",
+   "search": [],
+   "toolbar": [
+    "初始化排序",
+    "新增"
+   ],
+   "columns": [
+    "序号",
+    "资源",
+    "URL",
+    "加载方式",
+    "打开类型",
+    "KEY",
+    "资源类型",
+    "超管默认",
+    "操作"
+   ],
+   "rowActions": [
+    "添加下级资源",
+    "编辑",
+    "删除",
+    "上移",
+    "下移"
+   ],
+   "formFields": [
+    "所属模块",
+    "上级资源",
+    "资源名称",
+    "ICONS",
+    "资源地址",
+    "权限KEY",
+    "是否是菜单",
+    "是",
+    "否",
+    "加载方式",
+    "浏览器当前窗口",
+    "浏览器新窗口",
+    "打开类型",
+    "系统默认",
+    "IFrame",
+    "Dialog",
+    "JBoltLayer组件",
+    "组件属性配置",
+    "是否超级管理员默认可用权限",
+    "设置插入位置",
+    "start",
+    "before",
+    "after",
+    "end"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "ajax数据接口",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "doc": "ajax options数据接口",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "insert",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "up",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "down",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "initRank",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleSystemAdminDefault",
+    "doc": "切换是否是超管默认",
+    "annotations": []
+   },
+   {
+    "action": "modules",
+    "doc": "列出模块",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 字典参数",
+  "key": "dictionary_config",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统管理 / 字典参数 / 数据字典",
+  "key": "dictionary",
+  "url": "admin/dictionary",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "DictionaryAdminController",
+  "page": {
+   "title": "字典管理",
+   "search": [],
+   "toolbar": [
+    "检测并初始化"
+   ],
+   "columns": [],
+   "rowActions": [
+    "添加新数据分类"
+   ],
+   "formFields": [
+    "请选择上级：",
+    "请输入名称：",
+    "请输入编码："
+   ]
+  },
+  "actions": [
+   {
+    "action": "datas",
+    "doc": "",
+    "annotations": [
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "options",
+    "doc": "字典管理Controller / public class DictionaryAdminController extends JBoltBaseControl",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "poptions",
+    "doc": "根据获取一级options",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "soptions",
+    "doc": "子类级别数据 根据父类ID获取数据",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "soptionsByPsn",
+    "doc": "子类级别数据 根据父类SN获取数据",
+    "annotations": [
+     "@UnCheck",
+     "@Before(JBoltNoUrlPara.class)"
+    ]
+   },
+   {
+    "action": "checkandinit",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "mgr",
+    "doc": "加载管理portal",
+    "annotations": []
+   },
+   {
+    "action": "index",
+    "doc": "管理首页",
+    "annotations": []
+   },
+   {
+    "action": "show",
+    "doc": "从日志过来的显示一个",
+    "annotations": []
+   },
+   {
+    "action": "select",
+    "doc": "除了自己以外的其它所有数据",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "addItem",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "editItem",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "doc": "上移",
+    "annotations": []
+   },
+   {
+    "action": "down",
+    "doc": "下移",
+    "annotations": []
+   },
+   {
+    "action": "initRank",
+    "doc": "初始化顺序",
+    "annotations": []
+   },
+   {
+    "action": "clearByType",
+    "doc": "清空分类下的字典数据",
+    "annotations": []
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 字典参数 / 全局参数",
+  "key": "globalconfig",
+  "url": "admin/globalconfig",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "GlobalConfigAdminController",
+  "page": {
+   "title": "系统参数配置管理#if(typeName??): #end",
+   "search": [
+    "关键词查询",
+    "是否内置"
+   ],
+   "toolbar": [
+    "查询",
+    "刷新缓存",
+    "重置全部"
+   ],
+   "columns": [
+    "名称",
+    "操作",
+    "序号",
+    "参数名",
+    "参数KEY",
+    "参数值",
+    "所属类型",
+    "值类型",
+    "内置",
+    "更新时间",
+    "编辑"
+   ],
+   "rowActions": [
+    "编辑",
+    "设置登录页面背景图",
+    "上移",
+    "下移",
+    "刷新",
+    "新增系统参数类型",
+    "初始化顺序"
+   ],
+   "formFields": [
+    "启用",
+    "禁用",
+    "sysout-控制台",
+    "jboltlog-日志文件",
+    "默认",
+    "GIF验证码",
+    "气泡PNG",
+    "数字运算型",
+    "数字运算型（中文）",
+    "(数据单位：天)",
+    "树形表格管理",
+    "JS_TREE树管理",
+    "系统名称",
+    "color值：",
+    "color值参考：",
+    "[60~400之间的数字]",
+    "参数类型：",
+    "系统内置：",
+    "是",
+    "否",
+    "可视化选择",
+    "[看大图]",
+    "'>[看视频]",
+    "手动录入"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "全局配置项 / public class GlobalConfigAdminController extends JBoltBaseController { p",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "列出登录背景图数据源 / private List<String> getLoginBgimgs() { List<String> imgs=new Array",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": []
+   },
+   {
+    "action": "changeAssetsVersion",
+    "doc": "刷新assetsVersion",
+    "annotations": []
+   },
+   {
+    "action": "editCustomConfig",
+    "doc": "编辑非内置",
+    "annotations": []
+   },
+   {
+    "action": "updateCustomConfig",
+    "doc": "更新自定义参数",
+    "annotations": []
+   },
+   {
+    "action": "saveCustomConfig",
+    "doc": "保存自定义参数",
+    "annotations": []
+   },
+   {
+    "action": "toggleBooleanValue",
+    "doc": "切换Boolean类型的值",
+    "annotations": []
+   },
+   {
+    "action": "deleteCustomConfig",
+    "doc": "删除自定义参数",
+    "annotations": []
+   },
+   {
+    "action": "clearCacheByType",
+    "doc": "清空缓存 指定type",
+    "annotations": []
+   },
+   {
+    "action": "clearCache",
+    "doc": "清空缓存",
+    "annotations": []
+   },
+   {
+    "action": "clearReset",
+    "doc": "清空缓存 重新初始化",
+    "annotations": []
+   },
+   {
+    "action": "addCustomConfig",
+    "doc": "新增参数",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 系统通知",
+  "key": "sys_notice",
+  "url": "admin/sysnotice",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "SysNoticeAdminController",
+  "page": {
+   "title": "系统通知管理",
+   "search": [
+    "输入关键字搜索",
+    "类型",
+    "优先级",
+    "接收者类型"
+   ],
+   "toolbar": [
+    "查询",
+    "回收站"
+   ],
+   "columns": [
+    "序号",
+    "标题",
+    "附件",
+    "类型",
+    "优先级",
+    "已读数",
+    "接收类型",
+    "接收值",
+    "创建时间",
+    "更新时间",
+    "创建人",
+    "更新人"
+   ],
+   "rowActions": [
+    "查看通知详情",
+    "系统通知附件列表管理"
+   ],
+   "formFields": [
+    "标题",
+    "内容"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "系统通知管理 Controller / public class SysNoticeAdminController extends JBoltBaseContr",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "files",
+    "doc": "查看附件列表",
+    "annotations": []
+   },
+   {
+    "action": "updateFiles",
+    "doc": "更新附件列表",
+    "annotations": []
+   },
+   {
+    "action": "uploadFiles",
+    "doc": "上传多文件",
+    "annotations": []
+   },
+   {
+    "action": "pdfViewer",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "download",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "doc": "详情",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "batchDelete",
+    "doc": "批量删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "batchRestore",
+    "doc": "批量还原恢复回收站数据",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "chooseReceiver",
+    "doc": "根据类型进入不同选择界面",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 七牛配置",
+  "key": "qiniu_config",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统管理 / 七牛配置 / 七牛账号",
+  "key": "qiniu",
+  "url": "admin/qiniu",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "QiniuAdminController",
+  "page": {
+   "title": "七牛账号管理",
+   "search": [
+    "输入关键字搜索",
+    "账号类型",
+    "是否默认",
+    "是否启用"
+   ],
+   "toolbar": [
+    "查询",
+    "重置",
+    "新增"
+   ],
+   "columns": [
+    "序号",
+    "账号",
+    "编号SN",
+    "账号类型",
+    "AK",
+    "SK",
+    "Bucket个数",
+    "是否默认",
+    "是否启用",
+    "备注",
+    "创建时间",
+    "更新时间",
+    "创建人",
+    "更新人",
+    "操作"
+   ],
+   "rowActions": [
+    "查看备注",
+    "修改",
+    "删除"
+   ],
+   "formFields": [
+    "账号类型",
+    "账号",
+    "编号SN",
+    "AK",
+    "SK",
+    "是否默认",
+    "是",
+    "否",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "uploadParas",
+    "doc": "七牛账号管理 Controller / public class QiniuAdminController extends JBoltBaseControlle",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "index",
+    "doc": "首页",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "doc": "作为其他组件的选项列表",
+    "annotations": [
+     "@CheckPermission({PermissionKey.QINIU,PermissionKey.QINIU_BUCKET})"
+    ]
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "checkDefaultExist",
+    "doc": "检查是否存在冲突默认数据",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsDefault",
+    "doc": "切换toggleIsDefault",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 七牛配置 / 七牛Bucket",
+  "key": "qiniu_bucket",
+  "url": "admin/qiniu/bucket",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "QiniuBucketAdminController",
+  "page": {
+   "title": "七牛Bucket管理",
+   "search": [
+    "输入关键字搜索",
+    "所属账号",
+    "地区"
+   ],
+   "toolbar": [
+    "查询",
+    "同步所有Bucket",
+    "新增"
+   ],
+   "columns": [
+    "序号",
+    "bucket名称",
+    "编码(SN)",
+    "所属七牛账号",
+    "所属地区",
+    "绑定域名",
+    "回调地址",
+    "回调body定义",
+    "回调Body类型",
+    "有效期(秒)",
+    "是否默认",
+    "是否启用",
+    "备注",
+    "创建时间",
+    "更新时间",
+    "创建人",
+    "更新人",
+    "操作"
+   ],
+   "rowActions": [
+    "查看备注",
+    "修改",
+    "删除"
+   ],
+   "formFields": [
+    "所属七牛账号",
+    "所属地区",
+    "bucket名称",
+    "编码(SN)",
+    "有效期(秒)",
+    "绑定域名",
+    "回调地址",
+    "回调body定义",
+    "回调Body类型",
+    "是否默认",
+    "是",
+    "否",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "七牛Bucket管理 Controller / public class QiniuBucketAdminController extends JBoltBas",
+    "annotations": []
+   },
+   {
+    "action": "syncAllQiniuBuckets",
+    "doc": "从线上同步所有账号的bucket",
+    "annotations": []
+   },
+   {
+    "action": "syncFromQiniu",
+    "doc": "从线上同步bucket",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "options",
+    "doc": "options数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsDefault",
+    "doc": "切换toggleIsDefault",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统管理 / 敏感词词库",
+  "key": "sensitive_word",
+  "url": "admin/sensitiveword",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "SensitiveWordAdminController",
+  "page": {
+   "title": "敏感词词库管理",
+   "search": [],
+   "toolbar": [],
+   "columns": [
+    "总量",
+    "启用/禁用",
+    "已加载",
+    "序号",
+    "敏感词",
+    "启用/禁用",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑",
+    "删除"
+   ],
+   "formFields": [
+    "敏感词"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "counts",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "reload",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "test",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "mgr",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "系统监控",
+  "key": "jbolt_monitor",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统监控 / Druid数据库监控",
+  "key": "druid_monitor",
+  "url": "admin/druid/monitor",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统监控 / 服务器监控",
+  "key": "jbolt_server_monitor",
+  "url": "admin/servermonitor",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "ServerMonitorAdminController",
+  "page": {
+   "title": "服务器运行监控",
+   "search": [],
+   "toolbar": [
+    "刷新"
+   ],
+   "columns": [],
+   "rowActions": []
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "disk",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "memory",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "server",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "jvm",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "cpu",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "cache",
+    "doc": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "系统监控 / 日志监控",
+  "key": "jbolt_log_monitor",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "系统监控 / 日志监控 / 登录日志",
+  "key": "jbolt_login_log",
+  "url": "admin/loginlog",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "LoginLogAdminController",
+  "page": {
+   "title": "登录日志",
+   "search": [
+    "输入关键字搜索",
+    "日期范围"
+   ],
+   "toolbar": [
+    "查询",
+    "刷新"
+   ],
+   "columns": [
+    "序号",
+    "用户名(id)",
+    "登录状态",
+    "异地登录",
+    "登录时间",
+    "操作系统",
+    "浏览器",
+    "登录IP",
+    "登录地址"
+   ],
+   "rowActions": []
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "doc": "登录日志controller / public class LoginLogAdminController extends JBoltBaseControlle",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "系统监控 / 日志监控 / 关键操作日志",
+  "key": "systemlog",
+  "url": "admin/systemlog",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "SystemLogAdminController",
+  "page": {
+   "title": "系统操作日志",
+   "search": [
+    "输入关键字搜索",
+    "开始日期",
+    "截止日期"
+   ],
+   "toolbar": [
+    "查询",
+    "刷新"
+   ],
+   "columns": [
+    "序号",
+    "数据类型",
+    "操作类型",
+    "日志",
+    "操作人",
+    "记录时间"
+   ],
+   "rowActions": [
+    "查看日志描述"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "系统监控 / 在线用户",
+  "key": "online_user",
+  "url": "admin/onlineuser",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "OnlineUserAdminController",
+  "page": {
+   "title": "在线用户管理",
+   "search": [
+    "输入关键字搜索",
+    "状态"
+   ],
+   "toolbar": [
+    "查询",
+    "刷新"
+   ],
+   "columns": [
+    "序号",
+    "用户名",
+    "会话ID",
+    "登录日志",
+    "在线状态",
+    "登录时间",
+    "更新时间",
+    "过期时间",
+    "离线时间",
+    "操作"
+   ],
+   "rowActions": []
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "在线用户管理 Controller / public class OnlineUserAdminController extends JBoltBaseCont",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "stateOptions",
+    "doc": "状态选项",
+    "annotations": []
+   },
+   {
+    "action": "forcedOffline",
+    "doc": "强退用户",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "开发平台",
+  "key": "dev_platform",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 应用中心",
+  "key": "application",
+  "url": "admin/app",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "ApplicationAdminController",
+  "page": {
+   "title": "应用开发中心",
+   "search": [
+    "输入关键字搜索",
+    "应用类型",
+    "状态"
+   ],
+   "toolbar": [
+    "查询",
+    "创建新应用"
+   ],
+   "columns": [
+    "序号",
+    "应用名称",
+    "类型",
+    "AppId/AppSecret",
+    "简介",
+    "创建时间",
+    "更新时间",
+    "是否启用",
+    "接口校验Signature",
+    "关联对象",
+    "操作"
+   ],
+   "rowActions": [
+    "应用开发中心关联对象",
+    "编辑应用基本信息"
+   ],
+   "formFields": [
+    "应用名称",
+    "应用简介 (200字内)",
+    "接口校验 (Signature)",
+    "开启",
+    "关闭"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "应用开发者中心 主要管理调用接口的Application 不管是APP还是小程序或者其它端应用 都可以集成进来 为调用开发API类应用准备 / public c",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "appinfo",
+    "doc": "查看app的appId和appSecret信息",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "enableOptions",
+    "doc": "enable 启用状态数据源",
+    "annotations": []
+   },
+   {
+    "action": "types",
+    "doc": "Api应用中心应用类型列表数据源",
+    "annotations": []
+   },
+   {
+    "action": "typesInForm",
+    "doc": "Api应用中心应用类型列表数据源 form里用",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before({Tx.class,ApplicationValidator.class})"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换状态",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "toggleNeedCheckSign",
+    "doc": "切换是否需要接口needchecksign",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "changeAppSecret",
+    "doc": "变更AppSecret",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "linkTarget",
+    "doc": "查看关联对象",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   },
+   {
+    "action": "removeLinkTarget",
+    "doc": "解除关联对象",
+    "annotations": [
+     "@Before(ApplicationValidator.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "开发平台 / 微信公众平台",
+  "key": "wechat_mpinfo",
+  "url": "admin/wechat/mpinfo",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "WechatMpinfoAdminController",
+  "page": {
+   "title": "微信公众平台管理",
+   "search": [
+    "输入关键字搜索",
+    "类型",
+    "主体类型",
+    "认证",
+    "状态"
+   ],
+   "toolbar": [
+    "查询",
+    "新增"
+   ],
+   "columns": [
+    "序号",
+    "头像",
+    "名称",
+    "二维码",
+    "类型|主体",
+    "简介",
+    "备注",
+    "启用",
+    "认证",
+    "核心配置",
+    "关联应用",
+    "操作"
+   ],
+   "rowActions": [
+    "点击查看二维码",
+    "公众平台基础配置",
+    "公众平台微信支付配置",
+    "公众平台其它配置",
+    "公众平台自定义菜单配置",
+    "公众平台素材库管理",
+    "公众平台关注时回复内容配置",
+    "公众平台自定义关键词回复配置",
+    "公众平台默认消息回复配置",
+    "公众平台用户管理",
+    "公众平台-应用开发中心关联设置",
+    "编辑公众平台信息"
+   ],
+   "formFields": [
+    "名称",
+    "微信号",
+    "简介",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "微信公众平台管理 / public class WechatMpinfoAdminController extends JBoltBaseController ",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "uploadImage",
+    "doc": "上传公众平台相关图片",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "进入新增表单",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "editLinkApp",
+    "doc": "编辑关联的APP",
+    "annotations": []
+   },
+   {
+    "action": "apps",
+    "doc": "获取application列表 通过关键字匹配 autocomplete组件使用",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "doc": "删除一个公众平台",
+    "annotations": []
+   },
+   {
+    "action": "clearAllConfigs",
+    "doc": "清空所有配置 慎用",
+    "annotations": []
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": []
+   },
+   {
+    "action": "toggleAuthenticated",
+    "doc": "切换认证状态",
+    "annotations": []
+   },
+   {
+    "action": "enableOptions",
+    "doc": "enable 启用状态数据源",
+    "annotations": []
+   },
+   {
+    "action": "isAuthenticatedOptions",
+    "doc": "isAuthenticated  是否认证数据源",
+    "annotations": []
+   },
+   {
+    "action": "typeOptions",
+    "doc": "类型数据源",
+    "annotations": []
+   },
+   {
+    "action": "subjectTypeOptions",
+    "doc": "主体类型数据源",
+    "annotations": []
+   },
+   {
+    "action": "submitLinkApp",
+    "doc": "提交关联APP",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "removeLinkApp",
+    "doc": "解除关联APP",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 基础配置",
+  "key": "wechat_config_basemgr",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 菜单配置",
+  "key": "wechat_menu",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 支付配置",
+  "key": "wechat_config_paymgr",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 关注回复",
+  "key": "wechat_autoreply_subscribe",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 关键词回复",
+  "key": "wechat_autoreply_keywords",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 默认回复",
+  "key": "wechat_autoreply_default",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 素材库",
+  "key": "wechat_media",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 用户管理",
+  "key": "wechat_user",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 微信公众平台 / 其它配置",
+  "key": "wechat_config_extramgr",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 报表设计器",
+  "key": "ureport_designer",
+  "url": "ureport/designer",
+  "isMenu": true,
+  "openType": 2
+ },
+ {
+  "path": "开发平台 / 打印设计器",
+  "key": "hiprint_design",
+  "url": "admin/hiprint",
+  "isMenu": true,
+  "openType": 2,
+  "controller": "HiprintAdminController",
+  "page": {
+   "title": "Hiprint-打印模板设计器",
+   "search": [],
+   "toolbar": [],
+   "columns": [],
+   "rowActions": []
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "jbolt hiprint 封装 / public class HiprintAdminController extends JBoltBaseControll",
+    "annotations": []
+   },
+   {
+    "action": "designer",
+    "doc": "设计器",
+    "annotations": [
+     "@ActionKey(\"tpl/designer\")"
+    ]
+   },
+   {
+    "action": "tpl",
+    "doc": "仓库管理",
+    "annotations": []
+   },
+   {
+    "action": "tplContent",
+    "doc": "模板获取",
+    "annotations": [
+     "@UnCheck",
+     "@ActionKey(\"tpl/content\")"
+    ]
+   },
+   {
+    "action": "tplDatas",
+    "doc": "模板库数据",
+    "annotations": [
+     "@ActionKey(\"tpl/datas\")"
+    ]
+   },
+   {
+    "action": "tplJsonDataEditor",
+    "doc": "模板库数据",
+    "annotations": [
+     "@ActionKey(\"tpl/jsonDataEditor\")"
+    ]
+   },
+   {
+    "action": "tplLoad",
+    "doc": "模板库数据加载一个",
+    "annotations": [
+     "@ActionKey(\"tpl/load\")"
+    ]
+   },
+   {
+    "action": "tplTestJsonData",
+    "doc": "模板库数据加载一个",
+    "annotations": [
+     "@ActionKey(\"tpl/testJsonData\")"
+    ]
+   },
+   {
+    "action": "tplAdd",
+    "doc": "新增模板",
+    "annotations": [
+     "@ActionKey(\"tpl/add\")"
+    ]
+   },
+   {
+    "action": "tplEdit",
+    "doc": "编辑模板",
+    "annotations": [
+     "@ActionKey(\"tpl/edit\")"
+    ]
+   },
+   {
+    "action": "submitTpl",
+    "doc": "提交模板",
+    "annotations": [
+     "@ActionKey(\"tpl/submit\")"
+    ]
+   },
+   {
+    "action": "tplDelete",
+    "doc": "删除模板",
+    "annotations": [
+     "@ActionKey(\"tpl/delete\")"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "开发平台 / 代码生成器",
+  "key": "jbolt_code_gen",
+  "url": "admin/codegen",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "CodeGenAdminController",
+  "page": {
+   "title": "JBolt平台代码生成器",
+   "search": [
+    "输入关键字搜索",
+    "构建类型",
+    "数据源",
+    "样式类型",
+    "生成状态"
+   ],
+   "toolbar": [
+    "查询",
+    "回收站"
+   ],
+   "columns": [
+    "序号",
+    "数据库表",
+    "数据源",
+    "版本号",
+    "构建类型",
+    "是否树表",
+    "是否CRUD",
+    "是否可编辑",
+    "删除表前缀",
+    "Main Java Package",
+    "功能作者",
+    "子表数",
+    "样式类型",
+    "生成状态",
+    "创建时间",
+    "更新时间",
+    "操作"
+   ],
+   "rowActions": [
+    "查看基础信息",
+    "编辑基础信息",
+    "设计详细生成配置",
+    "删除"
+   ],
+   "formFields": [
+    "项目根路径",
+    "数据源",
+    "数据表",
+    "删除表名前缀",
+    "是否CRUD",
+    "是",
+    "否",
+    "树表样式",
+    "表格可编辑",
+    "开发作者",
+    "版本号",
+    "Main Java Package",
+    "Model Package",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "JBolt 开发平台 - 可视化代码生成器 / public class CodeGenAdminController extends JBoltBaseCon",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "codeGen数据源",
+    "annotations": []
+   },
+   {
+    "action": "autocompletedemodatas",
+    "doc": "autocomplete组件默认的demo数据源",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "types",
+    "doc": "构建类型",
+    "annotations": []
+   },
+   {
+    "action": "refreshEnumsCache",
+    "doc": "刷新enum缓存",
+    "annotations": []
+   },
+   {
+    "action": "enums",
+    "doc": "内置枚举类",
+    "annotations": []
+   },
+   {
+    "action": "refreshCachesCache",
+    "doc": "刷新cache缓存",
+    "annotations": []
+   },
+   {
+    "action": "refreshServicesCache",
+    "doc": "刷新service缓存",
+    "annotations": []
+   },
+   {
+    "action": "caches",
+    "doc": "内置cahce类",
+    "annotations": []
+   },
+   {
+    "action": "datasources",
+    "doc": "系统数据源",
+    "annotations": []
+   },
+   {
+    "action": "styles",
+    "doc": "样式类型数据源",
+    "annotations": []
+   },
+   {
+    "action": "states",
+    "doc": "生成状态数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "添加主配置",
+    "annotations": []
+   },
+   {
+    "action": "addSubTable",
+    "doc": "添加子表配置",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑主配置",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存基础信息",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新基础信息",
+    "annotations": []
+   },
+   {
+    "action": "updateBase",
+    "doc": "详细配置里更新基础信息",
+    "annotations": []
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "doc": "删除批量",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "recoverByIds",
+    "doc": "批量还原",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "realDelete",
+    "doc": "真删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "tablesAutocomplete",
+    "doc": "数据源中的可选表",
+    "annotations": []
+   },
+   {
+    "action": "reloadTables",
+    "doc": "重新对数据源的表进行加载",
+    "annotations": []
+   },
+   {
+    "action": "uploadImg",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "createCodeGenDialog",
+    "doc": "创建代码生成器对话框",
+    "annotations": []
+   },
+   {
+    "action": "getLastCodegenId",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "editCodeGenConfig",
+    "doc": "进入代码生成详细配置UI",
+    "annotations": []
+   },
+   {
+    "action": "keyCacheColumns",
+    "doc": "keycache column数据源",
+    "annotations": []
+   },
+   {
+    "action": "autocompleteColumns",
+    "doc": "autocomplete接口匹配 column数据源",
+    "annotations": []
+   },
+   {
+    "action": "optionsTextColumns",
+    "doc": "options接口 text column数据源",
+    "annotations": []
+   },
+   {
+    "action": "optionsValueColumns",
+    "doc": "options接口 value column数据源",
+    "annotations": []
+   },
+   {
+    "action": "keyCacheBindColumns",
+    "doc": "keycache bindColumn数据源",
+    "annotations": []
+   },
+   {
+    "action": "intSortColumns",
+    "doc": "可以排序的int类型的columns",
+    "annotations": []
+   },
+   {
+    "action": "permissionPortal",
+    "doc": "加载权限菜单设置",
+    "annotations": []
+   },
+   {
+    "action": "unbindPermission",
+    "doc": "确认清空解绑权限菜单",
+    "annotations": []
+   },
+   {
+    "action": "keywordsMatchColumns",
+    "doc": "可以当做关键词查询匹配列的数据",
+    "annotations": []
+   },
+   {
+    "action": "formPortal",
+    "doc": "form portal预览",
+    "annotations": []
+   },
+   {
+    "action": "testAjax",
+    "doc": "测试ajax success",
+    "annotations": []
+   },
+   {
+    "action": "formPortalEditMode",
+    "doc": "form portal 编辑模式",
+    "annotations": []
+   },
+   {
+    "action": "formPortalTest",
+    "doc": "form portal test 测试预览",
+    "annotations": []
+   },
+   {
+    "action": "tablePortalEditMode",
+    "doc": "table portal预览 编辑模式",
+    "annotations": []
+   },
+   {
+    "action": "tablePortal",
+    "doc": "table portal预览",
+    "annotations": []
+   },
+   {
+    "action": "tablePortalDatas",
+    "doc": "table预览的demo数据",
+    "annotations": []
+   },
+   {
+    "action": "initSortRankInform",
+    "doc": "初始化form元素排序",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initSortRankIntable",
+    "doc": "初始化form元素排序",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "formDictionaryOptions",
+    "doc": "选择字典数据",
+    "annotations": []
+   },
+   {
+    "action": "searchDictionaryOptions",
+    "doc": "选择字典数据",
+    "annotations": []
+   },
+   {
+    "action": "routesOptions",
+    "doc": "路由列表数据",
+    "annotations": []
+   },
+   {
+    "action": "refreshRoutesCache",
+    "doc": "刷新routes缓存",
+    "annotations": []
+   },
+   {
+    "action": "genAll",
+    "doc": "一次性生成model、主逻辑等内容",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "genModel",
+    "doc": "一次性生成model",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "genMainLogic",
+    "doc": "一次性生成mainLogic",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "downloadTpl",
+    "doc": "模拟导出模板",
+    "annotations": []
+   },
+   {
+    "action": "initImportExcel",
+    "doc": "模拟初始化打开导入excel的dialog",
+    "annotations": []
+   },
+   {
+    "action": "importExcel",
+    "doc": "模拟导入成功",
+    "annotations": []
+   },
+   {
+    "action": "exportExcel",
+    "doc": "模拟导出",
+    "annotations": []
+   },
+   {
+    "action": "staticMethodClasses",
+    "doc": "关键词搜索静态方法 类",
+    "annotations": []
+   },
+   {
+    "action": "javaPackageAutocomplete",
+    "doc": "javapackageautocomplete查询",
+    "annotations": []
+   },
+   {
+    "action": "services",
+    "doc": "关键词搜索service方法",
+    "annotations": []
+   },
+   {
+    "action": "initBindPermission",
+    "doc": "初始化 绑定permission",
+    "annotations": []
+   },
+   {
+    "action": "bindPermission",
+    "doc": "绑定permission",
+    "annotations": []
+   },
+   {
+    "action": "syncProjectPath",
+    "doc": "同步本项目地址",
+    "annotations": []
+   },
+   {
+    "action": "updateProjectPath",
+    "doc": "更新projectpath",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "开发平台 / 开发文档",
+  "key": "admin_dev_doc",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "开发平台 / 开发文档 / 数据库文档",
+  "key": "admin_dev_doc_database",
+  "url": "admin/devdoc/database",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "JBoltDatabaseDevDocController",
+  "page": {
+   "title": "项目数据库文档 （开发人员专用）",
+   "search": [],
+   "toolbar": [],
+   "columns": [
+    "配置项",
+    "配置值"
+   ],
+   "rowActions": []
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "datasources",
+    "doc": "JBolt平台内置后台开发平台使用的数据库开发文档 / public class JBoltDatabaseDevDocController extends J",
+    "annotations": []
+   },
+   {
+    "action": "tableLayer",
+    "doc": "打开一个数据源的table列表Layer页面",
+    "annotations": []
+   },
+   {
+    "action": "tables",
+    "doc": "查询所有可用数据源配置信息",
+    "annotations": []
+   },
+   {
+    "action": "refreshTables",
+    "doc": "刷新表数据",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "独立逻辑权限",
+  "key": "logic_permission",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "独立逻辑权限 / Ureport报表查看权",
+  "key": "ureport_detail",
+  "url": "",
+  "isMenu": false,
+  "openType": 1
+ },
+ {
+  "path": "AI_数智化中心",
+  "key": "jbolt_ai_dev",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "AI_数智化中心 / AI_Tools注册中心",
+  "key": "admin_ai_tools",
+  "url": "/admin/ai/tools",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiToolsAdminController",
+  "page": {
+   "title": "AI_可调用Tools注册中心",
+   "search": [
+    "输入关键字搜索",
+    "类型",
+    "是否启用"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "编码",
+    "类型",
+    "功能描述",
+    "Service Package/Class/Method",
+    "应用角色",
+    "调用前置要求",
+    "返回值特殊处理说明",
+    "哪些参数必填",
+    "调用次数",
+    "参数管理",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "AI_Function参数管理"
+   ],
+   "formFields": [
+    "功能描述",
+    "调用前置要求",
+    "返回值特殊处理说明"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI_Tools注册中心 / public class AiToolsAdminController extends JBoltBaseController {",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "reloadServices",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "services",
+    "doc": "关键词搜索service方法",
+    "annotations": []
+   },
+   {
+    "action": "submit",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "addForm",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "addApiFunctionForm",
+    "doc": "新增 api function",
+    "annotations": []
+   },
+   {
+    "action": "serviceMethods",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "saveApiFunction",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateApiFunction",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "doc": "批量删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "updateColumn",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "detail",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "json",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "test",
+    "doc": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_功能&应用注册中心",
+  "key": "admin_ai_page",
+  "url": "/admin/ai/page",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiPageAdminController",
+  "page": {
+   "title": "AI_可调用页面&应用注册中心",
+   "search": [
+    "输入关键字搜索",
+    "类型",
+    "是否启用",
+    "打开方式"
+   ],
+   "toolbar": [
+    "查询",
+    "重置",
+    "清空VDB",
+    "同步VDB"
+   ],
+   "columns": [
+    "序号",
+    "名称",
+    "编号",
+    "类型",
+    "描述",
+    "打开方式",
+    "页面地址",
+    "应用角色",
+    "权限KEY",
+    "使用数",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑AI功能注册"
+   ],
+   "formFields": [
+    "名称",
+    "编号",
+    "页面地址",
+    "描述",
+    "权限KEY"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI功能注册中心 / public class AiPageAdminController extends JBoltBaseController { priv",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "clearVDB",
+    "doc": "清空VBD",
+    "annotations": []
+   },
+   {
+    "action": "submitAllEnableToVDB",
+    "doc": "全部提交VBD",
+    "annotations": []
+   },
+   {
+    "action": "processAllEmptyRoles",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "processAllRoles",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "detail",
+    "doc": "详情",
+    "annotations": []
+   },
+   {
+    "action": "permissionAdd",
+    "doc": "新增permission",
+    "annotations": []
+   },
+   {
+    "action": "permissions",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "aiApps",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "permissionsAutocomplete",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "submitPermissions",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "submitAiApps",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "aiAppAdd",
+    "doc": "新增ai应用",
+    "annotations": []
+   },
+   {
+    "action": "datasAdd",
+    "doc": "新增 业务数据",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "doc": "批量删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_应用开发中心",
+  "key": "admin_ai_app",
+  "url": "/admin/ai/app",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiAppAdminController",
+  "page": {
+   "title": "AI应用",
+   "search": [],
+   "toolbar": [
+    "筛选条件"
+   ],
+   "columns": [
+    "序号",
+    "名称",
+    "操作",
+    "排序",
+    "定制优化",
+    "快速测试",
+    "挂载Function",
+    "挂载知识库",
+    "是否启用",
+    "保持上下文",
+    "图标LOGO",
+    "大背景图",
+    "AI对话头像",
+    "AI对话空内容背景图",
+    "UI_布局风格",
+    "UI_对话风格",
+    "用户输入长度限制",
+    "编码",
+    "介绍",
+    "system_message模板",
+    "prompt模板",
+    "首次进入场景 用户消息",
+    "首次进入场景AI提示语",
+    "知识库无匹配时回复内容",
+    "AI消息声明信息",
+    "应用角色",
+    "什么权限可使用",
+    "使用次数",
+    "发布应用",
+    "UI扩展",
+    "应用配置",
+    "API参数",
+    "创建时间",
+    "更新时间",
+    "发布状态",
+    "发布类型",
+    "发布时间",
+    "应用地址",
+    "左",
+    "右",
+    "上",
+    "下",
+    "显示参考记录",
+    "引用片段查看",
+    "可下载源文件",
+    "仅知识库模式",
+    "语音播放",
+    "重新生成",
+    "max_tokens",
+    "temperature",
+    "top_p",
+    "top_k"
+   ],
+   "rowActions": [
+    "编辑AI应用",
+    "上移",
+    "下移",
+    "[移动端测试模式]",
+    "[PC端测试模式]",
+    "维护应用绑定的Functions",
+    "清空绑定的Functions",
+    "维护应用绑定的知识库",
+    "清空绑定的知识库",
+    "取消发布此AI应用",
+    "发布此AI应用",
+    "复制AI应用访问链接",
+    "打开AI应用"
+   ],
+   "formFields": [
+    "名称",
+    "编码",
+    "介绍",
+    "图标LOGO",
+    "大背景图",
+    "AI对话头像",
+    "AI聊天区域空内容显示背景图",
+    "什么权限可使用",
+    "Max_Tokens",
+    "temperature",
+    "top_p",
+    "top_k"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI应用 / public class AiAppAdminController extends JBoltBaseController { private A",
+    "annotations": []
+   },
+   {
+    "action": "count",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "copy",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "downloadAppJson",
+    "doc": "下载应用配置文件JSON",
+    "annotations": []
+   },
+   {
+    "action": "addByJson",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "detail",
+    "doc": "详情",
+    "annotations": []
+   },
+   {
+    "action": "designer",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "updateCustomCssStyle",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "updateCustomJavascript",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "knowledgeConfigTopPortal",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "knowledgeDatasPortal",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "functionCallDatasPortal",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "chooseFunctions",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "chooseKnowledgeBases",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "linkKnowledgeBaseDatas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "linkFunctionCallDatas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "unbindKnowledgeBase",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "unbindFunctionCall",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "logout",
+    "doc": "",
+    "annotations": [
+     "@Clear"
+    ]
+   },
+   {
+    "action": "publishConfigDialog",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "publishConfigPortal",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "linkFunctionDatas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "permissions",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "aiKnowledgeBases",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "aiFunctions",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "aiFunctionChooseDatas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "submitFunctions",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "aiKnowledgeBaseChooseDatas",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "submitKnowledgeBases",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "updateOneColumn",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsChatLlmEnableThinking",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsFunctionLlmEnableThinking",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsFuncResultLlmEnableThinking",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsKbResultLlmEnableThinking",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "aiKnowledgeCall",
+    "doc": "快速测试使用请勿商用",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "sessionHistory",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "removeLinkKnowledgeBases",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "removeLinkFunctionCall",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "designerTest",
+    "doc": "设计工具箱里加载测试预览",
+    "annotations": []
+   },
+   {
+    "action": "test",
+    "doc": "测试专用入口",
+    "annotations": []
+   },
+   {
+    "action": "clearSessionMsgs",
+    "doc": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "open",
+    "doc": "后台管理内部打开应用正式使用的入口",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "genTableBySql",
+    "doc": "根据sql生表",
+    "annotations": []
+   },
+   {
+    "action": "jdadHistorySession",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "jboltDatabaseAiDesigner",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "qrcode",
+    "doc": "aiApp二维码",
+    "annotations": []
+   },
+   {
+    "action": "initPublish",
+    "doc": "进入初始化发布页面",
+    "annotations": []
+   },
+   {
+    "action": "publish",
+    "doc": "publish发布",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "cancelPublish",
+    "doc": "取消publish发布",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "up",
+    "doc": "排序 上移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "down",
+    "doc": "排序 下移",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "initSortRank",
+    "doc": "排序 初始化",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsNeedRewriteQuery",
+    "doc": "切换is_need_rewrite_query",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowReference",
+    "doc": "切换is_show_reference",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowAiMsgBottomOptBtnTts",
+    "doc": "切换is_show_ai_msg_bottom_opt_btn_tts",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowAiMsgBottomOptBtnReChat",
+    "doc": "切换is_show_ai_msg_bottom_opt_btn_re_chat",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowRefFragment",
+    "doc": "切换is_show_reference",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsShowFileDownload",
+    "doc": "切换is_show_file_download",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsOnlyKnowledgeMode",
+    "doc": "切换is_only_knowledge_mode",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsOnlyFunctionCallMode",
+    "doc": "切换is_only_function_call_mode",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsKeepContext",
+    "doc": "切换is_keep_context",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsLeftBoxExtends",
+    "doc": "切换is_left_box_extends",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsRightBoxExtends",
+    "doc": "切换is_right_box_extends",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsAiMsgInputBoxExtends",
+    "doc": "切换is_ai_msg_input_box_extends",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsTopBoxExtends",
+    "doc": "切换is_top_box_extends",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "getUiExtendCode",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "delCustomJavascriptFile",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "loadCustomJavascriptCode",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "loadCustomDefaultJavascriptCode",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "updateUiExtendCode",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "toggleIsBottomBoxExtends",
+    "doc": "切换is_bottom_box_extends",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "uploadIcon",
+    "doc": "上传图标Logo",
+    "annotations": []
+   },
+   {
+    "action": "uploadAiAvatar",
+    "doc": "上传Ai对话头像",
+    "annotations": []
+   },
+   {
+    "action": "uploadBgImg",
+    "doc": "上传Ai背景图",
+    "annotations": []
+   },
+   {
+    "action": "uploadChatEmptyBgImg",
+    "doc": "上传Ai背景图（内容为空时 的背景📈）",
+    "annotations": []
+   },
+   {
+    "action": "aiCotClassAutocompleteDatas",
+    "doc": "cot 数据关键词查询检索",
+    "annotations": []
+   },
+   {
+    "action": "refreshAICotClass",
+    "doc": "刷新cot缓存",
+    "annotations": []
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "doc": "得到select radio checkbox专用options数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "runIframePreview",
+    "doc": "预览",
+    "annotations": []
+   },
+   {
+    "action": "runIframeDownload",
+    "doc": "下载代码",
+    "annotations": []
+   },
+   {
+    "action": "runIframeCode",
+    "doc": "代码",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_知识库中心",
+  "key": "admin_ai_kbc",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "AI_数智化中心 / AI_知识库中心 / AI_知识库",
+  "key": "admin_ai_kb",
+  "url": "/admin/ai/knowledgeBase",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiKnowledgeBaseAdminController",
+  "page": {
+   "title": "AI知识库管理",
+   "search": [
+    "输入关键字搜索",
+    "是否启用"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "名称",
+    "简介",
+    "AI_FILE",
+    "AI_DOC",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑AI知识库"
+   ],
+   "formFields": [
+    "名称",
+    "简介"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI知识库 / public class AiKnowledgeBaseAdminController extends JBoltBaseController ",
+    "annotations": []
+   },
+   {
+    "action": "count",
+    "doc": "统计数量",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_知识库中心 / AI_知识库训练文件",
+  "key": "admin_ai_file",
+  "url": "/admin/ai/file",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiFileAdminController",
+  "page": {
+   "title": "AI文件",
+   "search": [
+    "输入关键字搜索",
+    "请选择知识库",
+    "上传类型",
+    "训练类型",
+    "拆分状态",
+    "训练状态",
+    "向量化状态"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "文件名称",
+    "训练类型",
+    "上传类型",
+    "知识库",
+    "AI_DOC",
+    "训练异常",
+    "是否拆分",
+    "拆分时间",
+    "是否训练",
+    "训练时间",
+    "是否向量化",
+    "向量化时间",
+    "创建时间",
+    "更新时间",
+    "文件地址",
+    "操作"
+   ],
+   "rowActions": [
+    "重新训练",
+    "删除"
+   ],
+   "formFields": [
+    "知识库",
+    "上传",
+    "名称",
+    "文件地址",
+    "文件大小(KB)"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI文件 / public class AiFileAdminController extends JBoltBaseController { private ",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "pdfViewer",
+    "doc": "",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "addQa",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "addWebsite",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "addWebsiteQa",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "urlToMd",
+    "doc": "网页Html转Markdown",
+    "annotations": []
+   },
+   {
+    "action": "reTrain",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "submitMulti",
+    "doc": "提交aiFile多文件",
+    "annotations": []
+   },
+   {
+    "action": "submitByWebsite",
+    "doc": "",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "upload",
+    "doc": "本地上传",
+    "annotations": []
+   },
+   {
+    "action": "uploadFiles",
+    "doc": "上传多文件",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_知识库中心 / AI_知识库训练结果",
+  "key": "admin_ai_doc",
+  "url": "/admin/ai/doc",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiDocAdminController",
+  "page": {
+   "title": "AI DOC管理",
+   "search": [
+    "输入关键字搜索",
+    "请选择知识库",
+    "数据类型",
+    "是否训练",
+    "是否向量化"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "问题/内容",
+    "答案",
+    "知识库",
+    "文件",
+    "数据类型",
+    "训练异常",
+    "训练状态",
+    "训练时间",
+    "向量化状态",
+    "向量化时间",
+    "创建时间",
+    "修改时间",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑AI问答库"
+   ],
+   "formFields": [
+    "知识库",
+    "训练类型",
+    "非QA类",
+    "QA类",
+    "问题/内容",
+    "答案"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI问答库 / public class AiDocAdminController extends JBoltBaseController { private ",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "linkFileDocs",
+    "doc": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_知识库中心 / AI_文件标签",
+  "key": "admin_ai_file_tag",
+  "url": "/admin/ai/fileTag",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiFileTagAdminController",
+  "page": {
+   "title": "AI文件标签",
+   "search": [
+    "输入关键字搜索"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "名称",
+    "别名",
+    "操作"
+   ],
+   "rowActions": [
+    "编辑AI文件标签"
+   ],
+   "formFields": [
+    "名称",
+    "别名"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "AI文件标签 / public class AiFileTagAdminController extends JBoltBaseController { pri",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "deleteByIds",
+    "doc": "批量删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_全局参数配置",
+  "key": "admin_ai_config",
+  "url": "/admin/ai/config",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "JBoltAIConfigController",
+  "page": {
+   "title": "系统参数配置管理#if(typeName??): #end",
+   "search": [
+    "关键词查询",
+    "是否内置"
+   ],
+   "toolbar": [
+    "查询",
+    "刷新缓存",
+    "重置全部"
+   ],
+   "columns": [
+    "名称",
+    "操作",
+    "序号",
+    "参数名",
+    "参数KEY",
+    "参数值",
+    "所属类型",
+    "值类型",
+    "内置",
+    "更新时间",
+    "编辑"
+   ],
+   "rowActions": [
+    "编辑",
+    "设置登录页面背景图",
+    "上移",
+    "下移",
+    "刷新",
+    "新增系统参数类型",
+    "初始化顺序"
+   ],
+   "formFields": [
+    "启用",
+    "禁用",
+    "sysout-控制台",
+    "jboltlog-日志文件",
+    "默认",
+    "GIF验证码",
+    "气泡PNG",
+    "数字运算型",
+    "数字运算型（中文）",
+    "(数据单位：天)",
+    "树形表格管理",
+    "JS_TREE树管理",
+    "系统名称",
+    "color值：",
+    "color值参考：",
+    "[60~400之间的数字]",
+    "参数类型：",
+    "系统内置：",
+    "是",
+    "否",
+    "可视化选择",
+    "[看大图]",
+    "'>[看视频]",
+    "手动录入"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "",
+    "annotations": []
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_资源配置中心",
+  "key": "admin_ai_resource_center",
+  "url": "",
+  "isMenu": true,
+  "openType": 1
+ },
+ {
+  "path": "AI_数智化中心 / AI_资源配置中心 / LLM大模型配置",
+  "key": "admin_ai_llm",
+  "url": "/admin/ai/llm",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AILlmAdminController",
+  "page": {
+   "title": "LLM资源管理",
+   "search": [
+    "输入关键字搜索",
+    "供应商",
+    "私有化部署",
+    "Think可控",
+    "用途场景",
+    "状态"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "模型资源名称",
+    "编码",
+    "大模型供应商",
+    "部署规格",
+    "模型用途场景",
+    "是否私有化部署",
+    "思考模式可控",
+    "API_KEY",
+    "API_URL",
+    "API_SECRET",
+    "max_tokens(默认)",
+    "temperature:温度(默认)",
+    "top_p:多样性(默认)",
+    "top_k:采样(默认)",
+    "频率限制",
+    "备注",
+    "测试",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "点击执行LLM大模型资源测试",
+    "编辑LLM大模型资源"
+   ],
+   "formFields": [
+    "大模型资源名称",
+    "编码",
+    "大模型供应商",
+    "部署规格",
+    "API_URL",
+    "API_KEY",
+    "API_SECRET",
+    "max_tokens(默认)",
+    "temperature(默认)",
+    "top_P(默认)",
+    "tok_K(默认)",
+    "频率限制",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "enableList",
+    "doc": "LLM资源管理 / public class AILlmAdminController extends JBoltBaseController { privat",
+    "annotations": [
+     "@CheckPermission({PermissionKey.ADMIN_AI_LLM,PermissionKey.ADMIN_AI_APP})"
+    ]
+   },
+   {
+    "action": "index",
+    "doc": "首页",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "testById",
+    "doc": "列表里测试",
+    "annotations": []
+   },
+   {
+    "action": "formTest",
+    "doc": "表单里测试数据是否配置正常",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "doc": "得到select radio checkbox专用options数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_资源配置中心 / Embedding模型配置",
+  "key": "admin_ai_embedding",
+  "url": "/admin/ai/embedding",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiEmbeddingAdminController",
+  "page": {
+   "title": "Embedding资源管理",
+   "search": [
+    "输入关键字搜索",
+    "大模型类型",
+    "是否私有化部署",
+    "是否启用"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "模型资源名称",
+    "编码",
+    "模型供应商",
+    "部署规格",
+    "是否私有化部署",
+    "API_KEY",
+    "API_URL",
+    "API_SECRET",
+    "维度",
+    "频率限制",
+    "备注",
+    "测试",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "点击执行Embedding模型资源测试",
+    "编辑Embedding模型资源"
+   ],
+   "formFields": [
+    "Embedding模型资源名称",
+    "编码",
+    "Embedding模型供应商",
+    "部署规格",
+    "API_URL",
+    "API_KEY",
+    "API_SECRET",
+    "维度",
+    "频率限制",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "Embedding模型资源配置 / public class AiEmbeddingAdminController extends JBoltBaseContr",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "getEmbeddingModelDimension",
+    "doc": "获取Embedding模型维度",
+    "annotations": []
+   },
+   {
+    "action": "formTest",
+    "doc": "表单里测试数据是否配置正常",
+    "annotations": []
+   },
+   {
+    "action": "testById",
+    "doc": "列表里测试",
+    "annotations": []
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsLocal",
+    "doc": "切换is_local",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "doc": "得到select radio checkbox专用options数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ },
+ {
+  "path": "AI_数智化中心 / AI_资源配置中心 / 向量数据库配置",
+  "key": "admin_ai_vdb",
+  "url": "/admin/ai/vdb",
+  "isMenu": true,
+  "openType": 1,
+  "controller": "AiVdbAdminController",
+  "page": {
+   "title": "向量数据库资源配置",
+   "search": [
+    "输入关键字搜索",
+    "类型",
+    "是否启用"
+   ],
+   "toolbar": [
+    "查询",
+    "重置"
+   ],
+   "columns": [
+    "序号",
+    "名称",
+    "编码",
+    "类型",
+    "Embeding模型",
+    "集合列表",
+    "URL",
+    "用户名",
+    "密码",
+    "数据库名",
+    "创建时间",
+    "更新时间",
+    "备注",
+    "测试",
+    "系统Main资源",
+    "是否启用",
+    "操作"
+   ],
+   "rowActions": [
+    "查看集合列表",
+    "点击执行向量数据库资源测试",
+    "编辑向量数据库资源配置"
+   ],
+   "formFields": [
+    "名称",
+    "编码",
+    "类型",
+    "URL",
+    "用户名",
+    "密码",
+    "数据库名",
+    "Embeding模型",
+    "备注"
+   ]
+  },
+  "actions": [
+   {
+    "action": "index",
+    "doc": "向量数据库资源配置 / public class AiVdbAdminController extends JBoltBaseController { priv",
+    "annotations": []
+   },
+   {
+    "action": "collections",
+    "doc": "collections",
+    "annotations": []
+   },
+   {
+    "action": "listCollections",
+    "doc": "获取集合数据",
+    "annotations": []
+   },
+   {
+    "action": "checkAndInitBuildInCollections",
+    "doc": "",
+    "annotations": []
+   },
+   {
+    "action": "datas",
+    "doc": "数据源",
+    "annotations": []
+   },
+   {
+    "action": "formTest",
+    "doc": "表单里测试数据是否配置正常",
+    "annotations": []
+   },
+   {
+    "action": "testById",
+    "doc": "列表里测试",
+    "annotations": []
+   },
+   {
+    "action": "add",
+    "doc": "新增",
+    "annotations": []
+   },
+   {
+    "action": "save",
+    "doc": "保存",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "edit",
+    "doc": "编辑",
+    "annotations": []
+   },
+   {
+    "action": "update",
+    "doc": "更新",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "delete",
+    "doc": "删除",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleEnable",
+    "doc": "切换启用状态",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "toggleIsMain",
+    "doc": "切换isMain",
+    "annotations": [
+     "@Before(Tx.class)"
+    ]
+   },
+   {
+    "action": "autocompleteDatas",
+    "doc": "autocomplete组件专用数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   },
+   {
+    "action": "options",
+    "doc": "得到select radio checkbox专用options数据",
+    "annotations": [
+     "@UnCheck"
+    ]
+   }
+  ]
+ }
+]

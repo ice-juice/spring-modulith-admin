@@ -1,0 +1,7645 @@
+[
+ {
+  "group": "platform",
+  "name": "jb_application",
+  "comment": "API应用中心的应用APP",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "应用名称"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "应用简介"
+   },
+   {
+    "name": "app_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "应用ID"
+   },
+   {
+    "name": "app_secret",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "应用密钥"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建用户ID"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新用户ID"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "app类型"
+   },
+   {
+    "name": "need_check_sign",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否需要接口校验SIGN"
+   },
+   {
+    "name": "is_inner",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否需要接口校验SIGN"
+   },
+   {
+    "name": "link_target_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联目标ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_dictionary",
+  "comment": "字典表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "字典ID主键"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "名称"
+   },
+   {
+    "name": "type_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "字典类型ID"
+   },
+   {
+    "name": "pid",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "父类ID"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "排序"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "编号编码"
+   },
+   {
+    "name": "type_key",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "字典类型KEY"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用"
+   },
+   {
+    "name": "is_build_in",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否内置"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_dictionary_type",
+  "comment": "字典类型",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "mode_level",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "模式层级"
+   },
+   {
+    "name": "type_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "标识KEY"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用"
+   },
+   {
+    "name": "is_build_in",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否内置"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_global_config",
+  "comment": "全局配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "config_key",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "配置KEY"
+   },
+   {
+    "name": "config_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "配置项值"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建用户ID"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新用户ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "value_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "值类型"
+   },
+   {
+    "name": "type_key",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "类型key"
+   },
+   {
+    "name": "type_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "类型ID"
+   },
+   {
+    "name": "built_in",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "0",
+    "comment": "内置参数"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_global_config_type",
+  "comment": "全局参数类型分组",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "类型名称"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "序号"
+   },
+   {
+    "name": "type_key",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "类型KEY"
+   },
+   {
+    "name": "built_in",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "0",
+    "comment": "内置"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_jbolt_file",
+  "comment": "文件库",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "local_path",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "保存物理地址"
+   },
+   {
+    "name": "local_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "本地可访问URL地址"
+   },
+   {
+    "name": "cdn_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "外部CDN地址"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户ID"
+   },
+   {
+    "name": "file_name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "文件名"
+   },
+   {
+    "name": "file_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "文件类型 图片 附件 视频 音频"
+   },
+   {
+    "name": "file_size",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "文件大小"
+   },
+   {
+    "name": "file_suffix",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "后缀名"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_login_log",
+  "comment": "登录日志",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户ID"
+   },
+   {
+    "name": "username",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户名"
+   },
+   {
+    "name": "login_ip",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "IP地址"
+   },
+   {
+    "name": "login_time",
+    "type": "datetime(0)",
+    "notNull": true,
+    "default": null,
+    "comment": "登录时间"
+   },
+   {
+    "name": "login_state",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "登录状态"
+   },
+   {
+    "name": "is_browser",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否是浏览器访问"
+   },
+   {
+    "name": "browser_version",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "浏览器版本号"
+   },
+   {
+    "name": "browser_name",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "浏览器"
+   },
+   {
+    "name": "os_name",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "操作系统"
+   },
+   {
+    "name": "login_city",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录城市"
+   },
+   {
+    "name": "login_address",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录位置详情"
+   },
+   {
+    "name": "login_city_code",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录城市代码"
+   },
+   {
+    "name": "login_province",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录省份"
+   },
+   {
+    "name": "login_country",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录国家"
+   },
+   {
+    "name": "is_mobile",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否移动端"
+   },
+   {
+    "name": "os_platform_name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "平台名称"
+   },
+   {
+    "name": "browser_engine_name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "浏览器引擎名"
+   },
+   {
+    "name": "browser_engine_version",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "浏览器引擎版本"
+   },
+   {
+    "name": "login_address_latitude",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录地横坐标"
+   },
+   {
+    "name": "login_address_longitude",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录地纵坐标"
+   },
+   {
+    "name": "is_remote_login",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为异地异常登录"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "记录创建时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_online_user",
+  "comment": "在线用户",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "session_id",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "会话ID"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户ID"
+   },
+   {
+    "name": "login_log_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "登录日志ID"
+   },
+   {
+    "name": "login_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "expiration_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "过期时间"
+   },
+   {
+    "name": "screen_locked",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否锁屏"
+   },
+   {
+    "name": "online_state",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "在线状态"
+   },
+   {
+    "name": "offline_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "离线时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_permission",
+  "comment": "function定义",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": ""
+   },
+   {
+    "name": "pid",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": "0",
+    "comment": ""
+   },
+   {
+    "name": "url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "地址"
+   },
+   {
+    "name": "icons",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "图标"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "排序"
+   },
+   {
+    "name": "permission_level",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "层级"
+   },
+   {
+    "name": "permission_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "权限资源KEY"
+   },
+   {
+    "name": "is_menu",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否是菜单"
+   },
+   {
+    "name": "is_target_blank",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否新窗口打开"
+   },
+   {
+    "name": "is_system_admin_default",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否系统超级管理员默认拥有的权限"
+   },
+   {
+    "name": "open_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "1",
+    "comment": "打开类型 1 默认 2 iframe 3 dialog"
+   },
+   {
+    "name": "open_option",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "组件属性json"
+   },
+   {
+    "name": "of_module",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "哪个模块"
+   },
+   {
+    "name": "of_module_link",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "具体指向关联"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_remote_login_log",
+  "comment": "异地登录日志记录",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "last_login_country",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最近一次登录国家"
+   },
+   {
+    "name": "last_login_province",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最近一次登录省份"
+   },
+   {
+    "name": "last_login_city",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最近一次登录城市"
+   },
+   {
+    "name": "last_login_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最近一次登录时间"
+   },
+   {
+    "name": "login_country",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "新登录国家"
+   },
+   {
+    "name": "login_province",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "新登录省份"
+   },
+   {
+    "name": "login_city",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "新登录城市"
+   },
+   {
+    "name": "login_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "新登录时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录用户ID"
+   },
+   {
+    "name": "username",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "登录用户名"
+   },
+   {
+    "name": "is_new",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为最新一次"
+   },
+   {
+    "name": "last_login_ip",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最近一次登录IP"
+   },
+   {
+    "name": "login_ip",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "新登录IP"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "记录创建时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_role",
+  "comment": "角色表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "pid",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "0",
+    "comment": "父级角色ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_role_permission",
+  "comment": "角色功能列表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "role_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "角色ID"
+   },
+   {
+    "name": "permission_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "权限ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_system_log",
+  "comment": "系统操作日志表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "标题"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "操作类型 删除 更新 新增"
+   },
+   {
+    "name": "url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "连接对象详情地址"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "操作人ID"
+   },
+   {
+    "name": "user_name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "操作人姓名"
+   },
+   {
+    "name": "target_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "操作对象类型"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "记录创建时间"
+   },
+   {
+    "name": "target_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "操作对象ID"
+   },
+   {
+    "name": "open_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "打开类型URL还是Dialog"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_dept",
+  "comment": "组织机构",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "full_name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "全称"
+   },
+   {
+    "name": "pid",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "父级ID"
+   },
+   {
+    "name": "dept_path",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "部门路径"
+   },
+   {
+    "name": "type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "类型"
+   },
+   {
+    "name": "leader",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "负责人"
+   },
+   {
+    "name": "phone",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "联系电话"
+   },
+   {
+    "name": "email",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "电子邮箱"
+   },
+   {
+    "name": "address",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "联系地址"
+   },
+   {
+    "name": "zipcode",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "邮政编码"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注信息"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "顺序"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "机构代码"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "启用/禁用"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后更新时间"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_post",
+  "comment": "岗位",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "岗位名称"
+   },
+   {
+    "name": "type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "岗位类型"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "顺序"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注信息"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "1",
+    "comment": "启用/禁用"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_user",
+  "comment": "用户登录账户表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "username",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户名"
+   },
+   {
+    "name": "password",
+    "type": "varchar(128)",
+    "notNull": true,
+    "default": null,
+    "comment": "密码"
+   },
+   {
+    "name": "name",
+    "type": "varchar(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "姓名"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "工号"
+   },
+   {
+    "name": "avatar",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "头像"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "记录创建时间"
+   },
+   {
+    "name": "phone",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "手机号"
+   },
+   {
+    "name": "email",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "电子邮箱"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "启用"
+   },
+   {
+    "name": "sex",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "性别"
+   },
+   {
+    "name": "age",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "年龄"
+   },
+   {
+    "name": "pinyin",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "拼音码"
+   },
+   {
+    "name": "roles",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "角色 一对多"
+   },
+   {
+    "name": "is_system_admin",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否系统超级管理员"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建人"
+   },
+   {
+    "name": "pwd_salt",
+    "type": "varchar(128)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "密码盐值"
+   },
+   {
+    "name": "login_ip",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后登录IP"
+   },
+   {
+    "name": "login_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后登录时间"
+   },
+   {
+    "name": "login_city",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后登录城市"
+   },
+   {
+    "name": "login_province",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后登录省份"
+   },
+   {
+    "name": "login_country",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后登录国家"
+   },
+   {
+    "name": "is_remote_login",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否异地登录"
+   },
+   {
+    "name": "dept_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "部门ID"
+   },
+   {
+    "name": "dept_path",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "部门路径"
+   },
+   {
+    "name": "posts",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "岗位IDS"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人ID"
+   },
+   {
+    "name": "last_pwd_update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最近一次密码修改时间"
+   },
+   {
+    "name": "of_module",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "哪个模块"
+   },
+   {
+    "name": "of_module_link",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "具体指向关联"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_user_config",
+  "comment": "用户系统样式自定义设置表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "配置名"
+   },
+   {
+    "name": "config_key",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "配置KEY"
+   },
+   {
+    "name": "config_value",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "配置值"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户ID"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "value_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "取值类型"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_article",
+  "comment": "微信图文信息",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "content",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户 ID"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新用户 ID"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(120)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "文章摘要"
+   },
+   {
+    "name": "poster",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "view_count",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "阅读数"
+   },
+   {
+    "name": "media_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信素材 ID"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "图文链接地址"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "本地图文 公众号图文素材 外部图文"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_autoreply",
+  "comment": "微信公众号自动回复规则",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "类型 关注回复 无内容时回复 关键词回复"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "规则名称"
+   },
+   {
+    "name": "reply_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "回复类型 全部还是随机一条"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "记录创建时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户 ID"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_config",
+  "comment": "微信公众号配置表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "config_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "配置key"
+   },
+   {
+    "name": "config_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "配置值"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "配置项名称"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "配置类型"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_keywords",
+  "comment": "微信关键词回复中的关键词定义",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "模糊 全匹配"
+   },
+   {
+    "name": "auto_reply_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "回复规则ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_media",
+  "comment": "微信公众平台素材库同步管理",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(500)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "标题"
+   },
+   {
+    "name": "digest",
+    "type": "text",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "描述"
+   },
+   {
+    "name": "type",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "类型 image video voice news"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "media_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信素材ID"
+   },
+   {
+    "name": "thumb_media_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "封面图ID"
+   },
+   {
+    "name": "content_source_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "原文地址"
+   },
+   {
+    "name": "url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "访问地址"
+   },
+   {
+    "name": "author",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "图文作者"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "server_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "存服务器URL"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_menu",
+  "comment": "微信菜单",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "pid",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "0",
+    "comment": ""
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "排序"
+   },
+   {
+    "name": "value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": ""
+   },
+   {
+    "name": "app_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信小程序APPID"
+   },
+   {
+    "name": "page_path",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信小程序页面地址"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_mpinfo",
+  "comment": "微信公众号与小程序",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "平台名称"
+   },
+   {
+    "name": "logo",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "头像LOGO"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户ID"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人ID"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "简介"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "类型 订阅号、服务号、小程序、企业号"
+   },
+   {
+    "name": "is_authenticated",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否已认证"
+   },
+   {
+    "name": "subject_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "申请认证主体的类型 个人还是企业"
+   },
+   {
+    "name": "wechat_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信号"
+   },
+   {
+    "name": "qrcode",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "二维码"
+   },
+   {
+    "name": "link_app_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联应用ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_reply_content",
+  "comment": "自动回复内容",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": "0",
+    "comment": "类型 图文 文字 图片 音频 视频"
+   },
+   {
+    "name": "title",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "标题"
+   },
+   {
+    "name": "content",
+    "type": "mediumtext",
+    "notNull": false,
+    "default": null,
+    "comment": "内容"
+   },
+   {
+    "name": "poster",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "封面"
+   },
+   {
+    "name": "url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "地址"
+   },
+   {
+    "name": "auto_reply_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "回复规则ID"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户 ID"
+   },
+   {
+    "name": "media_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联数据"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信 ID"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "排序"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_wechat_user",
+  "comment": "微信用户信息_模板表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "nickname",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "用户昵称"
+   },
+   {
+    "name": "open_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "openId"
+   },
+   {
+    "name": "union_id",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "unionID"
+   },
+   {
+    "name": "sex",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "性别 1男 2女 0 未知"
+   },
+   {
+    "name": "language",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "语言"
+   },
+   {
+    "name": "subscribe",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否已关注"
+   },
+   {
+    "name": "country",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "国家"
+   },
+   {
+    "name": "province",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "省"
+   },
+   {
+    "name": "city",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "城市"
+   },
+   {
+    "name": "head_img_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "头像"
+   },
+   {
+    "name": "subscribe_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关注时间"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "group_id",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "分组"
+   },
+   {
+    "name": "tag_ids",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "标签"
+   },
+   {
+    "name": "subscribe_scene",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关注渠道"
+   },
+   {
+    "name": "qr_scene",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "二维码场景-开发者自定义"
+   },
+   {
+    "name": "qr_scene_str",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "二维码扫码场景描述-开发者自定义"
+   },
+   {
+    "name": "realname",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "真实姓名"
+   },
+   {
+    "name": "phone",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "手机号"
+   },
+   {
+    "name": "phone_country_code",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "手机号国家代码"
+   },
+   {
+    "name": "check_code",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "手机验证码"
+   },
+   {
+    "name": "is_checked",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否已验证"
+   },
+   {
+    "name": "source",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "来源 小程序还是公众平台"
+   },
+   {
+    "name": "session_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "小程序登录SessionKey"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "禁用访问"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建时间"
+   },
+   {
+    "name": "checked_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "验证绑定手机号时间"
+   },
+   {
+    "name": "mp_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "所属公众平台ID"
+   },
+   {
+    "name": "weixin",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "微信号"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "last_login_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后登录时间"
+   },
+   {
+    "name": "first_auth_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "首次授权时间"
+   },
+   {
+    "name": "last_auth_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "最后一次更新授权时间"
+   },
+   {
+    "name": "first_login_time",
+    "type": "datetime(0)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "首次登录时间"
+   },
+   {
+    "name": "bind_user",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "绑定其他用户信息"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_topnav",
+  "comment": "顶部导航",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "名称"
+   },
+   {
+    "name": "icon",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "图标"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "排序"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_topnav_menu",
+  "comment": "顶部菜单对应左侧一级导航中间表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "topnav_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "顶部导航ID"
+   },
+   {
+    "name": "permission_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "菜单资源ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_todo",
+  "comment": "待办事项",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "标题"
+   },
+   {
+    "name": "content",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "详情内容"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "所属用户"
+   },
+   {
+    "name": "state",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "状态"
+   },
+   {
+    "name": "specified_finish_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "规定完成时间"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "类型 链接还是内容 还是都有"
+   },
+   {
+    "name": "url",
+    "type": "varchar(512)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "链接"
+   },
+   {
+    "name": "priority_level",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "优先级"
+   },
+   {
+    "name": "real_finish_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "完成时间"
+   },
+   {
+    "name": "cancel_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "取消时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人ID"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人ID"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "source_msg_id",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "第三方系统消息主键"
+   },
+   {
+    "name": "source_request_id",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "第三方系统流程主键"
+   },
+   {
+    "name": "source_url",
+    "type": "varchar(512)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "第三方url"
+   },
+   {
+    "name": "send_user_key",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "发送人第三方系统标识"
+   },
+   {
+    "name": "receive_user_key",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "接收人第三方系统标识"
+   },
+   {
+    "name": "source_sys",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "来源系统"
+   },
+   {
+    "name": "is_readed",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否已读"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_sys_notice",
+  "comment": "系统通知",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "标题"
+   },
+   {
+    "name": "content",
+    "type": "text",
+    "notNull": true,
+    "default": null,
+    "comment": "消息内容"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "通知类型"
+   },
+   {
+    "name": "priority_level",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "优先级"
+   },
+   {
+    "name": "read_count",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "已读人数"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建人"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人"
+   },
+   {
+    "name": "receiver_type",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "接收人类型"
+   },
+   {
+    "name": "receiver_value",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "接收人值"
+   },
+   {
+    "name": "files",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "附件"
+   },
+   {
+    "name": "del_flag",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "0",
+    "comment": "删除标志"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_sys_notice_reader",
+  "comment": "通知阅读用户关系表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "sys_notice_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "通知ID"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户ID"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_private_message",
+  "comment": "内部私信",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "content",
+    "type": "text",
+    "notNull": true,
+    "default": null,
+    "comment": "私信内容"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "发送时间"
+   },
+   {
+    "name": "from_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "发信人"
+   },
+   {
+    "name": "to_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "收信人"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_hiprint_tpl",
+  "comment": "hiprint模版",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "模板名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "模板编码"
+   },
+   {
+    "name": "content",
+    "type": "text",
+    "notNull": true,
+    "default": null,
+    "comment": "模板内容"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   },
+   {
+    "name": "test_api_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "测试API地址"
+   },
+   {
+    "name": "test_json_data",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "测试JSON数据"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_qiniu",
+  "comment": "七牛账号表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "账号"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "编号SN"
+   },
+   {
+    "name": "ak",
+    "type": "varchar(64)",
+    "notNull": true,
+    "default": null,
+    "comment": "AK"
+   },
+   {
+    "name": "sk",
+    "type": "varchar(64)",
+    "notNull": true,
+    "default": null,
+    "comment": "SK"
+   },
+   {
+    "name": "type",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "账号类型"
+   },
+   {
+    "name": "bucket_count",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "0",
+    "comment": "空间个数"
+   },
+   {
+    "name": "is_default",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否默认"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_qiniu_bucket",
+  "comment": "七牛bucket配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(64)",
+    "notNull": true,
+    "default": null,
+    "comment": "bucket名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "qiniu_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "所属七牛账号"
+   },
+   {
+    "name": "domain_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "绑定域名"
+   },
+   {
+    "name": "callback_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "回调地址"
+   },
+   {
+    "name": "callback_body",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "回调body定义"
+   },
+   {
+    "name": "callback_body_type",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "回调Body类型"
+   },
+   {
+    "name": "expires",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "有效期(秒)"
+   },
+   {
+    "name": "is_default",
+    "type": "char(1)",
+    "notNull": true,
+    "default": null,
+    "comment": "是否默认"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": null,
+    "comment": "是否启用"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "region",
+    "type": "varchar(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "地区"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_datasource_filter",
+  "comment": "数据源过滤配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "config_name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "配置名称"
+   },
+   {
+    "name": "table_name_filter",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "不需要生成的表名"
+   },
+   {
+    "name": "table_name_contains",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "需要排除包含字符"
+   },
+   {
+    "name": "table_name_patterns",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "需要排除符合正则的"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_code_gen",
+  "comment": "代码生成配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "pid",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "0",
+    "comment": "父ID"
+   },
+   {
+    "name": "project_path",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "项目根路径"
+   },
+   {
+    "name": "is_sub_table",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为子表"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "子表的顺序"
+   },
+   {
+    "name": "type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "模块类型"
+   },
+   {
+    "name": "main_table_name",
+    "type": "varchar(150)",
+    "notNull": true,
+    "default": null,
+    "comment": "主表名"
+   },
+   {
+    "name": "datasource_name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "数据源"
+   },
+   {
+    "name": "datasource_remark",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "数据源说明"
+   },
+   {
+    "name": "database_type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "数据库类型"
+   },
+   {
+    "name": "is_main_datasource",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为主数据源"
+   },
+   {
+    "name": "main_table_pkey",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "id",
+    "comment": "主表主键"
+   },
+   {
+    "name": "table_remove_prefix",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "数据表删除前缀"
+   },
+   {
+    "name": "main_table_idgenmode",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "主表主键策略"
+   },
+   {
+    "name": "version_sn",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "版本序号"
+   },
+   {
+    "name": "main_table_remark",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表备注"
+   },
+   {
+    "name": "author",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "功能作者"
+   },
+   {
+    "name": "style",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "样式类型"
+   },
+   {
+    "name": "is_crud",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否CRUD"
+   },
+   {
+    "name": "is_editable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否可编辑表格"
+   },
+   {
+    "name": "is_tree_table",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为树表"
+   },
+   {
+    "name": "is_check_can_delete",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "检测是否可以刪除数据"
+   },
+   {
+    "name": "is_check_can_toggle",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "检测是否可以toggle数据"
+   },
+   {
+    "name": "is_check_can_recover",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "检测是否可以recover数据"
+   },
+   {
+    "name": "editable_submit_type",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "可编辑提交方式"
+   },
+   {
+    "name": "state",
+    "type": "int(11)",
+    "notNull": true,
+    "default": null,
+    "comment": "生成状态"
+   },
+   {
+    "name": "sub_table_count",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "子表数"
+   },
+   {
+    "name": "topnav_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "顶部导航"
+   },
+   {
+    "name": "permission_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联权限"
+   },
+   {
+    "name": "roles",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "可访问角色"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人ID"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人ID"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "gen_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建后执行生成人ID"
+   },
+   {
+    "name": "gen_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "创建后执行生成时间"
+   },
+   {
+    "name": "model_name",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "modelName"
+   },
+   {
+    "name": "base_model_name",
+    "type": "varchar(64)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "baseModelName"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "is_auto_cache",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用autoCache"
+   },
+   {
+    "name": "is_id_cache",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用idCache"
+   },
+   {
+    "name": "is_key_cache",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用keyCache"
+   },
+   {
+    "name": "key_cache_column",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "keyCache指定Column"
+   },
+   {
+    "name": "key_cache_bind_column",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "keyCache指定bindColumn"
+   },
+   {
+    "name": "controller_name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "Controller Name"
+   },
+   {
+    "name": "controller_path",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "controller path"
+   },
+   {
+    "name": "main_java_package",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "java主包pacakge"
+   },
+   {
+    "name": "service_name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "Service Name"
+   },
+   {
+    "name": "controller_package",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "Controller代码包"
+   },
+   {
+    "name": "service_package",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "Service代码包"
+   },
+   {
+    "name": "index_html_page_icon",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "index.html标题icon"
+   },
+   {
+    "name": "index_html_page_title",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "index.html页面标题"
+   },
+   {
+    "name": "model_package",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "model 所属package"
+   },
+   {
+    "name": "html_view_path",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "html view path"
+   },
+   {
+    "name": "routes_scan_package",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "路由扫描包"
+   },
+   {
+    "name": "is_gen_model",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否需要生成Model"
+   },
+   {
+    "name": "is_table_use_record",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "表格是否使用record"
+   },
+   {
+    "name": "is_table_record_camel_case",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "表格列名用驼峰的attrName"
+   },
+   {
+    "name": "is_import_excel",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否支持Excel导入"
+   },
+   {
+    "name": "is_export_excel",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否支持Excel导出"
+   },
+   {
+    "name": "is_export_excel_by_checked_ids",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用 导出选中行功能"
+   },
+   {
+    "name": "is_export_excel_by_form",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用导出表单查询结果功能"
+   },
+   {
+    "name": "is_export_excel_all",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用导出所有数据"
+   },
+   {
+    "name": "is_copy_to_excel",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否支持表格复制到excel"
+   },
+   {
+    "name": "is_copy_from_excel",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否支持从excel复制到可编辑表格"
+   },
+   {
+    "name": "is_toolbar",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否使用toolbar模式"
+   },
+   {
+    "name": "is_headbox",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否使用headbox"
+   },
+   {
+    "name": "is_leftbox",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否使用leftBox"
+   },
+   {
+    "name": "is_rightbox",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否使用rightBox"
+   },
+   {
+    "name": "is_footbox",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否使用footbox"
+   },
+   {
+    "name": "is_paginate",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否分页查询"
+   },
+   {
+    "name": "is_table_sortable_move",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否开启移动排序功能"
+   },
+   {
+    "name": "leftbox_width",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "220",
+    "comment": "leftbox width"
+   },
+   {
+    "name": "rightbox_width",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "220",
+    "comment": "right width"
+   },
+   {
+    "name": "is_headbox_height_auto",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "headbox高度自动"
+   },
+   {
+    "name": "is_footbox_height_auto",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "footbox高度自动"
+   },
+   {
+    "name": "headbox_height",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "60",
+    "comment": "headbox height"
+   },
+   {
+    "name": "footbox_height",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "220",
+    "comment": "footbox height"
+   },
+   {
+    "name": "is_leftbox_footer",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用leftbox的footer"
+   },
+   {
+    "name": "is_rightbox_footer",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用rightbox的footer"
+   },
+   {
+    "name": "leftbox_footer_button_count",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "leftbox footer button count"
+   },
+   {
+    "name": "rightbox_footer_button_count",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "rightbox footer button count"
+   },
+   {
+    "name": "leftbox_title",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "leftbox",
+    "comment": "leftbox title"
+   },
+   {
+    "name": "leftbox_icon",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "fa fa-cog",
+    "comment": "leftbox icon"
+   },
+   {
+    "name": "rightbox_title",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "rightbox",
+    "comment": "rightbox title"
+   },
+   {
+    "name": "rightbox_icon",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "fa fa-cog",
+    "comment": "rightbox icon"
+   },
+   {
+    "name": "is_show_optcol_sort",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否开启操作列排序功能"
+   },
+   {
+    "name": "is_show_optcol_edit",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否开启操作列显示编辑按钮"
+   },
+   {
+    "name": "is_show_optcol_del",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否开启操作列显示删除按钮"
+   },
+   {
+    "name": "is_show_optcol",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示操作列"
+   },
+   {
+    "name": "is_show_optcol_recover",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否显示操作列的恢复按钮"
+   },
+   {
+    "name": "default_sort_column",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "默认排序字段"
+   },
+   {
+    "name": "default_sort_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "默认排序方式"
+   },
+   {
+    "name": "table_optcol_width",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "80",
+    "comment": "长度"
+   },
+   {
+    "name": "is_table_column_resize",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格是否开启调整列宽功能"
+   },
+   {
+    "name": "is_table_prepend_column",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否增加填充列"
+   },
+   {
+    "name": "table_prepend_column_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格chechbox radio配置类型"
+   },
+   {
+    "name": "table_prepend_column_index",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "填充列到第几列"
+   },
+   {
+    "name": "is_table_prepend_column_linkparent",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "填充列linkparent"
+   },
+   {
+    "name": "is_table_prepend_column_linkson",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "填充列linkson"
+   },
+   {
+    "name": "table_prepend_column_rowspan",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "填充列表头是几行rowspan"
+   },
+   {
+    "name": "is_table_prepend_column_click_active",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否点击行就切换列填充组件选中状态"
+   },
+   {
+    "name": "table_fixed_column_left",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "左侧固定列"
+   },
+   {
+    "name": "table_fixed_column_right",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "右侧固定列"
+   },
+   {
+    "name": "table_pagesize_options",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "分页pagesize自定义设置"
+   },
+   {
+    "name": "table_width_assign",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格宽度自定义值"
+   },
+   {
+    "name": "table_width",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": "fill",
+    "comment": "表格宽度"
+   },
+   {
+    "name": "table_height_assign",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格高度自定义值"
+   },
+   {
+    "name": "table_height",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": "fill",
+    "comment": "表格高度"
+   },
+   {
+    "name": "table_default_sort_column",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "id",
+    "comment": "表格默认排序字段"
+   },
+   {
+    "name": "table_default_sort_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "desc",
+    "comment": "表格默认排序类型"
+   },
+   {
+    "name": "is_keywords_search",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否开启关键词查询"
+   },
+   {
+    "name": "keywords_match_columns",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关键词匹配列"
+   },
+   {
+    "name": "toolbar_extra_button_size",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "toolbar 额外预留按钮个数"
+   },
+   {
+    "name": "is_deleted",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "删除标识"
+   },
+   {
+    "name": "form_column_size",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表单分几列"
+   },
+   {
+    "name": "is_form_group_row",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表单form-group风格 左右还是上下"
+   },
+   {
+    "name": "form_column_proportion",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单分多列 比例值"
+   },
+   {
+    "name": "form_column_direction",
+    "type": "varchar(10)",
+    "notNull": false,
+    "default": "v",
+    "comment": "表单列排布方向 横向还是纵向"
+   },
+   {
+    "name": "form_group_proportion",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "2:10",
+    "comment": "form-group row状态下的比例"
+   },
+   {
+    "name": "is_view_use_path",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用Path注解路由"
+   },
+   {
+    "name": "view_layout",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "使用布局器"
+   },
+   {
+    "name": "is_need_new_route",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否需要创建新的路由配置类"
+   },
+   {
+    "name": "routes_class_name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "哪个路由配置类"
+   },
+   {
+    "name": "is_need_admin_interceptor",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否需要后台管理权限拦截器"
+   },
+   {
+    "name": "extra_interceptor_class_name",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "额外配置的拦截器"
+   },
+   {
+    "name": "is_table_multi_conditions_mode",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "表格查询条件是否启用高级多条件模式"
+   },
+   {
+    "name": "is_table_multi_conditions_default_hide",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格查询高级模式 是否隐藏条件 默认隐藏"
+   },
+   {
+    "name": "is_table_multi_conditions_btn_show_title",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格高级查询条件切换按钮是否显示标题"
+   },
+   {
+    "name": "is_toolbar_add_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格toolbar上启用添加按钮"
+   },
+   {
+    "name": "is_toolbar_edit_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格toolbar上启用编辑按钮"
+   },
+   {
+    "name": "is_toolbar_del_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格toolbar上启用删除按钮"
+   },
+   {
+    "name": "is_toolbar_recover_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "表格toolbar上启用恢复按钮 当有is_deleted时"
+   },
+   {
+    "name": "is_toolbar_refresh_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格tolbar上启用刷新按钮"
+   },
+   {
+    "name": "is_page_title_add_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用pageTitle上的添加按钮"
+   },
+   {
+    "name": "is_page_title_refresh_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否启用pageTitle上的刷新按钮"
+   },
+   {
+    "name": "is_page_title_init_rank_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用pageTitle上的初始化顺序按钮"
+   },
+   {
+    "name": "is_project_system_log",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用systemLog日志"
+   },
+   {
+    "name": "project_system_log_target_type_text",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "系统日志text"
+   },
+   {
+    "name": "project_system_log_target_type_value",
+    "type": "varchar(10)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "系统日志value值"
+   },
+   {
+    "name": "project_system_log_target_type_key_name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "系统日志KeyName"
+   },
+   {
+    "name": "form_dialog_area",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "980,700",
+    "comment": "form表单的dialog的area属性 长宽"
+   },
+   {
+    "name": "is_base_model_gen_col_constant",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否在baseModel中生成字段常量"
+   },
+   {
+    "name": "is_base_model_gen_col_constant_to_uppercase",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否在baseModel中生成的字段常量 名称转大写"
+   },
+   {
+    "name": "thead_bg_color",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表头背景色"
+   },
+   {
+    "name": "thead_fr_color",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表头文字颜色"
+   },
+   {
+    "name": "is_table_row_click_active",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否表格选中定色"
+   },
+   {
+    "name": "active_tr_bg_color",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "选中行背景色"
+   },
+   {
+    "name": "active_tr_fr_color",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "选中行文字颜色"
+   },
+   {
+    "name": "is_gen_cache_util_class",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成缓存工具类"
+   },
+   {
+    "name": "cache_class_name",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "缓存工具类名"
+   },
+   {
+    "name": "cache_class_package",
+    "type": "varchar(200)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "缓存工具类包"
+   },
+   {
+    "name": "is_cache_get_name",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成getName"
+   },
+   {
+    "name": "is_cache_get_sn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成getSn"
+   },
+   {
+    "name": "is_cache_get_name_by_sn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成getNameBySn(sn)"
+   },
+   {
+    "name": "is_cache_get_by_sn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成getBySn(sn)"
+   },
+   {
+    "name": "model_title",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "模型名称"
+   },
+   {
+    "name": "is_gen_options_action",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成options接口"
+   },
+   {
+    "name": "is_return_option_type",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "1",
+    "comment": "是否返回Option类型"
+   },
+   {
+    "name": "options_text_column",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "name",
+    "comment": "options接口text用哪一列"
+   },
+   {
+    "name": "options_value_column",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "id",
+    "comment": "options接口value用哪一列"
+   },
+   {
+    "name": "is_gen_autocomplete_action",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否生成Autocomplete接口"
+   },
+   {
+    "name": "autocomplete_limit",
+    "type": "int(10)",
+    "notNull": true,
+    "default": "20",
+    "comment": "autocomplete接口limit"
+   },
+   {
+    "name": "autocomplete_match_columns",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "autocomplete接口匹配字段"
+   },
+   {
+    "name": "table_opt_sort_column",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格排序操作用哪个column"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_code_gen_model_attr",
+  "comment": "CodeGen模型详细设计",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "code_gen_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "所属codeGen"
+   },
+   {
+    "name": "col_name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "列名"
+   },
+   {
+    "name": "attr_name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "属性名"
+   },
+   {
+    "name": "java_type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "属性类型"
+   },
+   {
+    "name": "attr_length",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "20",
+    "comment": "属性长度"
+   },
+   {
+    "name": "attr_fixed",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "0",
+    "comment": "属性小数点"
+   },
+   {
+    "name": "attr_default_value",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "默认值"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "数据表内默认顺序"
+   },
+   {
+    "name": "sort_rank_intable",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表格中的排序"
+   },
+   {
+    "name": "sort_rank_inform",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "表单中的排序"
+   },
+   {
+    "name": "sort_rank_insearch",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "查询条件中的顺序"
+   },
+   {
+    "name": "is_pkey",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否主键"
+   },
+   {
+    "name": "is_required",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否必填"
+   },
+   {
+    "name": "is_search_required",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "作为查询条件是否必填"
+   },
+   {
+    "name": "data_rule_for_search",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询条件必填校验规则"
+   },
+   {
+    "name": "data_tips_for_search",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询条件不符合校验的提示信息"
+   },
+   {
+    "name": "form_label",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单单显示文本"
+   },
+   {
+    "name": "placeholder",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单placeholder"
+   },
+   {
+    "name": "table_label",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格中显示文本"
+   },
+   {
+    "name": "search_form_label",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询表单提示文本"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "is_keywords_column",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为关键词查询列"
+   },
+   {
+    "name": "is_form_ele",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否表单可编辑元素"
+   },
+   {
+    "name": "is_table_col",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否表格列"
+   },
+   {
+    "name": "is_table_switchbtn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为表格switchbtn"
+   },
+   {
+    "name": "table_col_width",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "100",
+    "comment": "列宽"
+   },
+   {
+    "name": "is_need_fixed_width",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否固定宽度"
+   },
+   {
+    "name": "is_search_ele",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否检索条件"
+   },
+   {
+    "name": "is_search_hidden",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为检索隐藏条件"
+   },
+   {
+    "name": "col_format",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "格式化操作值"
+   },
+   {
+    "name": "search_ui_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询用ui 组件类型"
+   },
+   {
+    "name": "search_data_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询用组件数据源类型"
+   },
+   {
+    "name": "search_data_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询用组件数据值"
+   },
+   {
+    "name": "search_default_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "查询用组件默认值"
+   },
+   {
+    "name": "is_single_line",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "独立新行"
+   },
+   {
+    "name": "need_data_handler",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "是否需要data_handler"
+   },
+   {
+    "name": "form_ui_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单组件类型"
+   },
+   {
+    "name": "form_jboltinput_filter_handler",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "jboltinput filter handler"
+   },
+   {
+    "name": "is_form_jboltinput_jstree_checkbox",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "0",
+    "comment": "jboltinput jstree是否有checkbox"
+   },
+   {
+    "name": "is_form_jboltinput_jstree_only_leaf",
+    "type": "char(1)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "jboltinput jstree checkbox只选子节点"
+   },
+   {
+    "name": "form_data_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单组件数据源类型"
+   },
+   {
+    "name": "form_data_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单组件数据值"
+   },
+   {
+    "name": "form_default_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单组件默认值"
+   },
+   {
+    "name": "data_rule_assign",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表单校验规则 自定义"
+   },
+   {
+    "name": "data_rule",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "校验规则"
+   },
+   {
+    "name": "data_tips",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "校验提示信息"
+   },
+   {
+    "name": "is_import_col",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否为导入列"
+   },
+   {
+    "name": "is_export_col",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "导出列"
+   },
+   {
+    "name": "is_sortable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否可排序"
+   },
+   {
+    "name": "table_ui_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "可编辑表格显示组件类型"
+   },
+   {
+    "name": "table_data_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格组件数据库类型"
+   },
+   {
+    "name": "table_data_value",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "表格组件数据值"
+   },
+   {
+    "name": "form_ele_width",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "0",
+    "comment": "组件自定义宽度"
+   },
+   {
+    "name": "is_item_inline",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "radio checkbox等是否inline"
+   },
+   {
+    "name": "form_data_text_attr",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-text-attr"
+   },
+   {
+    "name": "form_data_value_attr",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-value-attr"
+   },
+   {
+    "name": "form_data_column_attr",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-column-attr"
+   },
+   {
+    "name": "search_data_text_attr",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-text-attr"
+   },
+   {
+    "name": "search_data_value_attr",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-value-attr"
+   },
+   {
+    "name": "search_data_column_attr",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-column-attr"
+   },
+   {
+    "name": "table_data_text_attr",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-text-attr"
+   },
+   {
+    "name": "table_data_value_attr",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-value-attr"
+   },
+   {
+    "name": "table_data_column_attr",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "data-column-attr"
+   },
+   {
+    "name": "is_need_translate",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否需要翻译"
+   },
+   {
+    "name": "translate_type",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "翻译类型"
+   },
+   {
+    "name": "translate_use_value",
+    "type": "varchar(250)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "翻译用值"
+   },
+   {
+    "name": "translate_col_name",
+    "type": "varchar(250)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "翻译后的列名"
+   },
+   {
+    "name": "is_upload_to_qiniu",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否上传到七牛"
+   },
+   {
+    "name": "form_upload_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "上传地址"
+   },
+   {
+    "name": "form_img_uploader_area",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "200,200",
+    "comment": "上传组件area"
+   },
+   {
+    "name": "form_maxsize",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "200",
+    "comment": "上传尺寸限制"
+   },
+   {
+    "name": "qiniu_bucket_sn",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "七牛bucket sn"
+   },
+   {
+    "name": "qiniu_file_key",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "[dateTime]/[randomId]/[filename]",
+    "comment": "七牛file key"
+   },
+   {
+    "name": "is_need_check_exists",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否检测数据重复字段"
+   },
+   {
+    "name": "is_fuzzy_query",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否模糊查询"
+   },
+   {
+    "name": "fuzzy_query_type",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "default",
+    "comment": "模糊查询类型"
+   },
+   {
+    "name": "form_tips",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "帮助信息"
+   },
+   {
+    "name": "form_tips_color",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "secondary",
+    "comment": "帮助信息的文字颜色"
+   },
+   {
+    "name": "data_min",
+    "type": "decimal(10,2)",
+    "notNull": true,
+    "default": "0.00",
+    "comment": "最小值"
+   },
+   {
+    "name": "data_max",
+    "type": "decimal(10,2)",
+    "notNull": true,
+    "default": "100.00",
+    "comment": "最大值"
+   },
+   {
+    "name": "data_step",
+    "type": "decimal(10,2)",
+    "notNull": true,
+    "default": "1.00",
+    "comment": "步长"
+   },
+   {
+    "name": "ig_prepend_html",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "前缀html"
+   },
+   {
+    "name": "ig_append_html",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "后缀html"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_sensitive_word",
+  "comment": "敏感词词库",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "content",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "内容"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "启用状态"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "platform",
+  "name": "jb_user_extend",
+  "comment": "用户扩展信息表",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "english_full_name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "英文全名"
+   },
+   {
+    "name": "birthday",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "出生日期"
+   },
+   {
+    "name": "residential_address",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "居住地址"
+   },
+   {
+    "name": "company_name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "公司名称"
+   },
+   {
+    "name": "company_address",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "公司地址"
+   },
+   {
+    "name": "recipient_address",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "快递收件地址"
+   },
+   {
+    "name": "recipient_phone",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "收件人电话"
+   },
+   {
+    "name": "recipient_name",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "收件人姓名"
+   },
+   {
+    "name": "id_number",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "身份证号"
+   },
+   {
+    "name": "country",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "国家"
+   },
+   {
+    "name": "nation",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "民族"
+   },
+   {
+    "name": "province",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "省"
+   },
+   {
+    "name": "city",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "城市"
+   },
+   {
+    "name": "city_code",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "城市代码"
+   },
+   {
+    "name": "county",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "区县"
+   },
+   {
+    "name": "township",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "乡镇"
+   },
+   {
+    "name": "community",
+    "type": "varchar(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "行政村 社区"
+   },
+   {
+    "name": "marital_status",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "婚姻状态"
+   },
+   {
+    "name": "is_cpc_member",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否党员"
+   },
+   {
+    "name": "is_cyl_member",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否共青团员"
+   },
+   {
+    "name": "professional_title",
+    "type": "int(11)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "职称"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_app",
+  "comment": "AI应用",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "function_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "挂载Function数"
+   },
+   {
+    "name": "knowledge_base_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "挂载知识库数"
+   },
+   {
+    "name": "icon",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "图标"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "介绍"
+   },
+   {
+    "name": "system_message_tpl",
+    "type": "text",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "system_message模板"
+   },
+   {
+    "name": "prompt_tpl",
+    "type": "text",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "prompt模板"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "排序"
+   },
+   {
+    "name": "first_user_msg",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "首次进入时 用户消息"
+   },
+   {
+    "name": "first_ai_msg",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "首次进入时AI提示语"
+   },
+   {
+    "name": "first_js_callback",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "首次进入时执行的js"
+   },
+   {
+    "name": "ai_js_callback",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "每次AI返回内容后执行的js"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "permission_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "什么权限可使用"
+   },
+   {
+    "name": "roles",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "角色"
+   },
+   {
+    "name": "is_keep_context",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否保持上下文"
+   },
+   {
+    "name": "used_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "使用次数"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_Id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人"
+   },
+   {
+    "name": "is_left_box_extends",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否扩展左侧UI"
+   },
+   {
+    "name": "is_right_box_extends",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否扩展右侧UI"
+   },
+   {
+    "name": "is_top_box_extends",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否扩展上方UI"
+   },
+   {
+    "name": "is_bottom_box_extends",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否扩展下方UI"
+   },
+   {
+    "name": "is_ai_msg_input_box_extends",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否扩展消息输入框区域"
+   },
+   {
+    "name": "is_published",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否发布"
+   },
+   {
+    "name": "publish_type",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "发布类型"
+   },
+   {
+    "name": "publish_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "发布时间"
+   },
+   {
+    "name": "ui_chat_theme",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": "DEFAULT",
+    "comment": "UI对话风格"
+   },
+   {
+    "name": "ui_layout_theme",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": "DEFAULT",
+    "comment": "ui布局风格"
+   },
+   {
+    "name": "view_pwd",
+    "type": "varchar(128)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "访问密码"
+   },
+   {
+    "name": "pwd_salt",
+    "type": "varchar(128)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "密码盐"
+   },
+   {
+    "name": "link_sys_app_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "绑定系统应用APP的ID"
+   },
+   {
+    "name": "ai_avatar",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "AI的头像"
+   },
+   {
+    "name": "bg_img",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "背景图"
+   },
+   {
+    "name": "mobile_bg_img",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "移动端背景图"
+   },
+   {
+    "name": "chat_empty_bg_img",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "chat区域空内容背景图"
+   },
+   {
+    "name": "is_show_chat_empty_bg_img",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示数据空背景图"
+   },
+   {
+    "name": "custom_css_style",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "css自定义内容"
+   },
+   {
+    "name": "is_show_history_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示可查看历史记录按钮"
+   },
+   {
+    "name": "is_show_new_page_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示打开独立新页面按钮"
+   },
+   {
+    "name": "is_show_new_session_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示可新建会话按钮"
+   },
+   {
+    "name": "is_show_refresh_btn",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示刷新按钮"
+   },
+   {
+    "name": "is_show_reference",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否显示参考记录"
+   },
+   {
+    "name": "is_show_ref_fragment",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "引用片段查看"
+   },
+   {
+    "name": "is_show_file_download",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否可下载原文"
+   },
+   {
+    "name": "is_only_function_call_mode",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否只能执行function"
+   },
+   {
+    "name": "is_only_knowledge_mode",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否仅知识库模式"
+   },
+   {
+    "name": "no_match_reply_content",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "知识库无匹配时回复内容"
+   },
+   {
+    "name": "no_match_function_reply_content",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "function无匹配时回复"
+   },
+   {
+    "name": "temperature",
+    "type": "decimal(10, 2)",
+    "notNull": true,
+    "default": "0.30",
+    "comment": "llm参数temperature"
+   },
+   {
+    "name": "top_p",
+    "type": "decimal(10, 2)",
+    "notNull": true,
+    "default": "0.85",
+    "comment": "llm参数topP"
+   },
+   {
+    "name": "top_k",
+    "type": "int",
+    "notNull": true,
+    "default": "5",
+    "comment": "llm参数topK"
+   },
+   {
+    "name": "max_tokens",
+    "type": "int",
+    "notNull": true,
+    "default": "2048",
+    "comment": "最大输出tokens量"
+   },
+   {
+    "name": "input_max_length",
+    "type": "int",
+    "notNull": true,
+    "default": "1000",
+    "comment": "用户输入内容长度限制"
+   },
+   {
+    "name": "ai_msg_statement_info",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": "AI生成,仅供参考",
+    "comment": "AI消息提示"
+   },
+   {
+    "name": "is_show_ai_msg_bottom_opt_btn_tts",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否显示语音播放按钮"
+   },
+   {
+    "name": "is_show_ai_msg_bottom_opt_btn_re_chat",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示重新生成按钮"
+   },
+   {
+    "name": "ai_cot_class",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "指定执行思维链"
+   },
+   {
+    "name": "is_need_rewrite_query",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否需要完善重写知识库问题"
+   },
+   {
+    "name": "is_show_chat_avatar",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示对话头像"
+   },
+   {
+    "name": "bubble_style",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": "DEFAULT",
+    "comment": "对话气泡风格"
+   },
+   {
+    "name": "header_style",
+    "type": "varchar(30)",
+    "notNull": false,
+    "default": "DEFAULT",
+    "comment": "header风格"
+   },
+   {
+    "name": "page_tpl",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": "index.html",
+    "comment": "页面模版"
+   },
+   {
+    "name": "is_show_thinking",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否显示深度思考信息"
+   },
+   {
+    "name": "is_only_html_mode",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用仅Html模式"
+   },
+   {
+    "name": "is_use_iframe_mode",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "html使用Iframe渲染"
+   },
+   {
+    "name": "front_framework",
+    "type": "varchar(40)",
+    "notNull": false,
+    "default": "bootstrap",
+    "comment": "前端框架依赖"
+   },
+   {
+    "name": "function_llm_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "工具调用指定模型资源ID"
+   },
+   {
+    "name": "is_function_llm_enable_thinking",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "工具调用模型是否启用思考"
+   },
+   {
+    "name": "func_result_llm_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "工具调用结果推理模型ID"
+   },
+   {
+    "name": "is_func_result_llm_enable_thinking",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "工具调用结果模型是否开启思考"
+   },
+   {
+    "name": "chat_llm_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "对话模型ID"
+   },
+   {
+    "name": "is_chat_llm_enable_thinking",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "对话模型是否启用思考"
+   },
+   {
+    "name": "kb_result_llm_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "知识库问答对话模型ID"
+   },
+   {
+    "name": "is_kb_result_llm_enable_thinking",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "知识库回答模型是否开启思考"
+   },
+   {
+    "name": "ai_loading_msg",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": "AI思考中...",
+    "comment": "AI loading内容"
+   },
+   {
+    "name": "is_need_md_formula",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否开启公式渲染"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_app_link_function",
+  "comment": "AI应用绑定Functions",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "app_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "AI应用"
+   },
+   {
+    "name": "function_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "AiFunction"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_app_link_knowledge_base",
+  "comment": "AI应用关联知识库",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "app_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "AI应用"
+   },
+   {
+    "name": "knowledge_base_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "知识库"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_app_message",
+  "comment": "AI应用消息记录",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "content",
+    "type": "text",
+    "notNull": true,
+    "default": null,
+    "comment": "消息内容"
+   },
+   {
+    "name": "role",
+    "type": "varchar(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "角色"
+   },
+   {
+    "name": "ai_app_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "AI应用"
+   },
+   {
+    "name": "session_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "会话"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "用户"
+   },
+   {
+    "name": "is_in_context",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否收录到上下文"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "发布时间"
+   },
+   {
+    "name": "is_hidden",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否隐藏"
+   },
+   {
+    "name": "link_ai_files_json",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "参考记录"
+   },
+   {
+    "name": "link_msg_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联消息ID"
+   },
+   {
+    "name": "think_content",
+    "type": "text",
+    "notNull": false,
+    "default": null,
+    "comment": "深度思考内容"
+   },
+   {
+    "name": "think_time_consuming",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "思考耗时"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_app_session",
+  "comment": "AI应用下的session会话",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "用户ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "ai_app_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "AI应用"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)",
+   "KEY session_user_id_index (user_id) COMMENT '用户ID index'"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_app_summary",
+  "comment": "AI应用使用统计",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "use_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "使用量"
+   },
+   {
+    "name": "session_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "会话数"
+   },
+   {
+    "name": "message_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "消息数"
+   },
+   {
+    "name": "user_times",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "使用人次"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_doc",
+  "comment": "AI问答库",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "title",
+    "type": "varchar(5000)",
+    "notNull": true,
+    "default": null,
+    "comment": "标题"
+   },
+   {
+    "name": "answer",
+    "type": "varchar(5000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "答案"
+   },
+   {
+    "name": "ai_knowledge_base_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "知识库"
+   },
+   {
+    "name": "ai_file_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "文件"
+   },
+   {
+    "name": "data_type",
+    "type": "int",
+    "notNull": true,
+    "default": null,
+    "comment": "数据类型"
+   },
+   {
+    "name": "train_type",
+    "type": "int",
+    "notNull": true,
+    "default": null,
+    "comment": "训练类型"
+   },
+   {
+    "name": "train_state",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "训练状态"
+   },
+   {
+    "name": "vector_state",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "向量化状态"
+   },
+   {
+    "name": "vector_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "向量化时间"
+   },
+   {
+    "name": "train_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "训练时间"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "修改时间"
+   },
+   {
+    "name": "link_tag_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联标签"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_file",
+  "comment": "AI文件",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(50)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "is_upload_to_local",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "上传类型"
+   },
+   {
+    "name": "url",
+    "type": "varchar(250)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "文件地址"
+   },
+   {
+    "name": "train_type",
+    "type": "int",
+    "notNull": true,
+    "default": null,
+    "comment": "训练类型"
+   },
+   {
+    "name": "upload_type",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "文件上传类型"
+   },
+   {
+    "name": "website_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "网页地址"
+   },
+   {
+    "name": "ai_knowledge_base_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "知识库"
+   },
+   {
+    "name": "split_state",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "拆分状态"
+   },
+   {
+    "name": "split_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "拆分时间"
+   },
+   {
+    "name": "train_state",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "训练状态"
+   },
+   {
+    "name": "train_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "训练时间"
+   },
+   {
+    "name": "vector_state",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "向量化状态"
+   },
+   {
+    "name": "vector_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "向量化时间"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人"
+   },
+   {
+    "name": "link_tag_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联标签"
+   },
+   {
+    "name": "split_rule",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "拆分规则"
+   },
+   {
+    "name": "ai_split_prompt",
+    "type": "varchar(2000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "AI拆分专用prompt"
+   },
+   {
+    "name": "ai_split_model_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "AI拆分使用的模型ID"
+   },
+   {
+    "name": "qa_train_model_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "QA提取专用模型ID"
+   },
+   {
+    "name": "title_selector",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "抽取标题的css选择器"
+   },
+   {
+    "name": "content_selector",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "抽取内容的css选择器"
+   },
+   {
+    "name": "split_chunk_size",
+    "type": "int",
+    "notNull": true,
+    "default": "300",
+    "comment": "分段token大小"
+   },
+   {
+    "name": "split_overlap_size",
+    "type": "int",
+    "notNull": true,
+    "default": "50",
+    "comment": "重叠token大小"
+   },
+   {
+    "name": "is_need_extract_resources",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否提取资源"
+   },
+   {
+    "name": "is_need_ocr_img",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否执行图片资源OCR"
+   },
+   {
+    "name": "train_fail_reason",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "训练过程失败原因"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_function",
+  "comment": "AI_可调用Tools注册中心",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "编号"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "功能描述"
+   },
+   {
+    "name": "of_module",
+    "type": "int",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "所属模块"
+   },
+   {
+    "name": "service_pkg",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "Service Package"
+   },
+   {
+    "name": "service_class",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "Service Class"
+   },
+   {
+    "name": "service_method",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "Service Method"
+   },
+   {
+    "name": "roles",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "应用角色"
+   },
+   {
+    "name": "permission_key",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "权限"
+   },
+   {
+    "name": "system_message",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "调用前置要求"
+   },
+   {
+    "name": "return_value_requirements",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "返回值特殊处理说明"
+   },
+   {
+    "name": "used_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "调用次数"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "required_args",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "哪些参数必填"
+   },
+   {
+    "name": "param_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "参数个数"
+   },
+   {
+    "name": "service_method_text",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "Service Method Text"
+   },
+   {
+    "name": "type",
+    "type": "int",
+    "notNull": false,
+    "default": "1",
+    "comment": "function类型"
+   },
+   {
+    "name": "api_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_URL"
+   },
+   {
+    "name": "api_param_json",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_参数"
+   },
+   {
+    "name": "api_header_json",
+    "type": "varchar(1000)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_header"
+   },
+   {
+    "name": "api_http_method",
+    "type": "varchar(10)",
+    "notNull": false,
+    "default": "get",
+    "comment": "API_http_method"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_function_param",
+  "comment": "AI接口参数",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": " 主键ID"
+   },
+   {
+    "name": "ai_function_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "属于哪个接口"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "参数名"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "参数描述"
+   },
+   {
+    "name": "type",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "参数值类型"
+   },
+   {
+    "name": "is_required",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否必填"
+   },
+   {
+    "name": "default_value",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "默认值"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "顺序"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_knowledge_base",
+  "comment": "AI知识库",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": ""
+   },
+   {
+    "name": "name",
+    "type": "varchar(50)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "简介"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建日期"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新日期"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_page",
+  "comment": "AI功能页面",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键"
+   },
+   {
+    "name": "name",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "编号"
+   },
+   {
+    "name": "type",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "类型"
+   },
+   {
+    "name": "url",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "页面地址"
+   },
+   {
+    "name": "brief_info",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "描述"
+   },
+   {
+    "name": "used_count",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "使用数"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "roles",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "应用角色"
+   },
+   {
+    "name": "permission_key",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "权限KEY"
+   },
+   {
+    "name": "open_type",
+    "type": "int",
+    "notNull": true,
+    "default": "1",
+    "comment": "打开方式"
+   },
+   {
+    "name": "link_id",
+    "type": "bigint",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "关联对象ID"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_file_tag",
+  "comment": "AI文件标签",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "alias_name",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "别名"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_llm",
+  "comment": "LLM大模型配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "type",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "类型"
+   },
+   {
+    "name": "model",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "模型名称"
+   },
+   {
+    "name": "is_local",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否本地部署"
+   },
+   {
+    "name": "is_with_think_switch",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "思考模式是否可控"
+   },
+   {
+    "name": "use_for",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "模型用途场景"
+   },
+   {
+    "name": "api_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_KEY"
+   },
+   {
+    "name": "api_secret",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_SECRET"
+   },
+   {
+    "name": "api_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_URL"
+   },
+   {
+    "name": "default_max_tokens",
+    "type": "int",
+    "notNull": true,
+    "default": "2000",
+    "comment": "max_tokens生成最大令牌数(默认)"
+   },
+   {
+    "name": "default_temperature",
+    "type": "decimal(10, 2)",
+    "notNull": true,
+    "default": "0.30",
+    "comment": "温度(默认)"
+   },
+   {
+    "name": "default_top_p",
+    "type": "decimal(10, 2)",
+    "notNull": true,
+    "default": "0.85",
+    "comment": "多样性(默认)"
+   },
+   {
+    "name": "default_top_k",
+    "type": "int",
+    "notNull": true,
+    "default": "5",
+    "comment": "采样(默认)"
+   },
+   {
+    "name": "rate_limit_min",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "频率限制_每分钟"
+   },
+   {
+    "name": "rate_limit_hour",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "频率限制_每小时"
+   },
+   {
+    "name": "rate_limit_day",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "频率限制_每天"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": null,
+    "comment": "是否启用"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_embedding",
+  "comment": "Embedding模型资源配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "资源名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "type",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "资源类型"
+   },
+   {
+    "name": "model",
+    "type": "varchar(100)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "模型名称"
+   },
+   {
+    "name": "is_local",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否本地部署"
+   },
+   {
+    "name": "api_key",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_KEY"
+   },
+   {
+    "name": "api_secret",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_SECRET"
+   },
+   {
+    "name": "api_url",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "API_URL"
+   },
+   {
+    "name": "dimension",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "维度"
+   },
+   {
+    "name": "rate_limit_min",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "频率限制_每分钟"
+   },
+   {
+    "name": "rate_limit_hour",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "频率限制_每小时"
+   },
+   {
+    "name": "rate_limit_day",
+    "type": "int",
+    "notNull": true,
+    "default": "0",
+    "comment": "频率限制_每天"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": null,
+    "comment": "是否启用"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "ai",
+  "name": "tb_ai_vdb",
+  "comment": "向量数据库资源配置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "名称"
+   },
+   {
+    "name": "sn",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "编码"
+   },
+   {
+    "name": "type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "类型"
+   },
+   {
+    "name": "url",
+    "type": "varchar(255)",
+    "notNull": true,
+    "default": null,
+    "comment": "URL"
+   },
+   {
+    "name": "user_name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户名"
+   },
+   {
+    "name": "password",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "密码"
+   },
+   {
+    "name": "database_name",
+    "type": "varchar(100)",
+    "notNull": true,
+    "default": null,
+    "comment": "数据库名"
+   },
+   {
+    "name": "embedding_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "Embeding模型"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": " 创建时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "更新时间"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint",
+    "notNull": true,
+    "default": null,
+    "comment": "更新人"
+   },
+   {
+    "name": "is_main",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否默认Main资源"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "custom_business",
+  "name": "jbc_custom_business",
+  "comment": "系统业务定义",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "业务名称"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注信息"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   },
+   {
+    "name": "create_user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "创建人"
+   },
+   {
+    "name": "update_user_id",
+    "type": "bigint(20)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新人"
+   },
+   {
+    "name": "enable",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否启用"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "custom_business",
+  "name": "jbc_role_custom_table",
+  "comment": "角色自定义表格设置",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "role_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "角色"
+   },
+   {
+    "name": "business_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "业务ID"
+   },
+   {
+    "name": "attr_name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "属性名"
+   },
+   {
+    "name": "title",
+    "type": "varchar(30)",
+    "notNull": true,
+    "default": null,
+    "comment": "标题"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "排序"
+   },
+   {
+    "name": "java_type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "java类型"
+   },
+   {
+    "name": "render_format",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "渲染格式化"
+   },
+   {
+    "name": "width",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "100",
+    "comment": "默认宽度"
+   },
+   {
+    "name": "is_min_width",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否最小宽度"
+   },
+   {
+    "name": "is_show_in_thead",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示"
+   },
+   {
+    "name": "is_fixed_left",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否左固定列"
+   },
+   {
+    "name": "is_fixed_right",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否右固定列"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "custom_business",
+  "name": "jbc_user_custom_business",
+  "comment": "用户针对一个业务自定义模板",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户ID"
+   },
+   {
+    "name": "business_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "业务ID"
+   },
+   {
+    "name": "name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "业务模板名称"
+   },
+   {
+    "name": "remark",
+    "type": "varchar(255)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "备注"
+   },
+   {
+    "name": "create_time",
+    "type": "datetime",
+    "notNull": true,
+    "default": null,
+    "comment": "创建时间"
+   },
+   {
+    "name": "update_time",
+    "type": "datetime",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "更新时间"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ },
+ {
+  "group": "custom_business",
+  "name": "jbc_user_role_custom_table",
+  "comment": "用户自定义业务配置表格",
+  "columns": [
+   {
+    "name": "id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "主键ID"
+   },
+   {
+    "name": "user_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户ID"
+   },
+   {
+    "name": "user_custom_business_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "用户自定义业务模板ID"
+   },
+   {
+    "name": "role_id",
+    "type": "bigint(20)",
+    "notNull": true,
+    "default": null,
+    "comment": "角色"
+   },
+   {
+    "name": "attr_name",
+    "type": "varchar(60)",
+    "notNull": true,
+    "default": null,
+    "comment": "属性名"
+   },
+   {
+    "name": "title",
+    "type": "varchar(30)",
+    "notNull": true,
+    "default": null,
+    "comment": "标题"
+   },
+   {
+    "name": "sort_rank",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "1",
+    "comment": "排序"
+   },
+   {
+    "name": "java_type",
+    "type": "varchar(40)",
+    "notNull": true,
+    "default": null,
+    "comment": "java类型"
+   },
+   {
+    "name": "render_format",
+    "type": "varchar(60)",
+    "notNull": false,
+    "default": "NULL",
+    "comment": "渲染格式化"
+   },
+   {
+    "name": "width",
+    "type": "int(11)",
+    "notNull": true,
+    "default": "100",
+    "comment": "默认宽度"
+   },
+   {
+    "name": "is_min_width",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否最小宽度"
+   },
+   {
+    "name": "is_show_in_thead",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "1",
+    "comment": "是否显示"
+   },
+   {
+    "name": "is_fixed_left",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否左固定列"
+   },
+   {
+    "name": "is_fixed_right",
+    "type": "char(1)",
+    "notNull": true,
+    "default": "0",
+    "comment": "是否右固定列"
+   }
+  ],
+  "keys": [
+   "PRIMARY KEY (id)"
+  ]
+ }
+]
