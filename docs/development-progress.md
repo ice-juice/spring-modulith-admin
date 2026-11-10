@@ -33,7 +33,7 @@
 | P0-4 | 后端 i18n | `Accept-Language` 解析、模块语言包自动注册、`ErrorCode` 与 `BizException` 改造、异常与校验提示本地化、401/403 本地化、语言包一致性测试（I2～I4） | ✅ |
 | P0-5 | UTC 与用户时区 | JDBC 会话时区 UTC、`Instant` 序列化、`X-Time-Zone` 请求时区上下文、按用户时区的日期范围换算 | ✅ |
 | P0-6 | 持久化与 Web 标准件 | `BaseEntity` / `TenantEntity`、审计自动填充、租户隔离、逻辑删除、防全表更新、分页与排序白名单、当前用户/租户/portal 上下文、选项与树 DTO | ✅ |
-| P0-7 | 数据权限框架 | 数据范围模型、数据权限插件（按 `dept_id` / `created_by` 拼接条件）、上下文 SPI | ⬜ |
+| P0-7 | 数据权限框架 | 五类角色数据范围、不可变授权上下文、Mapper `@DataScoped`、查询/更新/删除与分页计数过滤；角色范围展开放在 P1 | ✅ |
 | P0-8 | 前端底座 | vue-i18n（zh-CN、en-US）、语言与时区切换、dayjs 时区、axios（令牌、`Accept-Language`、`X-Time-Zone`、错误处理）、路由守卫、权限指令、主框架骨架、`i18n:check`、单元测试 | ⬜ |
 
 ### P1 身份与权限（iam、auth）
@@ -92,4 +92,5 @@
 | 2026-11-10 | P0-3 | 新增测试库 `springboot_modulith_admin_test`、`application-test.yml`、`CleanTestDatabaseListener`（每个 JVM 首次加载上下文前 Flyway clean）、`@IntegrationTest`；`tools/dev/verify-backend.ps1`（`mvnd verify`）21 个测试通过，其中 `ApplicationSmokeTests` 确认连接测试库、Flyway 建表、健康检查公开、API 返回 401 | 通过 |
 | 2026-11-10 | P0-4 / P0-5 | `mvnd verify` 31 项测试通过；MockMvc 验证中英文业务错误、校验提示和 401、语言回退、请求时区；真实 MySQL 验证 JDBC 会话 UTC；时间输出 `2026-11-10T03:00:00Z`，自然日查询覆盖夏令时切换 | 通过 |
 | 2026-11-10 | P0-6 | `mvnd verify` 35 项通过；真实 MySQL 验证租户 ID 防伪造、跨租户查询/分页计数/更新/删除隔离、租户归属不可修改、审计字段与逻辑删除、防无条件更新；分页上限及排序注入拒绝、树环检测；补充 23/25 小时夏令时日期测试 | 通过 |
+| 2026-11-10 | P0-7 | `mvnd verify` 38 项通过；真实 MySQL 覆盖本人、部门集合、多角色并集、无授权、全部与超管（仍限制租户）；别名与原条件组合无 OR 越权；分页计数、更新、逻辑删除均受数据范围限制 | 通过 |
 

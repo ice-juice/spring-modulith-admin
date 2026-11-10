@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.sma.admin.common.persistence.TenantEntity;
@@ -35,6 +36,7 @@ class PersistenceConfiguration {
                 return !TenantEntity.class.isAssignableFrom(info.getEntityType());
             }
         }));
+        interceptor.addInnerInterceptor(new DataPermissionInterceptor(new RoleDataPermissionHandler()));
         var pagination = new PaginationInnerInterceptor(DbType.MYSQL);
         pagination.setMaxLimit(200L);
         pagination.setOverflow(false);
