@@ -67,7 +67,7 @@ spring Modulith/
 | file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 完成 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试）、数据库文档 | common、common :: security、common :: persistence | P3 完成 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
-| openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security、common :: persistence | P4 应用中心完成 |
+| openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security、common :: persistence | P4 鉴权完成 |
 
 ```mermaid
 flowchart LR
@@ -112,7 +112,7 @@ com.sma.admin.<module>
 | R2 | `common` 不得依赖任何业务模块 | 自动：`commonDoesNotDependOnBusinessModules` + R0 白名单为空 |
 | R3 | 模块根包（对外 API）不得引用任何 `internal` 类型，实体、Mapper 不得出现在 API 签名中 | 自动：`moduleApiDoesNotExposeInternalTypes` |
 | R4 | 模块内分层只能向下依赖：web → service → persistence；web 不得直接用 Mapper | 自动：`layersInsideModulesPointDownwards` |
-| R5 | `@RestController` 必须位于 `internal.web`，类名以 `Controller` 结尾，类上 `@RequestMapping` 以 `/api/<模块id>` 开头 | 自动：`controllersLiveInWebLayerUnderModulePath` |
+| R5 | `@RestController` 必须位于 `internal.web`，类名以 `Controller` 结尾，类上 `@RequestMapping` 以 `/api/<模块id>` 开头；唯一例外为 `openapi.internal.web.OpenController` 使用 `/open`，独立应用鉴权链 | 自动：`controllersLiveInWebLayerUnderModulePath` |
 | R6 | 每个请求处理方法必须（在方法或类上）声明 `@RequiresPermission`、`@PermitLoggedIn` 或 `@PermitAnonymous` | 自动：`everyRequestHandlerDeclaresAnAccessPolicy` |
 | R7 | 权限 key 格式为 `<模块id>:<资源>[:<动作>]`，且必须以所在模块 id 开头 | 自动：`permissionKeysAreScopedToTheirModule` |
 | R8 | 请求处理方法返回 `ApiResponse`（文件下载等例外用 `ResponseEntity`） | 自动：`requestHandlersReturnUnifiedResponses` |
@@ -135,6 +135,7 @@ com.sma.admin.<module>
 | P1 | 业务实体继承 `common :: persistence` 的 `TenantEntity`；租户由认证上下文获取，插入强制填充，更新不可更换；超管同样受租户隔离 | 自动：`PersistenceTests` |
 | P2 | 插件顺序：防全表更新 → 租户 → 数据权限（P0-7）→ 分页；未知 MyBatis 表不自动豁免租户隔离 | 自动：`PersistenceTests` |
 | P3 | 分页最多 200 条，排序列从服务端白名单取得；树输入拒绝环和重复 ID | 自动：`PersistenceTests` |
+| S1 | 仅允许 OpenAPI 的 AppId/令牌哈希两个启动查询声明租户过滤例外；取得身份后恢复可信租户 | 自动：`tenantBypassIsRestrictedToCredentialBootstrap` |
 
 后台启动/系统任务未携带认证时使用默认租户 `1`、操作者 `0`；HTTP API 由安全链要求登录。租户 ID 不从请求头取值，业务代码不得直接使用未经插件保护的 JDBC 读写业务表。系统级事件表由 Modulith 自身的 JDBC 管理，不经过业务 Mapper。
 
@@ -165,6 +166,8 @@ WebSocket 位于 `/api/message/ws`，仅接受已登录 REST 接口签发的一�
 事件发布管理使用 Modulith 2.1 的仓储和失败重投 API，只返回当前租户的事件类型、目标监听器、状态、尝试次数与时间，不能读取事件正文或重投其他租户的事件；只允许手动重试 FAILED 状态。事件必须携带 `tenantId`，缺少租户信息的记录不向业务管理界面开放。事件存储正文已扩为 MEDIUMTEXT，支持通知接收快照。升级 Modulith 时必须回归重投及事件表兼容性测试。数据库文档通过 JDBC DatabaseMetaData 读取当前库的表、字段与索引，允许结构元数据读取，不读取业务行数据；支持双语言 Markdown 导出，敏感列默认值遮蔽。
 
 应用中心保留 13 种分类及关联对象元数据，受租户/portal/数据范围保护。AppSecret 只在创建/轮换时返回，数据库采用 AES-256-GCM 加密并绑定 AppId。主密钥由 `SMA_APP_MASTER_KEY` 提供；本机未设置时自动生成并持久化到忽略版本控制的 `data/keys/openapi.key`，部署需保留该密钥。关联元数据不授予对象访问权。详见 [docs/openapi-design.md](docs/openapi-design.md)。
+
+`/open/**` 使用独立的应用令牌表和过滤链，签名绑定方法/路径/排序查询/时间戳/nonce/正文 SHA-256；nonce 按大小写区分并用数据库唯一约束拒绝并发重放。AppId/令牌哈希启动查询是仅有的租户插件例外（架构测试白名单），定位后恢复凭据中的租户。机器身份没有用户权限和数据范围授权，`CurrentUser.require()` 拒绝机器身份，持久化仍保留租户过滤；应用令牌不能访问后台 API，管理员令牌不能访问开放 API。
 
 关键操作日志由 Common 的 MVC 拦截器捕获带 `@RequiresPermission` 的写请求；登录即可的关键写操作显式加 `@AuditAction`。只记录操作者、动作、目标 ID、路径、结果码、耗时和设备，不记录请求体、查询参数、认证头或响应内容。事件在独立事务中发布，由 Audit 的 `@ApplicationModuleListener` 幂等写入。文案使用 `<模块>.audit.<资源>.<动作>` 与目标 ID 参数，保存中文快照，查询时按语言重新渲染；目标回跳地址仅由受控路径和 ID 构成。
 

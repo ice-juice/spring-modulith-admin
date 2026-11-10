@@ -27,6 +27,10 @@ NONCE
 SHA256_BODY_HEX
 ```
 
-HTTP_METHOD 大写；RAW_PATH 是不含查询串的原始编码路径；查询参数解码后按键和值排序，再逐项按 RFC3986 编码，重复参数保留，用 `&` 连接；空查询串对应空行。正文使用实际发送的字节计算 SHA-256，小写十六进制；空正文也计算其 SHA-256。`X-Signature` 为签名结果的十六进制。签名开关关闭只跳过签名，仍必须通过 AppSecret/令牌校验。
+HTTP_METHOD 大写；RAW_PATH 是不含查询串的原始编码路径；查询参数解码后逐项按 RFC3986 编码，再按编码后的键、值字典序排序，重复参数保留，用 `&` 连接；空查询串对应空行。正文使用实际发送的字节计算 SHA-256，小写十六进制；空正文也计算其 SHA-256。`X-Signature` 为签名结果的十六进制。签名开关关闭只跳过签名，仍必须通过 AppSecret/令牌校验。
 
 开放接口只提供明确列出的应用能力，不赋予用户管理权限。初始提供应用身份查询与回显用于集成验证；新增业务 API 必须声明范围并遵守模块边界。普通管理员令牌不能调用 `/open/**`，应用令牌不能调用 `/api/**`。认证错误返回真实 HTTP 401/403，正文沿用 ApiResponse 与双语言错误码。
+
+令牌有效期为一小时，`POST /open/revoke` 撤销当前令牌；重新签发使用新的签名和 nonce。开放请求正文上限为 64 KiB。相同 IP/AppId 在五分钟内连续认证失败十次后限流；首版限流状态为单实例内存。nonce 区分大小写，过期安全记录由同租户的后续签名校验清理。
+
+Node.js 参考客户端见 [sma-client.mjs](../tools/openapi/sma-client.mjs)，只使用内置模块。设置 `SMA_API_URL`、`SMA_APP_ID`、`SMA_APP_SECRET` 后执行 `node tools/openapi/sma-client.mjs`，只输出应用身份，不输出密钥或令牌。客户端协议测试：`node --test tools/openapi/client.test.mjs`。

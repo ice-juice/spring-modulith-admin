@@ -136,7 +136,7 @@ class ArchitectureRulesTests {
 				.should().resideInAPackage("..internal.web..")
 				.andShould().haveSimpleNameEndingWith("Controller")
 				.andShould(classCondition("map requests under /api/{module}", type -> {
-					String prefix = "/api/" + moduleOf(type);
+					String prefix = type.getName().equals(BASE + ".openapi.internal.web.OpenController") ? "/open" : "/api/" + moduleOf(type);
 					List<String> paths = type.tryGetAnnotationOfType(RequestMapping.class)
 							.map(mapping -> Stream.concat(Arrays.stream(mapping.value()), Arrays.stream(mapping.path())).toList())
 							.orElse(List.of());
@@ -205,6 +205,14 @@ class ArchitectureRulesTests {
 	}
 
 	// R10 --------------------------------------------------------------------------------------------------------
+	@Test
+	void tenantBypassIsRestrictedToCredentialBootstrap() {
+		methods().that().areAnnotatedWith(com.baomidou.mybatisplus.annotation.InterceptorIgnore.class)
+			.should(methodCondition("only bypass tenant filtering for unique credential bootstrap lookups", method ->
+				(method.getOwner().getName().equals(BASE + ".openapi.internal.persistence.ApplicationBootstrapMapper") && method.getName().equals("byAppId"))
+				|| (method.getOwner().getName().equals(BASE + ".openapi.internal.persistence.TokenBootstrapMapper") && method.getName().equals("byHash"))))
+			.allowEmptyShould(true).check(CLASSES);
+	}
 
 	@Test
 	void transactionsAreNotOpenedInTheWebLayer() {
