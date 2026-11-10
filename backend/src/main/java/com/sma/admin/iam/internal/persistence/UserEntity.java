@@ -20,4 +20,5 @@ public class UserEntity extends TenantEntity {
     private String locale;
     private String timeZone;
     private Instant passwordChangedAt;
+    private Long credentialVersion;
 }

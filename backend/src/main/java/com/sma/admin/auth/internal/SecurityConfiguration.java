@@ -11,6 +11,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.sma.admin.common.CommonErrorCode;
 import com.sma.admin.common.ErrorResponseWriter;
+import com.sma.admin.auth.internal.service.SessionService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Security baseline of the stateless REST backend: deny by default, URL level requires authentication, method level
@@ -29,7 +31,7 @@ class SecurityConfiguration {
 	}
 
 	@Bean
-	SecurityFilterChain apiSecurity(HttpSecurity http, ErrorResponseWriter errors) throws Exception {
+    SecurityFilterChain apiSecurity(HttpSecurity http, ErrorResponseWriter errors, SessionService sessions) throws Exception {
 		return http
 				.csrf(AbstractHttpConfigurer::disable)
 				.httpBasic(AbstractHttpConfigurer::disable)
@@ -40,7 +42,9 @@ class SecurityConfiguration {
 						.accessDeniedHandler((request, response, e) -> errors.write(request, response, CommonErrorCode.FORBIDDEN)))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/actuator/health/**", "/actuator/info", "/error").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/captcha").permitAll()
 						.anyRequest().authenticated())
+                .addFilterBefore(new TokenAuthenticationFilter(sessions, errors), UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 

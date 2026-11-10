@@ -21,7 +21,10 @@ try {
     }
     $code = $LASTEXITCODE
     Select-String -Path $log -CaseSensitive -Pattern 'Tests run:.*in com\.|Tests run: \d+, Failures: \d+, Errors: \d+, Skipped: \d+$|BUILD (SUCCESS|FAILURE)|\[ERROR\] (?!\s*$)|FAILURE!' |
-        Select-Object -First 80 | ForEach-Object { $_.Line -replace '^\[INFO\] ', '' }
+        Select-Object -First 60 | ForEach-Object {
+            $line = $_.Line -replace '^\[INFO\] ', ''
+            if ($line.Length -gt 350) { $line.Substring(0, 350) + ' ... (see full log)' } else { $line }
+        }
     "exit=$code log=$log"
     exit $code
 }

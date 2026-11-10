@@ -71,8 +71,9 @@ public class UserService implements AccountQuery {
         row.setEmail(input.email()); row.setMobile(input.mobile()); row.setGender(input.gender()); row.setEnabled(input.enabled());
         row.setLocale(input.locale()); row.setTimeZone(input.timeZone());
         if(id==null) {
-            row.setSuperAdmin(false); row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now());
+            row.setSuperAdmin(false); row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(0L);
         }
+        else row.setCredentialVersion(row.getCredentialVersion()+1);
         try { if(id==null) mapper.insert(row); else mapper.updateById(row); }
         catch(DuplicateKeyException ex) { throw new BizException(IamErrorCode.DUPLICATE_CODE); }
         userRoles.delete(new LambdaQueryWrapper<UserRoleEntity>().eq(UserRoleEntity::getUserId,row.getId()));
@@ -108,7 +109,7 @@ public class UserService implements AccountQuery {
     @Transactional
     public void resetPassword(long id,String password) {
         guard.lock(); var row=require(id); protect(row);
-        row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now()); mapper.updateById(row);
+        row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); mapper.updateById(row);
         events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password"));
     }
     @Transactional
@@ -116,7 +117,7 @@ public class UserService implements AccountQuery {
         long id=CurrentUser.require().userId();
         guard.lock(); var row=accounts.selectById(id);
         if(row==null||!passwords.matches(oldPassword,row.getPasswordHash())) throw new BizException(IamErrorCode.INVALID_PASSWORD);
-        row.setPasswordHash(hash(newPassword)); row.setPasswordChangedAt(Instant.now()); accounts.updateById(row);
+        row.setPasswordHash(hash(newPassword)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); accounts.updateById(row);
         events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password"));
     }
     private void protect(UserEntity row) {
@@ -143,7 +144,7 @@ public class UserService implements AccountQuery {
     private AccountView account(UserEntity row) {
         var roleIds=userRoles.selectList(new LambdaQueryWrapper<UserRoleEntity>().eq(UserRoleEntity::getUserId,row.getId())).stream().map(UserRoleEntity::getRoleId).collect(java.util.stream.Collectors.toSet());
         var postIds=userPosts.selectList(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getUserId,row.getId())).stream().map(UserPostEntity::getPostId).collect(java.util.stream.Collectors.toSet());
-        return new AccountView(row.getId(),row.getTenantId(),row.getUsername(),row.getName(),row.getPortal(),row.getDeptId(),row.getSuperAdmin(),row.getEnabled(),roleIds,postIds,row.getLocale(),row.getTimeZone(),row.getPasswordChangedAt());
+        return new AccountView(row.getId(),row.getTenantId(),row.getUsername(),row.getName(),row.getPortal(),row.getDeptId(),row.getSuperAdmin(),row.getEnabled(),roleIds,postIds,row.getLocale(),row.getTimeZone(),row.getPasswordChangedAt(),row.getCredentialVersion());
     }
 
     @Transactional
@@ -152,6 +153,6 @@ public class UserService implements AccountQuery {
         if(accounts.selectCount(new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getPortal,"admin").eq(UserEntity::getSuperAdmin,true))>0) return;
         if(password==null||password.isBlank()) return;
         var row=new UserEntity(); row.setUsername("admin"); row.setName("Administrator"); row.setPortal("admin");
-        row.setPasswordHash(hash(password)); row.setEnabled(true); row.setSuperAdmin(true); row.setPasswordChangedAt(Instant.now()); accounts.insert(row);
+        row.setPasswordHash(hash(password)); row.setEnabled(true); row.setSuperAdmin(true); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(0L); accounts.insert(row);
     }
 }
