@@ -10,5 +10,7 @@ import com.sma.admin.common.security.*;
   new PermissionSpec("monitor:cache:clear","monitor:cache:view","monitor.action.clear","清理缓存","BUTTON",null,null,0,"admin",true),
   new PermissionSpec("monitor:event:view","monitor:center","monitor.menu.events","事件发布管理","MENU","/monitor/events",null,20,"admin",true),
   new PermissionSpec("monitor:event:retry","monitor:event:view","monitor.action.retry","重试失败事件","BUTTON",null,null,0,"admin",true),
-  new PermissionSpec("monitor:database:view","monitor:center","monitor.menu.database","数据库文档","MENU","/monitor/database",null,30,"admin",true));}
+  new PermissionSpec("monitor:database:view","monitor:center","monitor.menu.database","数据库文档","MENU","/monitor/database",null,30,"admin",true),
+  new PermissionSpec("monitor:sql:view","monitor:center","monitor.menu.sql","SQL 执行统计","MENU","/monitor/sql",null,40,"admin",true),
+  new PermissionSpec("monitor:sql:reset","monitor:sql:view","monitor.action.reset-sql","重置执行统计","BUTTON",null,null,0,"admin",true));}
 }

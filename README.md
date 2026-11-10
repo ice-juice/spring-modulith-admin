@@ -166,6 +166,8 @@ WebSocket 位于 `/api/message/ws`，仅接受已登录 REST 接口签发的一�
 
 服务器监控只输出 CPU、物理内存、磁盘、JVM 和连接池运行指标，不输出进程环境变量或数据库连接串。模块通过 `CacheRegion` SPI 提供当前租户的缓存数量、命中/未命中统计及清理操作，Monitor 不反向依赖业务模块，也不返回缓存值。参数缓存的版本与清理均按租户隔离，安全限流、验证码与握手票据不参与管理清理。
 
+SQL 执行统计通过 MyBatis StatementHandler 在实际 JDBC 执行时采集，按当前租户聚合 Mapper 标识、操作类型、次数、失败数、结果行数及耗时；不保存 SQL 正文、参数或凭据启动查询。慢调用阈值 `sma.persistence.slow-statement-millis` 默认 500 ms。统计只覆盖当前实例本次运行，重置限定当前租户。连接池采用 Hikari 指标，数据库监控不引入 Druid 的独立管理页面。
+
 事件发布管理使用 Modulith 2.1 的仓储和失败重投 API，只返回当前租户的事件类型、目标监听器、状态、尝试次数与时间，不能读取事件正文或重投其他租户的事件；只允许手动重试 FAILED 状态。事件必须携带 `tenantId`，缺少租户信息的记录不向业务管理界面开放。事件存储正文已扩为 MEDIUMTEXT，支持通知接收快照。升级 Modulith 时必须回归重投及事件表兼容性测试。数据库文档通过 JDBC DatabaseMetaData 读取当前库的表、字段与索引，允许结构元数据读取，不读取业务行数据；支持双语言 Markdown 导出，敏感列默认值遮蔽。
 
 应用中心保留 13 种分类及关联对象元数据，受租户/portal/数据范围保护。AppSecret 只在创建/轮换时返回，数据库采用 AES-256-GCM 加密并绑定 AppId。主密钥由 `SMA_APP_MASTER_KEY` 提供；本机未设置时自动生成并持久化到忽略版本控制的 `data/keys/openapi.key`，部署需保留该密钥。关联元数据不授予对象访问权。详见 [docs/openapi-design.md](docs/openapi-design.md)。

@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
         {
+          path: 'monitor/sql',
+          component: () => import('@/views/monitor/SqlView.vue'),
+          meta: { module: 'monitor', titleKey: 'monitor.sql', permission: 'monitor:sql:view' },
+        },
+        {
           path: 'openapi/apps',
           component: () => import('@/views/openapi/ApplicationsView.vue'),
           meta: { module: 'openapi', titleKey: 'openapi.apps', permission: 'openapi:app:view' },
