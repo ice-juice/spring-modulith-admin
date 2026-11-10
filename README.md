@@ -20,7 +20,7 @@ P0～P4 的范围内代码与自动验证已完成；最终功能对照与待人
 | 协作方式 | 查询走对方模块的 API 接口；有副作用的联动走事件（`@ApplicationModuleListener` + 事件发布登记表） | 降低耦合，副作用失败可重试、可观测 |
 | 数据所有权 | 每张表只属于一个模块，只能由该模块读写；表结构全部由 Flyway 管理 | 模块可以独立演进，避免跨模块 SQL |
 | 安全 | 默认拒绝：每个接口必须显式声明访问策略，权限 key 由模块声明 | 延续 JBolt“未声明即无权访问”的做法，并在构建期检查 |
-| 质量门禁 | `mvn verify` 运行 Modulith 结构校验 + 13 条架构规则 + 单元测试，Maven Enforcer 要求 JDK 21+ | 约束写进代码，不靠口头约定 |
+| 质量门禁 | `mvn verify` 运行 Modulith 结构校验 + 架构规则 + 单元/集成测试，Maven Enforcer 要求 JDK 21+ | 约束写进代码，不靠口头约定 |
 | 构建工具 | 本地默认 `mvnd`（1.0.6，内置 Maven 3.9.16），标准构建 `mvnw`（同为 Maven 3.9.16） | 实测 `compile` 1.7s → 0.3s、`verify` 4.3s → 2.5s；两者同版本，本地仓库元数据一致 |
 | 多租户 | 业务表从第一版起带 `tenant_id`，由 MyBatis-Plus 租户插件自动过滤与填充，首版只有默认租户 | 以后开启 SaaS 不需要改表 |
 | 数据权限 | 角色配置数据范围（全部、本部门及下级、本部门、仅本人、自定义部门），按 `dept_id` / `created_by` 自动拼接查询条件 | 弥补 JBolt 没有数据权限的空白 |
@@ -255,9 +255,9 @@ void on(UserCreatedEvent event) { /* 写操作日志，必须幂等 */ }
 | 层次 | 内容 |
 |---|---|
 | 结构 | `ModularityTests`：`ApplicationModules.verify()` + 生成 C4/UML 模块图与模块 Canvas 到 `backend/target/spring-modulith-docs` |
-| 架构规则 | `ArchitectureRulesTests`：R1～R13 |
+| 架构规则 | `ArchitectureRulesTests`：R1～R13 与 S1 凭据启动查询白名单 |
 | 单元测试 | 例如 `AccessAnnotationsTests`、`JacksonConfigurationTests` |
-| 模块集成测试 | 每个业务模块用 `@ApplicationModuleTest` 单独启动本模块，跨模块依赖用 `@MockitoBean`，异步事件用 `Scenario` API；数据库使用独立测试库（Docker 就绪后改用 Testcontainers） |
+| 集成测试 | 当前以 `@IntegrationTest` 全应用 + 专用 MySQL 测试库验证模块协作，MockMvc 验证权限，随机端口 WebSocket 测试验证真实网络；可按需增加 `@ApplicationModuleTest` 隔离模块测试 |
 | 构建 | `mvnw verify` 依次执行 Enforcer、编译、全部测试、打包，任何一步失败即构建失败 |
 
 ## 12. 新增一个模块的步骤
@@ -266,7 +266,7 @@ void on(UserCreatedEvent event) { /* 写操作日志，必须幂等 */ }
 2. 对外类型放根包：查询接口、record DTO、事件；实现放 `internal.service`。
 3. 表结构写在 `src/main/resources/db/migration/<id>/V1__init.sql`，表名以 `<id>_` 开头。
 4. 实体和 Mapper 放 `internal.persistence`；控制器放 `internal.web`，路径 `/api/<id>/...`，每个方法声明访问注解，权限 key 以 `<id>:` 开头。
-5. 编写 `@ApplicationModuleTest`，运行 `mvnw verify`。
+5. 编写模块业务/权限/租户集成测试，必要时增加 `@ApplicationModuleTest`，运行 `mvnw verify`。
 6. 如被其他模块依赖，更新本文第 3 节的依赖表和对方的 `allowedDependencies`。
 
 ## 13. 开发环境与常用命令
@@ -300,4 +300,8 @@ npm run dev                   # http://127.0.0.1:5173，/api 代理到 8080
 | [docs/jbolt-research/](docs/jbolt-research/README.md) | JBolt 研究资料：底层能力、数据字典、接口清单、运行观察 |
 | [docs/jbolt-capability-migration-plan.md](docs/jbolt-capability-migration-plan.md) | 从 JBolt 迁移产品能力的执行方案 |
 | [docs/dev-environment.md](docs/dev-environment.md) | 开发环境安装、临时数据库、JBolt 参考环境 |
+| [docs/acceptance.md](docs/acceptance.md) | 最终功能对照、自动验证与人工待办 |
+| [docs/deployment.md](docs/deployment.md) | 构建、运行配置、上传目录和应用主密钥持久化 |
+| [docs/message-design.md](docs/message-design.md) | 协同与附件授权约定 |
+| [docs/openapi-design.md](docs/openapi-design.md) | 应用鉴权协议与 Node 客户端 |
 
