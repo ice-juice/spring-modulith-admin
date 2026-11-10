@@ -13,6 +13,7 @@ export interface MenuItem {
   icon: string | null
   permission: string | null
   type: string
+  openMode: string
   children: MenuItem[]
 }
 export interface CurrentUser {
@@ -28,6 +29,7 @@ export interface CurrentUser {
   timeZone?: string
   tenantTimeZone?: string
   locked?: boolean
+  passwordChangeSuggested?: boolean
 }
 export const useAuth = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null)

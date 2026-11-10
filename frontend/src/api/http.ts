@@ -57,6 +57,7 @@ export function configureHttp(client: AxiosInstance) {
           ),
         )
       }
+      if (error.response?.status === 423) window.dispatchEvent(new Event('sma:locked'))
       return Promise.reject(error)
     },
   )

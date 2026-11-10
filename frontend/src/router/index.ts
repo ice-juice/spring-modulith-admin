@@ -3,6 +3,7 @@ import { getToken } from '@/lib/token'
 import { useAuth } from '@/stores/auth'
 import { loadLocaleModule } from '@/locales'
 import { accessDecision } from './access'
+import { resources } from '@/features/iam/resources'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,22 @@ const router = createRouter({
       path: '/',
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
+        ...Object.values(resources).map((resource) => ({
+          path: 'iam/' + resource.id,
+          component: () => import('@/views/iam/ManagementView.vue'),
+          meta: {
+            module: 'iam',
+            resource: resource.id,
+            titleKey: resource.titleKey,
+            permission: resource.permission + ':view',
+          },
+        })),
+        {
+          path: 'auth/sessions',
+          component: () => import('@/views/auth/SessionsView.vue'),
+          meta: { module: 'auth', titleKey: 'auth.sessions', permission: 'auth:session:view' },
+        },
+        { path: 'frame/:id', component: () => import('@/views/FrameView.vue') },
         {
           path: '',
           name: 'home',

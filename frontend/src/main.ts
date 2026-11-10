@@ -23,3 +23,7 @@ window.addEventListener('sma:unauthorized', () => {
   }
 })
 app.mount('#app')
+window.addEventListener('sma:locked', () => {
+  const auth = useAuth()
+  if (auth.user) auth.user.locked = true
+})
