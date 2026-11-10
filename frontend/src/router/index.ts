@@ -18,22 +18,67 @@ const router = createRouter({
       path: '/',
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
-        ...Object.values(resources).map((resource) => ({
-          path: 'iam/' + resource.id,
-          component: () => import('@/views/iam/ManagementView.vue'),
-          meta: {
-            module: 'iam',
-            resource: resource.id,
-            titleKey: resource.titleKey,
-            permission: resource.permission + ':view',
-          },
-        })),
+        ...Object.values(resources)
+          .filter((resource) => resource.module !== 'config')
+          .map((resource) => ({
+            path: 'iam/' + resource.id,
+            component: () => import('@/views/iam/ManagementView.vue'),
+            meta: {
+              module: 'iam',
+              resource: resource.id,
+              titleKey: resource.titleKey,
+              permission: resource.permission + ':view',
+            },
+          })),
         {
           path: 'auth/sessions',
           component: () => import('@/views/auth/SessionsView.vue'),
           meta: { module: 'auth', titleKey: 'auth.sessions', permission: 'auth:session:view' },
         },
         { path: 'frame/:id', component: () => import('@/views/FrameView.vue') },
+        {
+          path: 'config/dictionaries',
+          component: () => import('@/views/config/DictionaryView.vue'),
+          meta: {
+            module: 'config',
+            titleKey: 'config.dictionary',
+            permission: 'config:dictionary:view',
+          },
+        },
+        {
+          path: 'config/parameters',
+          component: () => import('@/views/config/ParametersView.vue'),
+          meta: {
+            module: 'config',
+            titleKey: 'config.parameters',
+            permission: 'config:parameter:view',
+          },
+        },
+        {
+          path: 'preferences',
+          component: () => import('@/views/config/PreferencesView.vue'),
+          meta: { module: 'config', titleKey: 'common.preferences' },
+        },
+        {
+          path: 'audit/logins',
+          component: () => import('@/views/audit/LogsView.vue'),
+          meta: {
+            module: 'audit',
+            logKind: 'logins',
+            titleKey: 'audit.logins',
+            permission: 'audit:login:view',
+          },
+        },
+        {
+          path: 'audit/operations',
+          component: () => import('@/views/audit/LogsView.vue'),
+          meta: {
+            module: 'audit',
+            logKind: 'operations',
+            titleKey: 'audit.operations',
+            permission: 'audit:operation:view',
+          },
+        },
         {
           path: '',
           name: 'home',

@@ -51,6 +51,7 @@ class HeaderLocaleContextResolver implements LocaleContextResolver {
 				return exact;
 			}
 			for (Locale.LanguageRange range : ranges) {
+				if (range.getWeight() <= 0) continue;
 				String language = Locale.forLanguageTag(range.getRange()).getLanguage();
 				for (Locale candidate : supported) {
 					if (candidate.getLanguage().equals(language)) {

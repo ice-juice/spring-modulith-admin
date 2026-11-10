@@ -333,3 +333,56 @@ small {
   background: #fff;
   border-radius: 8px;
 }
+html.dark {
+  color: #dbe5ef;
+  background: var(--el-bg-color-page);
+}
+.dark .topbar,
+.dark .workspace-tabs,
+.dark .portal-navigation {
+  background: var(--el-bg-color);
+  border-color: var(--el-border-color);
+}
+.dark .welcome-card {
+  background: linear-gradient(120deg, #153a35, var(--el-bg-color));
+  border-color: #285047;
+}
+.focused-row {
+  --el-table-tr-bg-color: var(--el-color-primary-light-9);
+}
+.login-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.login-background {
+  position: absolute;
+  inset: -12px;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  pointer-events: none;
+}
+.login-brand,
+.login-card {
+  position: relative;
+}
+.login-tools {
+  z-index: 1;
+}
+.branding-footer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 20px;
+  color: #8190a2;
+  font-size: 12px;
+}
+.login-footer {
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  color: #adbfcd;
+}

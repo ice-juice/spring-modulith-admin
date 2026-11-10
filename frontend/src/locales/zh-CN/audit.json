@@ -1,0 +1,24 @@
+{
+  "logins": "登录日志",
+  "operations": "关键操作日志",
+  "username": "用户名",
+  "ip": "IP 地址",
+  "operation": "操作",
+  "location": "位置",
+  "device": "设备",
+  "duration": "耗时（毫秒）",
+  "occurredAt": "发生时间",
+  "success": "成功",
+  "failure": "失败",
+  "viewObject": "查看对象",
+  "unusual": "异地登录",
+  "localAddress": "本地/私网",
+  "unknown": "未知",
+  "from": "开始时间",
+  "to": "结束时间",
+  "statuses": {
+    "SUCCESS": "登录成功",
+    "PASSWORD_FAILURE": "账号或密码失败",
+    "CAPTCHA_FAILURE": "验证码失败"
+  }
+}

@@ -54,8 +54,8 @@ spring Modulith/
 | common | 共享内核 | 统一响应、业务异常、访问控制注解、序列化、全局异常处理 | 无 | 已建 |
 | auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security、common :: persistence、iam、config | P1 完成 |
 | iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围 | common、common :: security、common :: persistence | P1 完成 |
-| config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 进行中 |
-| audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、common :: persistence、auth | P2 进行中 |
+| config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 完成 |
+| audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、common :: persistence、auth | P2 完成 |
 | message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、iam | 规划 |
 | file | 文件 | 文件元数据、本地/对象存储适配 | common、common :: security | 规划 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试） | common、common :: security | 规划 |

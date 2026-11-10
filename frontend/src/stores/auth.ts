@@ -30,6 +30,10 @@ export interface CurrentUser {
   tenantTimeZone?: string
   locked?: boolean
   passwordChangeSuggested?: boolean
+  theme?: string
+  tabsEnabled?: boolean
+  keepTabsAfterReload?: boolean
+  features?: { departmentEnabled: boolean; postEnabled: boolean; extendedProfileEnabled: boolean }
 }
 export const useAuth = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null)
@@ -46,8 +50,12 @@ export const useAuth = defineStore('auth', () => {
     }
     user.value = await get<CurrentUser>('/auth/me')
     const preferences = usePreferences()
-    if (applyPreferences && user.value.timeZone) preferences.changeTimeZone(user.value.timeZone)
+    if (applyPreferences) {
+      if (user.value.timeZone) preferences.changeTimeZone(user.value.timeZone)
+      else preferences.userZone = null
+    }
     preferences.tenantZone = user.value.tenantTimeZone || null
+    preferences.applyAppearance(user.value)
     if (applyPreferences && user.value.locale)
       preferences.changeLocale(normalizeLocale(user.value.locale))
     ready.value = true

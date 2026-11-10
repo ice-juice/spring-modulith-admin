@@ -43,7 +43,7 @@ public class SessionService {
     public record Resolved(SessionEntity session,SmaPrincipal principal) {}
     public record Me(Long id,String username,String name,String portal,Long departmentId,boolean superAdmin,Set<String> permissions,
             List<MenuView> menus,List<NavigationView> navigation,String locale,String timeZone,boolean locked,Instant passwordChangedAt,boolean passwordChangeSuggested,
-            String tenantTimeZone,String theme,boolean tabsEnabled,boolean keepTabsAfterReload) {}
+            String tenantTimeZone,String theme,boolean tabsEnabled,boolean keepTabsAfterReload,java.util.Map<String,Boolean> features) {}
 
     public LoginResult login(String username,String password,String portal,String captchaId,String captcha,boolean remember,String ip,String userAgent) {
         String key=throttle.key(ip,username);
@@ -91,7 +91,9 @@ public class SessionService {
                 navigation.visible(menus.stream().map(MenuView::id).collect(java.util.stream.Collectors.toSet())),preference.locale(),preference.timeZone(),
                 session!=null&&session.getLocked(),user.passwordChangedAt(),settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays())>0
                         &&user.passwordChangedAt().plus(Duration.ofDays(settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays()))).isBefore(Instant.now()),
-                preference.tenantTimeZone(),preference.theme(),preference.tabsEnabled(),preference.keepTabsAfterReload());
+                preference.tenantTimeZone(),preference.theme(),preference.tabsEnabled(),preference.keepTabsAfterReload(),java.util.Map.of(
+                    "departmentEnabled",settings.booleanValue("system.departmentEnabled",true),"postEnabled",settings.booleanValue("system.postEnabled",true),
+                    "extendedProfileEnabled",settings.booleanValue("system.extendedProfileEnabled",true)));
     }
     public void logout(long sessionId) { manager.logout(sessionId); }
     private void publish(Long userId,String username,String portal,String status,String ip,String userAgent) {

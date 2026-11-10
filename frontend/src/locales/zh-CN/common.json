@@ -51,5 +51,11 @@
   "preferences": "个人偏好",
   "security": "安全设置",
   "collapse": "收起导航",
-  "expand": "展开导航"
+  "expand": "展开导航",
+  "required": "此项不能为空",
+  "translations": "名称翻译",
+  "nameZhCN": "简体中文名称",
+  "nameEnUS": "英文名称",
+  "yes": "是",
+  "no": "否"
 }

@@ -36,7 +36,7 @@ public class DictionaryService implements DictionaryQuery {
     private DictionaryItemEntity requireItem(long id) { var row=items.selectById(id); if(row==null) throw new BizException(CommonErrorCode.DATA_NOT_FOUND); return row; }
     @Transactional public TypeView saveType(Long id,TypeInput input) {
         lock.lock(CurrentUser.tenantId()); var row=id==null?new DictionaryTypeEntity():requireType(id);
-        if(Boolean.TRUE.equals(row.getBuiltin())&&!row.getTypeKey().equals(input.typeKey())) throw new BizException(ConfigErrorCode.BUILTIN);
+        if(Boolean.TRUE.equals(row.getBuiltin())&&(!row.getTypeKey().equals(input.typeKey())||!input.enabled()||!row.getTree().equals(input.tree()))) throw new BizException(ConfigErrorCode.BUILTIN);
         if(id!=null&&!input.tree()&&items.selectCount(new LambdaQueryWrapper<DictionaryItemEntity>().eq(DictionaryItemEntity::getTypeId,id).ne(DictionaryItemEntity::getParentId,0))>0) throw new BizException(ConfigErrorCode.HAS_CHILDREN);
         row.setTypeKey(input.typeKey()); row.setName(input.name().trim()); row.setNameKey(input.nameKey()); row.setTree(input.tree()); row.setEnabled(input.enabled()); row.setSort(input.sort());
         if(id==null) row.setBuiltin(false);
@@ -46,8 +46,9 @@ public class DictionaryService implements DictionaryQuery {
     @Transactional public ItemView saveItem(Long id,ItemInput input) {
         lock.lock(CurrentUser.tenantId()); var type=requireType(input.typeId()); var row=id==null?new DictionaryItemEntity():requireItem(id);
         if(id!=null&&!row.getTypeId().equals(type.getId())) throw new BizException(CommonErrorCode.BAD_REQUEST);
-        if(Boolean.TRUE.equals(row.getBuiltin())&&!row.getItemValue().equals(input.value())) throw new BizException(ConfigErrorCode.BUILTIN);
+        if(Boolean.TRUE.equals(row.getBuiltin())&&(!row.getItemValue().equals(input.value())||!input.enabled())) throw new BizException(ConfigErrorCode.BUILTIN);
         long parentId=input.parentId()==null?0:input.parentId();
+        if(Boolean.TRUE.equals(row.getBuiltin())&&!row.getParentId().equals(parentId)) throw new BizException(ConfigErrorCode.BUILTIN);
         if(!type.getTree()&&parentId!=0) throw new BizException(ConfigErrorCode.INVALID_PARENT);
         long cursor=parentId; Set<Long> visited=new HashSet<>();
         while(cursor!=0) {

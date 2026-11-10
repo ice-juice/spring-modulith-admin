@@ -112,6 +112,11 @@ public class ParameterService implements ParameterQuery {
  private View view(ParameterEntity row){var texts=names.translations("parameter",row.getId());return new View(row.getId(),row.getParamKey(),row.getGroupKey(),names.name(row.getName(),row.getNameKey(),texts),row.getName(),row.getNameKey(),row.getValueType(),row.getSecret()?null:row.getParamValue(),row.getPublicReadable(),row.getSecret(),row.getSort(),row.getBuiltin(),texts);}
  public record SeedGroup(String key,String name,String nameKey){}
  public record Seed(String key,String group,String name,String nameKey,String type,String value,boolean publicly){}
+ @Transactional public void resetBuiltins(List<Seed> specs){
+  lock.lock(CurrentUser.tenantId());
+  for(var spec:specs){var row=mapper.selectOne(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,spec.key()));
+   if(row!=null&&row.getBuiltin()){row.setParamValue(spec.value());mapper.updateById(row);changed(row.getParamKey());}}
+ }
  @Transactional public void initialize(List<SeedGroup> groupSpecs,List<Seed> specs){
   lock.lock(CurrentUser.tenantId());
   for(var spec:groupSpecs)if(groups.selectCount(new LambdaQueryWrapper<ParameterGroupEntity>().eq(ParameterGroupEntity::getGroupKey,spec.key()))==0){

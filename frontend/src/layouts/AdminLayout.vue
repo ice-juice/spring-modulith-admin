@@ -3,13 +3,18 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import { usePreferences } from '@/stores/preferences'
+import { useBranding } from '@/stores/branding'
 import { loadLocaleModule } from '@/locales'
 import { filterMenus, findMenu } from '@/lib/menus'
 import DisplaySettings from '@/components/DisplaySettings.vue'
 import SecurityControls from '@/components/SecurityControls.vue'
 import MenuBranch from '@/components/MenuBranch.vue'
-const { t } = useI18n()
+import BrandingFooter from '@/components/BrandingFooter.vue'
+const { t, te } = useI18n()
 const auth = useAuth()
+const preferences = usePreferences(),
+  branding = useBranding()
 const route = useRoute()
 const router = useRouter()
 const collapsed = ref(false)
@@ -21,6 +26,44 @@ interface Tab {
   fallback: string
 }
 const tabs = ref<Tab[]>([{ path: '/', titleKey: 'common.home', fallback: '' }])
+const tabKey = 'sma.tabs.' + auth.user?.id
+if (preferences.keepTabsAfterReload) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(tabKey) || '[]') as Tab[]
+    tabs.value.push(
+      ...saved.filter((tab) => {
+        if (
+          typeof tab.path !== 'string' ||
+          !tab.path.startsWith('/') ||
+          tab.path.startsWith('//') ||
+          tab.path === '/'
+        )
+          return false
+        const resolved = router.resolve(tab.path)
+        return (
+          resolved.meta.titleKey !== 'common.notFound' &&
+          (!resolved.meta.permission || auth.hasPermission(String(resolved.meta.permission)))
+        )
+      }),
+    )
+  } catch {
+    /* Invalid saved tabs are ignored. */
+  }
+}
+watch(
+  [tabs, () => preferences.keepTabsAfterReload],
+  () => {
+    if (preferences.keepTabsAfterReload) localStorage.setItem(tabKey, JSON.stringify(tabs.value))
+    else localStorage.removeItem(tabKey)
+  },
+  { deep: true },
+)
+function tabLabel(tab: Tab) {
+  return tab.titleKey && te(tab.titleKey)
+    ? t(tab.titleKey)
+    : findMenu(auth.user?.menus || [], (menu) => menu.path === router.resolve(tab.path).path)
+        ?.name || tab.fallback
+}
 const title = computed(() =>
   route.meta.titleKey
     ? t(String(route.meta.titleKey))
@@ -57,6 +100,7 @@ async function logout() {
   await router.replace('/login')
 }
 void loadLocaleModule('auth')
+void branding.load()
 </script>
 <template>
   <div class="admin-shell" :class="{ collapsed }">
@@ -81,7 +125,7 @@ void loadLocaleModule('auth')
         >
         <MenuBranch v-for="item in menus" :key="item.id" :item="item" />
       </el-menu>
-      <div class="sidebar-footer">{{ t('common.brand') }}</div>
+      <div class="sidebar-footer">{{ branding.name }}</div>
     </aside>
     <div class="workspace">
       <header class="topbar">
@@ -95,6 +139,9 @@ void loadLocaleModule('auth')
         </div>
         <div class="topbar-actions">
           <DisplaySettings /><span class="user-name">{{ auth.user?.name }}</span
+          ><el-button text @click="router.push('/preferences')">{{
+            t('common.preferences')
+          }}</el-button
           ><SecurityControls /><el-button @click="logout">{{ t('common.signOut') }}</el-button>
         </div>
       </header>
@@ -111,7 +158,7 @@ void loadLocaleModule('auth')
           >{{ item.name }}</el-button
         >
       </div>
-      <div class="workspace-tabs">
+      <div v-if="preferences.tabsEnabled" class="workspace-tabs">
         <el-tag
           v-for="tab in tabs"
           :key="tab.path"
@@ -119,7 +166,7 @@ void loadLocaleModule('auth')
           :type="route.fullPath === tab.path ? 'primary' : 'info'"
           @click="router.push(tab.path)"
           @close="closeTab(tab.path)"
-          >{{ tab.titleKey ? t(tab.titleKey) : tab.fallback }}</el-tag
+          >{{ tabLabel(tab) }}</el-tag
         >
       </div>
       <el-alert
@@ -129,6 +176,7 @@ void loadLocaleModule('auth')
         :closable="false"
       />
       <main class="main-content"><RouterView :key="route.path" /></main>
+      <BrandingFooter />
     </div>
   </div>
 </template>

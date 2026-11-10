@@ -20,9 +20,19 @@ import {
   type Option,
 } from '@/features/iam/resources'
 const route = useRoute()
+const props = withDefaults(
+  defineProps<{
+    resourceId?: string
+    filters?: Record<string, unknown>
+    preset?: Record<string, unknown>
+    hierarchical?: boolean
+  }>(),
+  { hierarchical: true },
+)
+const emit = defineEmits<{ changed: []; select: [row: Row] }>()
 const { t, locale } = useI18n()
 const auth = useAuth()
-const resource = computed(() => resources[String(route.meta.resource)]!)
+const resource = computed(() => resources[props.resourceId || String(route.meta.resource)]!)
 const rows = ref<Row[]>([])
 const loading = ref(false)
 const error = ref('')
@@ -43,9 +53,24 @@ const roleForGrant = ref<Row>()
 const resetDialog = ref(false)
 const newPassword = ref('')
 const userForReset = ref<Row>()
+const focusMode = ref(true)
+function rowClassName({ row }: { row: Row }) {
+  return row.id === route.query?.focus ? 'focused-row' : ''
+}
 const tableData = computed(() => (resource.value.tree ? tableTree(rows.value) : rows.value))
 const visibleFields = computed(() =>
-  resource.value.fields.filter((field) => !current.value || !field.createOnly),
+  resource.value.fields.filter(
+    (field) =>
+      (!current.value || !field.createOnly) &&
+      (field.key !== 'parentId' || props.hierarchical) &&
+      !(
+        resource.value.id === 'users' &&
+        ((field.key === 'departmentId' && auth.user?.features?.departmentEnabled === false) ||
+          (field.key === 'postIds' && auth.user?.features?.postEnabled === false) ||
+          (['email', 'mobile', 'gender'].includes(field.key) &&
+            auth.user?.features?.extendedProfileEnabled === false))
+      ),
+  ),
 )
 const rules = computed<FormRules>(() =>
   Object.fromEntries(
@@ -53,17 +78,27 @@ const rules = computed<FormRules>(() =>
       .filter((field) => field.required)
       .map((field) => [
         ['tree', 'select'].includes(field.kind) ? 'singles.' + field.key : 'text.' + field.key,
-        [{ required: true, message: t('iam.required'), trigger: 'blur' }],
+        [{ required: true, message: t('common.required'), trigger: 'blur' }],
       ]),
   ),
 )
 function label(key: string) {
-  return t('iam.fields.' + key)
+  return t((resource.value.module || 'iam') + '.fields.' + key)
 }
 function choice(key: string) {
-  return t('iam.choices.' + key)
+  return t((resource.value.module || 'iam') + '.choices.' + key)
 }
+function selectRow(row: Row) {
+  emit('select', row)
+}
+const parameterBoolean = computed({
+  get: () => editor.value.text.value === 'true',
+  set: (value: boolean) => {
+    editor.value.text.value = String(value)
+  },
+})
 function search() {
+  focusMode.value = false
   page.value = 1
   void load()
 }
@@ -80,19 +115,24 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const result = await get<Row[] | PageResult<Row>>(resource.value.endpoint, {
-      page: page.value,
-      size: size.value,
-      keyword: keyword.value || undefined,
-    })
+    const result =
+      resource.value.id === 'users' && focusMode.value && typeof route.query?.focus === 'string'
+        ? [await get<Row>(resource.value.endpoint + '/' + route.query.focus)]
+        : await get<Row[] | PageResult<Row>>(resource.value.endpoint, {
+            page: page.value,
+            size: size.value,
+            keyword: keyword.value || undefined,
+            ...props.filters,
+          })
     rows.value = Array.isArray(result)
       ? result.filter(
           (row) =>
             !keyword.value.trim() ||
-            ['name', 'code', 'permissionKey'].some((key) =>
-              String(row[key] || '')
-                .toLocaleLowerCase()
-                .includes(keyword.value.trim().toLocaleLowerCase()),
+            ['name', 'code', 'permissionKey', 'typeKey', 'paramKey', 'value', 'groupKey'].some(
+              (key) =>
+                String(row[key] || '')
+                  .toLocaleLowerCase()
+                  .includes(keyword.value.trim().toLocaleLowerCase()),
             ),
         )
       : result.items
@@ -111,6 +151,7 @@ interface TreeSource {
   disabled?: boolean
   enabled?: boolean
   children?: TreeSource[]
+  groupKey?: string
 }
 function optionTree(rows: TreeSource[]): Option[] {
   return rows.map((row) => ({
@@ -131,6 +172,8 @@ async function loadOptions() {
     roles: '/iam/roles/options',
     posts: '/iam/posts/options',
     rootMenus: '/iam/permissions',
+    parameterGroups: '/config/parameters/groups',
+    dictionaryParents: '/config/dictionaries/items',
   }
   await Promise.all(
     [...sources].map(async (source) => {
@@ -142,12 +185,19 @@ async function loadOptions() {
         return
       }
       try {
-        const result = await get<TreeSource[] | Option[]>(paths[source]!)
+        const result = await get<TreeSource[] | Option[]>(paths[source]!, props.filters)
         if (source === 'roles' || source === 'posts') options[source] = result as Option[]
         else if (source === 'rootMenus')
           options[source] = optionTree(
             (result as TreeSource[]).filter((row) => String(row.parentId) === '0'),
           )
+        else if (source === 'parameterGroups')
+          options[source] = (result as TreeSource[]).map((row) => ({
+            value: row.groupKey!,
+            label: row.name || '',
+          }))
+        else if (source === 'dictionaryParents')
+          options[source] = optionTree(tableTree(result as Row[]) as unknown as TreeSource[])
         else options[source] = optionTree(result as TreeSource[])
       } catch {
         options[source] = []
@@ -181,12 +231,18 @@ async function save() {
   saving.value = true
   error.value = ''
   try {
-    const payload = payloadFor(resource.value, editor.value, !!current.value)
+    const payload = {
+      ...payloadFor(resource.value, editor.value, !!current.value),
+      ...props.preset,
+    }
+    if (resource.value.id === 'parameters' && current.value?.secret && !editor.value.text.value)
+      payload.value = null
     if (current.value) await put(resource.value.endpoint + '/' + current.value.id, payload)
     else await post(resource.value.endpoint, payload)
     dialog.value = false
     ElMessage.success(t('common.saved'))
     await load()
+    emit('changed')
     if (resource.value.id === 'permissions' || resource.value.id === 'navigation')
       await auth.load(false)
   } catch (e) {
@@ -205,6 +261,7 @@ async function deleteRow(row: Row) {
     await remove(resource.value.endpoint + '/' + row.id)
     ElMessage.success(t('common.deleted'))
     await load()
+    emit('changed')
   } catch (e) {
     error.value = (e as Error).message
   }
@@ -257,13 +314,19 @@ async function resetPassword() {
   }
 }
 watch(
-  [() => route.meta.resource, locale],
+  [
+    () => props.resourceId || route.meta.resource,
+    locale,
+    () => props.filters,
+    () => route.query?.focus,
+  ],
   () => {
     page.value = 1
     keyword.value = ''
+    focusMode.value = true
     void load()
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 </script>
 <template>
@@ -300,6 +363,8 @@ watch(
       default-expand-all
       stripe
       :empty-text="t('common.empty')"
+      @row-click="selectRow"
+      :row-class-name="rowClassName"
     >
       <el-table-column
         v-for="column in resource.columns"
@@ -313,10 +378,17 @@ watch(
           <el-tag v-if="column.kind === 'status'" :type="row[column.key] ? 'success' : 'info'">{{
             t(row[column.key] ? 'common.enabled' : 'common.disabled')
           }}</el-tag>
+          <span v-else-if="column.kind === 'boolean'">{{
+            t(row[column.key] ? 'common.yes' : 'common.no')
+          }}</span>
           <span v-else-if="column.kind === 'scope' || column.kind === 'type'">{{
             choice(String(row[column.key]))
           }}</span>
-          <span v-else>{{ row[column.key] }}</span>
+          <span v-else>{{
+            resource.id === 'parameters' && column.key === 'value' && row.secret
+              ? t('config.masked')
+              : row[column.key]
+          }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="t('common.actions')" width="270" fixed="right">
@@ -388,13 +460,31 @@ watch(
           :label="label(field.key)"
           :prop="(['tree', 'select'].includes(field.kind) ? 'singles.' : 'text.') + field.key"
         >
+          <el-switch
+            v-if="
+              resource.id === 'parameters' &&
+              field.key === 'value' &&
+              editor.singles.valueType === 'BOOLEAN'
+            "
+            v-model="parameterBoolean"
+          />
           <el-input
-            v-if="['text', 'textarea', 'password'].includes(field.kind)"
+            v-else-if="['text', 'textarea', 'password'].includes(field.kind)"
             v-model="editor.text[field.key]"
             :type="field.kind === 'text' ? 'text' : field.kind"
             :show-password="field.kind === 'password'"
-            :disabled="!!current?.builtin && field.key === 'permissionKey'"
-            :maxlength="field.key === 'description' ? 512 : 128"
+            :disabled="
+              !!current?.builtin &&
+              (['permissionKey', 'typeKey', 'paramKey', 'groupKey'].includes(field.key) ||
+                (field.key === 'value' && resource.id === 'dictionaryItems'))
+            "
+            :maxlength="
+              resource.id === 'parameters' && field.key === 'value'
+                ? 4000
+                : field.key === 'description'
+                  ? 512
+                  : 128
+            "
           />
           <el-input-number
             v-else-if="field.kind === 'number'"
@@ -402,7 +492,15 @@ watch(
             :min="0"
             :max="999999"
           />
-          <el-switch v-else-if="field.kind === 'flag'" v-model="editor.flags[field.key]" />
+          <el-switch
+            v-else-if="field.kind === 'flag'"
+            v-model="editor.flags[field.key]"
+            :disabled="
+              !!current?.builtin &&
+              resource.id.startsWith('dictionary') &&
+              ['enabled', 'tree'].includes(field.key)
+            "
+          />
           <el-tree-select
             v-else-if="field.kind === 'tree'"
             v-model="editor.singles[field.key]"
@@ -443,7 +541,7 @@ watch(
             v-else-if="field.kind === 'select'"
             v-model="editor.singles[field.key]"
             filterable
-            :disabled="!!current?.builtin && field.key === 'type'"
+            :disabled="!!current?.builtin && ['type', 'valueType'].includes(field.key)"
             style="width: 100%"
           >
             <el-option
@@ -462,11 +560,11 @@ watch(
         </el-form-item>
       </template>
       <template v-if="resource.translations">
-        <el-divider>{{ t('iam.translations') }}</el-divider>
-        <el-form-item :label="t('iam.nameZhCN')"
+        <el-divider>{{ t('common.translations') }}</el-divider>
+        <el-form-item :label="t('common.nameZhCN')"
           ><el-input v-model="editor.text.nameZhCN" maxlength="128"
         /></el-form-item>
-        <el-form-item :label="t('iam.nameEnUS')"
+        <el-form-item :label="t('common.nameEnUS')"
           ><el-input v-model="editor.text.nameEnUS" maxlength="128"
         /></el-form-item>
       </template>
@@ -479,6 +577,7 @@ watch(
     >
   </el-dialog>
   <el-dialog
+    v-if="resource.id === 'roles'"
     v-model="grantDialog"
     :title="t('iam.grant') + ' · ' + roleForGrant?.name"
     width="600px"
@@ -501,7 +600,12 @@ watch(
       }}</el-button></template
     >
   </el-dialog>
-  <el-dialog v-model="resetDialog" :title="t('iam.resetPassword')" width="450px">
+  <el-dialog
+    v-if="resource.id === 'users'"
+    v-model="resetDialog"
+    :title="t('iam.resetPassword')"
+    width="450px"
+  >
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <el-input
       v-model="newPassword"

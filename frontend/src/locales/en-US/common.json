@@ -51,5 +51,11 @@
   "preferences": "Preferences",
   "security": "Security",
   "collapse": "Collapse navigation",
-  "expand": "Expand navigation"
+  "expand": "Expand navigation",
+  "required": "This field is required",
+  "translations": "Name translations",
+  "nameZhCN": "Chinese name",
+  "nameEnUS": "English name",
+  "yes": "Yes",
+  "no": "No"
 }

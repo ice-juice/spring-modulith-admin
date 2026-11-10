@@ -15,6 +15,14 @@ import com.sma.admin.support.*;
 class ParameterTests {
  @Autowired ParameterService service;
  @Autowired MockMvcTester mvc;
+ @Autowired com.sma.admin.config.internal.service.BuiltinParameters builtin;
+ @Test void restoringBuiltinsResetsValuesAndPreservesCustomParameters(){
+  var system=service.list(null,null).stream().filter(row->row.paramKey().equals("system.name")).findFirst().orElseThrow();
+  service.save(system.id(),new ParameterService.Input(system.paramKey(),system.groupKey(),system.defaultName(),system.nameKey(),system.valueType(),"Changed",true,false,0,Map.of()));
+  var custom=service.save(null,new ParameterService.Input("custom.resetCheck","basic","Custom",null,"STRING","keep",false,false,0,Map.of()));
+  builtin.resetDefaults();assertThat(service.stringValue("system.name","")).isEqualTo("Springboot Modulith Admin");assertThat(service.stringValue("custom.resetCheck","")).isEqualTo("keep");
+  service.delete(custom.id());
+ }
  @Test void typedValuesRefreshAfterCommitAndSecretsRemainServerSide(){
   Users.as(Users.principal(101,181,DataAccess.unrestricted()),()->{
    service.saveGroup(null,new ParameterService.GroupInput("business","业务",null,0,Map.of("en-US","Business")));

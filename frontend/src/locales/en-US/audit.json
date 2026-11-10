@@ -1,0 +1,24 @@
+{
+  "logins": "Sign-in logs",
+  "operations": "Operation logs",
+  "username": "Username",
+  "ip": "IP address",
+  "operation": "Operation",
+  "location": "Location",
+  "device": "Device",
+  "duration": "Duration (ms)",
+  "occurredAt": "Occurred",
+  "success": "Succeeded",
+  "failure": "Failed",
+  "viewObject": "View object",
+  "unusual": "Location changed",
+  "localAddress": "Local / private",
+  "unknown": "Unknown",
+  "from": "Start time",
+  "to": "End time",
+  "statuses": {
+    "SUCCESS": "Signed in",
+    "PASSWORD_FAILURE": "Credential check failed",
+    "CAPTCHA_FAILURE": "Verification code failed"
+  }
+}

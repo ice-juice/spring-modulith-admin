@@ -1,3 +1,4 @@
+import { configResources } from '@/features/config/resources'
 export type FieldKind =
   'text' | 'textarea' | 'password' | 'number' | 'flag' | 'select' | 'tree' | 'multi' | 'multiTree'
 export interface Option {
@@ -14,13 +15,15 @@ export interface Field {
   choices?: string[]
   initial?: string | number | boolean
   createOnly?: boolean
+  keepEmpty?: boolean
 }
 export interface Column {
   key: string
-  kind?: 'status' | 'scope' | 'type'
+  kind?: 'status' | 'scope' | 'type' | 'boolean'
 }
 export interface Resource {
   id: string
+  module?: string
   titleKey: string
   endpoint: string
   permission: string
@@ -46,6 +49,7 @@ const columns: Column[] = [
   { key: 'enabled', kind: 'status' },
 ]
 export const resources: Record<string, Resource> = {
+  ...configResources,
   departments: {
     id: 'departments',
     titleKey: 'iam.department',
@@ -224,7 +228,8 @@ export function payloadFor(
       payload[field.key] = state.singles[field.key] ?? (field.key === 'parentId' ? '0' : null)
     else if (['multi', 'multiTree'].includes(field.kind))
       payload[field.key] = state.multiples[field.key] || []
-    else payload[field.key] = state.text[field.key] || (field.required ? '' : null)
+    else
+      payload[field.key] = state.text[field.key] || (field.required || field.keepEmpty ? '' : null)
   }
   if (resource.translations) {
     payload.translations = Object.fromEntries(

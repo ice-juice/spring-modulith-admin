@@ -10,7 +10,10 @@ import com.sma.admin.config.internal.service.DictionaryService;
 @RestController @RequestMapping("/api/config/dictionaries")
 public class DictionaryController {
     private final DictionaryService service;
-    public DictionaryController(DictionaryService service) { this.service=service; }
+    private final com.sma.admin.config.internal.service.BuiltinDictionaries builtin;
+    public DictionaryController(DictionaryService service,com.sma.admin.config.internal.service.BuiltinDictionaries builtin) { this.service=service;this.builtin=builtin; }
+    @PostMapping("/initialize") @RequiresPermission("config:dictionary:update") @AuditAction("config:dictionary:initialize")
+    public ApiResponse<Void> initialize(){builtin.initialize();return ApiResponse.ok();}
     @GetMapping("/types") @RequiresPermission("config:dictionary:view")
     public ApiResponse<List<DictionaryService.TypeView>> types() { return ApiResponse.ok(service.types()); }
     @PostMapping("/types") @RequiresPermission("config:dictionary:create")

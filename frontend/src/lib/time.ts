@@ -5,6 +5,12 @@ import 'dayjs/locale/zh-cn'
 import 'dayjs/locale/en'
 dayjs.extend(utc)
 dayjs.extend(timezone)
+export function localDateTimeToInstant(value: string, zone: string): string {
+  return dayjs
+    .tz(value, validTimeZone(zone) ? zone : 'UTC')
+    .utc()
+    .toISOString()
+}
 
 export function validTimeZone(value?: string | null): value is string {
   if (!value) return false

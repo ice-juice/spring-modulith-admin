@@ -7,13 +7,16 @@ import org.springframework.stereotype.Component;
  private final ParameterService service;
  public BuiltinParameters(ParameterService service){this.service=service;}
  @EventListener(ApplicationReadyEvent.class)
- public void initialize(){service.initialize(List.of(
+ public void initialize(){service.initialize(groups(),specs());}
+ public void resetDefaults(){initialize();service.resetBuiltins(specs());}
+ public List<ParameterService.SeedGroup> groups(){return List.of(
   new ParameterService.SeedGroup("basic","系统基础","config.group.basic"),
   new ParameterService.SeedGroup("security","系统安全","config.group.security"),
   new ParameterService.SeedGroup("login","登录页面","config.group.login"),
   new ParameterService.SeedGroup("appearance","界面设置","config.group.appearance"),
   new ParameterService.SeedGroup("legal","备案与版权","config.group.legal")
- ),List.of(
+ );}
+ public List<ParameterService.Seed> specs(){return List.of(
   new ParameterService.Seed("system.name","basic","系统名称","config.param.system.name","STRING","Springboot Modulith Admin",true),
   new ParameterService.Seed("system.departmentEnabled","basic","启用部门","config.param.system.departmentEnabled","BOOLEAN","true",false),
   new ParameterService.Seed("system.postEnabled","basic","启用岗位","config.param.system.postEnabled","BOOLEAN","true",false),
@@ -34,5 +37,5 @@ import org.springframework.stereotype.Component;
   new ParameterService.Seed("system.copyrightUrl","legal","版权链接","config.param.system.copyrightUrl","STRING","",true),
   new ParameterService.Seed("system.recordInfo","legal","备案信息","config.param.system.recordInfo","STRING","",true),
   new ParameterService.Seed("system.recordUrl","legal","备案链接","config.param.system.recordUrl","STRING","",true)
- ));}
+ );}
 }

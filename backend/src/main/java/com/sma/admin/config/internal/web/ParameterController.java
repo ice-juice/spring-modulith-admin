@@ -9,7 +9,10 @@ import com.sma.admin.config.internal.service.ParameterService;
 @RestController @RequestMapping("/api/config/parameters")
 public class ParameterController {
  private final ParameterService service;
- public ParameterController(ParameterService service){this.service=service;}
+ private final com.sma.admin.config.internal.service.BuiltinParameters builtin;
+ public ParameterController(ParameterService service,com.sma.admin.config.internal.service.BuiltinParameters builtin){this.service=service;this.builtin=builtin;}
+ @PostMapping("/reset-builtins") @RequiresPermission("config:parameter:update") @AuditAction("config:parameter:reset")
+ public ApiResponse<Void> resetBuiltins(){builtin.resetDefaults();return ApiResponse.ok();}
  @GetMapping @RequiresPermission("config:parameter:view")
  public ApiResponse<List<ParameterService.View>> list(@RequestParam(required=false)String group,@RequestParam(required=false)String keyword){return ApiResponse.ok(service.list(group,keyword));}
  @GetMapping("/groups") @RequiresPermission("config:parameter:view")

@@ -6,10 +6,13 @@ import { useAuth } from '@/stores/auth'
 import { get } from '@/api/http'
 import { safeRedirect } from '@/router/access'
 import DisplaySettings from '@/components/DisplaySettings.vue'
+import { useBranding } from '@/stores/branding'
+import BrandingFooter from '@/components/BrandingFooter.vue'
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
+const branding = useBranding()
 const form = reactive({
   username: '',
   password: '',
@@ -22,6 +25,7 @@ const captchaImage = ref('')
 const busy = ref(false)
 const error = ref('')
 async function refreshCaptcha() {
+  if (!branding.captchaEnabled) return
   try {
     const result = await get<{ id: string; image: string }>('/auth/captcha')
     form.captchaId = result.id
@@ -32,7 +36,7 @@ async function refreshCaptcha() {
   }
 }
 async function submit() {
-  if (!form.username || !form.password || !form.captcha) {
+  if (!form.username || !form.password || (branding.captchaEnabled && !form.captcha)) {
     error.value = t('auth.required')
     return
   }
@@ -48,14 +52,26 @@ async function submit() {
     busy.value = false
   }
 }
-onMounted(refreshCaptcha)
+onMounted(async () => {
+  await branding.load()
+  await refreshCaptcha()
+})
 </script>
 <template>
   <div class="login-page">
+    <div
+      v-if="branding.background"
+      class="login-background"
+      :style="{
+        backgroundImage:
+          'linear-gradient(#122237aa,#122237cc),url(' + JSON.stringify(branding.background) + ')',
+        filter: branding.values['login.backgroundBlur'] === 'true' ? 'blur(8px)' : 'none',
+      }"
+    />
     <div class="login-tools"><DisplaySettings /></div>
     <section class="login-brand">
       <div class="brand-mark">{{ t('common.shortBrand') }}</div>
-      <h1>{{ t('common.brand') }}</h1>
+      <h1>{{ branding.name }}</h1>
       <p>{{ t('common.workspace') }}</p>
     </section>
     <el-card class="login-card" shadow="never">
@@ -75,7 +91,7 @@ onMounted(refreshCaptcha)
             show-password
             maxlength="128"
         /></el-form-item>
-        <el-form-item :label="t('auth.captcha')"
+        <el-form-item v-if="branding.captchaEnabled" :label="t('auth.captcha')"
           ><div class="captcha-row">
             <el-input
               v-model="form.captcha"
@@ -97,5 +113,6 @@ onMounted(refreshCaptcha)
         }}</el-button>
       </el-form>
     </el-card>
+    <BrandingFooter class="login-footer" />
   </div>
 </template>
