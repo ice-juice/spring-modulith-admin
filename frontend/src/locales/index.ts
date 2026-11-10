@@ -1,12 +1,14 @@
 import { createI18n } from 'vue-i18n'
 import zhCommon from './zh-CN/common.json'
 import enCommon from './en-US/common.json'
-import type zhAuth from './zh-CN/auth.json'
+import zhAuth from './zh-CN/auth.json'
+import enAuth from './en-US/auth.json'
 import type zhIam from './zh-CN/iam.json'
 import type zhConfig from './zh-CN/config.json'
 import type zhAudit from './zh-CN/audit.json'
 import type zhFile from './zh-CN/file.json'
-import type zhMessage from './zh-CN/message.json'
+import zhMessage from './zh-CN/message.json'
+import enMessage from './en-US/message.json'
 import type zhMonitor from './zh-CN/monitor.json'
 import type zhOpenapi from './zh-CN/openapi.json'
 import type zhWorkspace from './zh-CN/workspace.json'
@@ -47,10 +49,19 @@ export const i18n = createI18n<[Partial<MessageSchema>], AppLocale, false>({
   legacy: false,
   locale: normalizeLocale(localStorage.getItem('sma.locale') || navigator.language),
   fallbackLocale: 'zh-CN',
-  messages: { 'zh-CN': { common: zhCommon }, 'en-US': { common: enCommon } },
+  // The shell uses authentication and message labels on every protected route.
+  // Load these with common so the first render never caches missing translations.
+  messages: {
+    'zh-CN': { common: zhCommon, auth: zhAuth, message: zhMessage },
+    'en-US': { common: enCommon, auth: enAuth, message: enMessage },
+  },
 })
 const loaders = import.meta.glob(['./*/*.json', '!./*/common.json'])
-const loaded = new Set(['zh-CN/common', 'en-US/common'])
+const loaded = new Set(
+  supportedLocales.flatMap((locale) =>
+    ['common', 'auth', 'message'].map((module) => `${locale}/${module}`),
+  ),
+)
 export async function loadLocaleModule(module: string) {
   for (const locale of supportedLocales) {
     const key = `${locale}/${module}`

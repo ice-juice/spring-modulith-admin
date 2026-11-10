@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: sma-extension-security
+  datasource:
+    url: ${SMA_RELEASE_DB_URL}
+    username: ${SMA_RELEASE_DB_USERNAME}
+    password: ${SMA_RELEASE_DB_PASSWORD}
+  flyway:
+    locations: classpath:db/migration
+    clean-disabled: true
+  servlet:
+    multipart:
+      enabled: false
+server:
+  port: ${SMA_RELEASE_PORT:8092}
+  address: ${SMA_RELEASE_BIND:127.0.0.1}
+  error:
+    include-message: never
+    include-stacktrace: never
+release:
+  issuer: release-security
+  application: sma-admin
+  directory: ${SMA_RELEASE_DIRECTORY}
+  encryption-key: ${SMA_RELEASE_ENCRYPTION_KEY}
+  origin: ${SMA_RELEASE_ORIGIN}
+  bootstrap-file: ${SMA_RELEASE_BOOTSTRAP_FILE:}

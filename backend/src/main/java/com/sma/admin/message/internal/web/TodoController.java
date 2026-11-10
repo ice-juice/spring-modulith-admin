@@ -18,7 +18,10 @@ public class TodoController {
   @RequestParam(required=false)Integer state,@RequestParam(required=false)Integer type,@RequestParam(required=false)Integer priority,@RequestParam(required=false)Boolean active,
   @RequestParam(required=false)String dateField,@RequestParam(required=false)Instant from,@RequestParam(required=false)Instant to){return ApiResponse.ok(service.page(page,keyword,state,type,priority,active,dateField,from,to,false));}
  @GetMapping("/managed") @RequiresPermission("message:todo:view")
- public ApiResponse<PageResult<TodoService.View>> managed(@ModelAttribute PageQuery page){return ApiResponse.ok(service.page(page,null,null,null,null,null,null,null,null,true));}
+ public ApiResponse<PageResult<TodoService.View>> managed(@ModelAttribute PageQuery page,@RequestParam(required=false)String keyword,
+  @RequestParam(required=false)Integer state,@RequestParam(required=false)Integer type,@RequestParam(required=false)Integer priority,@RequestParam(required=false)Boolean active,
+  @RequestParam(required=false)String dateField,@RequestParam(required=false)Instant from,@RequestParam(required=false)Instant to){
+  return ApiResponse.ok(service.page(page,keyword,state,type,priority,active,dateField,from,to,true));}
  @GetMapping("/managed/{id}") @RequiresPermission("message:todo:view") public ApiResponse<TodoService.View> managed(@PathVariable long id){return ApiResponse.ok(service.managed(id));}
  @GetMapping("/{id}") public ApiResponse<TodoService.View> get(@PathVariable long id){return ApiResponse.ok(service.get(id));}
  @GetMapping("/recipients") @RequiresPermission("message:todo:assign") public ApiResponse<java.util.List<OptionItem>> recipients(@RequestParam(required=false)String keyword){return ApiResponse.ok(service.recipients(keyword));}

@@ -61,4 +61,21 @@ class TodoTests {
    });return null;
   });
  }
+ @Test void managedEndpointAppliesFiltersWithoutExpandingDataScope(){
+  var manager=new SmaPrincipal(101,"manager",1244,"admin",null,false,DataAccess.unrestricted(),Set.of("message:todo:view"),"UTC");
+  Users.as(manager,()->{
+   var user=users.create(new UserService.Create(new UserService.Input("filter-assignee","Assignee",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Assignee@Secure2026"));
+   todos.save(null,new TodoService.Input("Needle",null,null,1,2,due,user.id(),null),true);
+   todos.save(null,new TodoService.Input("Other","Details",null,2,1,due.plusSeconds(3600),user.id(),null),true);
+   assertThat(mvc.get().uri("/api/message/todos/managed").param("keyword","Needle").param("state","1").param("type","1")
+     .param("dateField","dueAt").param("from",due.toString()).param("to",due.plusSeconds(1).toString())).hasStatusOk()
+     .bodyJson().hasPathSatisfying("$.data.total",v->v.assertThat().isEqualTo("1"));
+   assertThat(mvc.get().uri("/api/message/todos/managed").param("keyword","Needle").param("state","3")).hasStatusOk()
+     .bodyJson().hasPathSatisfying("$.data.total",v->v.assertThat().isEqualTo("0"));
+   var restricted=new SmaPrincipal(user.id(),"assignee",1244,"admin",null,false,DataAccess.own(),Set.of("message:todo:view"),"UTC");
+   Users.as(restricted,()->{assertThat(mvc.get().uri("/api/message/todos/managed").param("keyword","Needle")).hasStatusOk()
+     .bodyJson().hasPathSatisfying("$.data.total",v->v.assertThat().isEqualTo("0"));return null;});
+   return null;
+  });
+ }
 }

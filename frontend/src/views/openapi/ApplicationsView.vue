@@ -240,9 +240,12 @@ watch(
         ></el-table-column
       ><el-table-column :label="t('openapi.type')" min-width="150"
         ><template #default="{ row }">{{ typeName(row.type) }}</template></el-table-column
-      ><el-table-column prop="appId" :label="t('openapi.appId')" min-width="260" /><el-table-column
-        :label="t('common.enabled')"
-        width="90"
+      ><el-table-column
+        prop="appId"
+        :label="t('openapi.appId')"
+        min-width="280"
+        show-overflow-tooltip
+      /><el-table-column :label="t('common.enabled')" width="90"
         ><template #default="{ row }"
           ><el-switch
             :model-value="row.enabled"
@@ -355,6 +358,7 @@ watch(
       ><el-form-item :label="t('openapi.targetName')"
         ><el-input v-model="target.name" maxlength="128" /></el-form-item></el-form
     ><template #footer
+      ><el-button @click="targetId = ''">{{ t('common.cancel') }}</el-button
       ><el-button type="primary" @click="saveTarget">{{ t('common.save') }}</el-button></template
     ></el-dialog
   >

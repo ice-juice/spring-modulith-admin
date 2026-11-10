@@ -294,6 +294,9 @@ npm run dev                   # http://127.0.0.1:5173，/api 代理到 8080
 
 | 文档 | 内容 |
 |---|---|
+| [用户手册](docs/user-manual.md) | 登录、各模块操作、个人偏好、安全与常见问题 |
+| [开发手册](docs/developer-manual.md) | 环境、启动、模块边界、开发流程、测试与排障 |
+| [浏览器巡检记录](docs/browser-audit.md) | 逐页点击记录、问题、修复和真实验证边界 |
 | [docs/jbolt-product-design.md](docs/jbolt-product-design.md) | JBolt 产品设计与功能地图（完整版） |
 | [docs/development-progress.md](docs/development-progress.md) | 开发计划（P0～P4）与每个功能的验证记录 |
 | [docs/proposals/](docs/proposals/README.md) | 方案与决策记录 |

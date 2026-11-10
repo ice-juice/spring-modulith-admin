@@ -1,0 +1,389 @@
+{
+  "generatedAt": "2026-11-10T13:46:02.868Z",
+  "note": "Requests include literal URL prefixes extracted from existing call sites and explicit resource endpoints. Dynamic suffixes require the named source and API contract. Status requires recorded test evidence.",
+  "total": 28,
+  "routes": [
+    {
+      "route": "/",
+      "legacyView": "views/HomeView.vue",
+      "module": "workspace",
+      "permission": null,
+      "requests": [
+        "GET /workspace/dashboard",
+        "GET /actuator/health"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/:pathMatch(.*)*",
+      "legacyView": "views/StatusView.vue",
+      "module": null,
+      "permission": null,
+      "requests": [],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/403",
+      "legacyView": "views/StatusView.vue",
+      "module": null,
+      "permission": null,
+      "requests": [],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/audit/logins",
+      "legacyView": "views/audit/LogsView.vue",
+      "module": "audit",
+      "permission": "audit:login:view",
+      "requests": [
+        "GET /audit/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/audit/operations",
+      "legacyView": "views/audit/LogsView.vue",
+      "module": "audit",
+      "permission": "audit:operation:view",
+      "requests": [
+        "GET /audit/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/auth/sessions",
+      "legacyView": "views/auth/SessionsView.vue",
+      "module": "auth",
+      "permission": "auth:session:view",
+      "requests": [
+        "GET /auth/sessions",
+        "POST /auth/sessions/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/config/dictionaries",
+      "legacyView": "views/config/DictionaryView.vue",
+      "module": "config",
+      "permission": "config:dictionary:view",
+      "requests": [
+        "GET /config/dictionaries/types",
+        "POST /config/dictionaries/initialize"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/config/parameters",
+      "legacyView": "views/config/ParametersView.vue",
+      "module": "config",
+      "permission": "config:parameter:view",
+      "requests": [
+        "POST /config/parameters/refresh",
+        "POST /config/parameters/reset-builtins"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/file/files",
+      "legacyView": "views/file/FilesView.vue",
+      "module": "file",
+      "permission": "file:file:view",
+      "requests": [
+        "GET /file/files",
+        "DELETE /file/files/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/frame/:id",
+      "legacyView": "views/FrameView.vue",
+      "module": null,
+      "permission": null,
+      "requests": [],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/iam/departments",
+      "legacyView": "views/iam/ManagementView.vue",
+      "module": "iam",
+      "permission": "iam:department:view",
+      "requests": [
+        "GET /iam/departments",
+        "POST /iam/departments",
+        "PUT /iam/departments/{id}",
+        "DELETE /iam/departments/{id}",
+        "GET /iam/permissions/tree",
+        "GET /iam/roles/",
+        "PUT /iam/roles/",
+        "PUT /iam/users/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/iam/navigation",
+      "legacyView": "views/iam/ManagementView.vue",
+      "module": "iam",
+      "permission": "iam:navigation:view",
+      "requests": [
+        "GET /iam/navigation",
+        "POST /iam/navigation",
+        "PUT /iam/navigation/{id}",
+        "DELETE /iam/navigation/{id}",
+        "GET /iam/permissions/tree",
+        "GET /iam/roles/",
+        "PUT /iam/roles/",
+        "PUT /iam/users/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/iam/permissions",
+      "legacyView": "views/iam/ManagementView.vue",
+      "module": "iam",
+      "permission": "iam:permission:view",
+      "requests": [
+        "GET /iam/permissions",
+        "POST /iam/permissions",
+        "PUT /iam/permissions/{id}",
+        "DELETE /iam/permissions/{id}",
+        "GET /iam/permissions/tree",
+        "GET /iam/roles/",
+        "PUT /iam/roles/",
+        "PUT /iam/users/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/iam/posts",
+      "legacyView": "views/iam/ManagementView.vue",
+      "module": "iam",
+      "permission": "iam:post:view",
+      "requests": [
+        "GET /iam/posts",
+        "POST /iam/posts",
+        "PUT /iam/posts/{id}",
+        "DELETE /iam/posts/{id}",
+        "GET /iam/permissions/tree",
+        "GET /iam/roles/",
+        "PUT /iam/roles/",
+        "PUT /iam/users/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/iam/roles",
+      "legacyView": "views/iam/ManagementView.vue",
+      "module": "iam",
+      "permission": "iam:role:view",
+      "requests": [
+        "GET /iam/roles",
+        "POST /iam/roles",
+        "PUT /iam/roles/{id}",
+        "DELETE /iam/roles/{id}",
+        "GET /iam/permissions/tree",
+        "GET /iam/roles/",
+        "PUT /iam/roles/",
+        "PUT /iam/users/",
+        "GET /iam/roles/{id}/permissions",
+        "PUT /iam/roles/{id}/permissions",
+        "GET /iam/permissions/tree",
+        "查看用户：/iam/users?roleId={id}"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/iam/users",
+      "legacyView": "views/iam/ManagementView.vue",
+      "module": "iam",
+      "permission": "iam:user:view",
+      "requests": [
+        "GET /iam/users",
+        "POST /iam/users",
+        "PUT /iam/users/{id}",
+        "DELETE /iam/users/{id}",
+        "GET /iam/permissions/tree",
+        "GET /iam/roles/",
+        "PUT /iam/roles/",
+        "PUT /iam/users/",
+        "PUT /iam/users/{id}/password",
+        "GET /iam/users/{id}"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/login",
+      "legacyView": "views/LoginView.vue",
+      "module": "auth",
+      "permission": null,
+      "requests": [],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/message/inbox",
+      "legacyView": "views/message/InboxView.vue",
+      "module": "message",
+      "permission": null,
+      "requests": [
+        "PUT /message/notices/inbox/",
+        "GET /message/notices/inbox",
+        "PUT /message/notices/inbox/read-all",
+        "PUT /message/notices/inbox/read-many"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/message/notices",
+      "legacyView": "views/message/NoticesView.vue",
+      "module": "message",
+      "permission": "message:notice:view",
+      "requests": [
+        "GET /message/notices",
+        "GET /message/notices/audience",
+        "PUT /message/notices/",
+        "POST /message/notices",
+        "DELETE /message/notices/",
+        "POST /message/notices/",
+        "GET /message/notices/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/message/todos",
+      "legacyView": "views/message/TasksView.vue",
+      "module": "message",
+      "permission": "message:todo:view",
+      "requests": [
+        "GET /message/todos",
+        "GET /message/todos/recipients",
+        "PUT /message/todos/",
+        "POST /message/todos",
+        "POST /message/todos/batch-state",
+        "DELETE /message/todos/",
+        "POST /message/todos/batch-delete",
+        "GET /message/todos/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/monitor/caches",
+      "legacyView": "views/monitor/CachesView.vue",
+      "module": "monitor",
+      "permission": "monitor:cache:view",
+      "requests": [
+        "GET /monitor/caches",
+        "DELETE /monitor/caches"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/monitor/database",
+      "legacyView": "views/monitor/DatabaseView.vue",
+      "module": "monitor",
+      "permission": "monitor:database:view",
+      "requests": [
+        "GET /monitor/database",
+        "GET /monitor/database/markdown"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/monitor/events",
+      "legacyView": "views/monitor/PublicationsView.vue",
+      "module": "monitor",
+      "permission": "monitor:event:view",
+      "requests": [
+        "GET /monitor/publications",
+        "POST /monitor/publications/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/monitor/server",
+      "legacyView": "views/monitor/ServerView.vue",
+      "module": "monitor",
+      "permission": "monitor:server:view",
+      "requests": [
+        "GET /monitor/server"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/monitor/sql",
+      "legacyView": "views/monitor/SqlView.vue",
+      "module": "monitor",
+      "permission": "monitor:sql:view",
+      "requests": [
+        "GET /monitor/sql",
+        "DELETE /monitor/sql"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/openapi/apps",
+      "legacyView": "views/openapi/ApplicationsView.vue",
+      "module": "openapi",
+      "permission": "openapi:app:view",
+      "requests": [
+        "GET /openapi/apps",
+        "PUT /openapi/apps/",
+        "POST /openapi/apps",
+        "POST /openapi/apps/",
+        "DELETE /openapi/apps/",
+        "GET /openapi/apps/types",
+        "GET /openapi/apps/"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/preferences",
+      "legacyView": "views/config/PreferencesView.vue",
+      "module": "config",
+      "permission": null,
+      "requests": [
+        "GET /config/preferences",
+        "PUT /config/preferences",
+        "DELETE /config/preferences"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "route": "/profile",
+      "legacyView": "views/iam/ProfileView.vue",
+      "module": "iam",
+      "permission": null,
+      "requests": [
+        "GET /iam/profile",
+        "PUT /iam/profile"
+      ],
+      "status": "pending",
+      "evidence": []
+    }
+  ]
+}

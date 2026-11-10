@@ -1,0 +1,43 @@
+{
+  "dictionary": "Data dictionaries",
+  "dictionaryTypes": "Dictionary types",
+  "dictionaryItems": "Dictionary items",
+  "selectType": "Select a dictionary type",
+  "parameters": "Global parameters",
+  "parameterGroups": "Parameter groups",
+  "initialize": "Check and initialize",
+  "refreshCache": "Refresh cache",
+  "resetDefaults": "Restore defaults",
+  "resetConfirm": "Restore all built-in parameter values to their defaults?",
+  "theme": "Theme",
+  "tabsEnabled": "Enable page tabs",
+  "keepTabs": "Keep tabs after reload",
+  "themes": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "fields": {
+    "name": "Name",
+    "sort": "Order",
+    "enabled": "Status",
+    "typeKey": "Type key",
+    "nameKey": "Message key",
+    "tree": "Hierarchical dictionary",
+    "parentId": "Parent",
+    "value": "Value",
+    "paramKey": "Parameter key",
+    "groupKey": "Parameter group",
+    "valueType": "Value type",
+    "publicReadable": "Publicly readable",
+    "secret": "Sensitive value"
+  },
+  "choices": {
+    "STRING": "String",
+    "BOOLEAN": "Boolean",
+    "INTEGER": "Integer",
+    "DECIMAL": "Decimal",
+    "JSON": "JSON"
+  },
+  "masked": "Sensitive value (leave blank to keep)"
+}

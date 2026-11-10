@@ -123,6 +123,6 @@ onMounted(load)
           ></el-table
         >
       </section>
-    </div></el-card
-  >
+      <el-empty v-else-if="!busy && !error" :description="t('common.empty')" /></div
+  ></el-card>
 </template>

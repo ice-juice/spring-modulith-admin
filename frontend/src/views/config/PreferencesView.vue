@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { get, put, remove } from '@/api/http'
@@ -18,10 +18,27 @@ const form = reactive({
 const zones = ['UTC', ...Intl.supportedValuesOf('timeZone')]
 const error = ref(''),
   busy = ref(false)
+// Header controls save immediately; reflect those fields without discarding a draft theme.
+watch(
+  () => preferences.locale,
+  (value) => {
+    form.locale = value
+  },
+)
+watch(
+  () => preferences.timeZone,
+  (value) => {
+    form.timeZone = value
+  },
+)
 async function load() {
-  Object.assign(form, await get('/config/preferences'))
-  if (!form.locale) form.locale = preferences.locale
-  if (!form.timeZone) form.timeZone = preferences.timeZone
+  try {
+    Object.assign(form, await get('/config/preferences'))
+    if (!form.locale) form.locale = preferences.locale
+    if (!form.timeZone) form.timeZone = preferences.timeZone
+  } catch (e) {
+    error.value = (e as Error).message
+  }
 }
 async function save() {
   busy.value = true

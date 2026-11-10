@@ -1,0 +1,96 @@
+import type { Resource, Field } from '@/features/iam/resources'
+const name: Field = { key: 'name', kind: 'text', required: true }
+const sort: Field = { key: 'sort', kind: 'number', initial: 0 }
+const enabled: Field = { key: 'enabled', kind: 'flag', initial: true }
+const nameKey: Field = { key: 'nameKey', kind: 'text' }
+export const configResources: Record<string, Resource> = {
+  dictionaryTypes: {
+    id: 'dictionaryTypes',
+    module: 'config',
+    titleKey: 'config.dictionaryTypes',
+    endpoint: '/config/dictionaries/types',
+    permission: 'config:dictionary',
+    translations: true,
+    fields: [
+      name,
+      { key: 'typeKey', kind: 'text', required: true },
+      nameKey,
+      { key: 'tree', kind: 'flag', initial: false },
+      enabled,
+      sort,
+    ],
+    columns: [
+      { key: 'name' },
+      { key: 'typeKey' },
+      { key: 'tree', kind: 'boolean' },
+      { key: 'enabled', kind: 'status' },
+      { key: 'sort' },
+    ],
+  },
+  dictionaryItems: {
+    id: 'dictionaryItems',
+    module: 'config',
+    titleKey: 'config.dictionaryItems',
+    endpoint: '/config/dictionaries/items',
+    permission: 'config:dictionary',
+    translations: true,
+    tree: true,
+    fields: [
+      { key: 'parentId', kind: 'tree', source: 'dictionaryParents', initial: '0' },
+      name,
+      { key: 'value', kind: 'text', required: true },
+      nameKey,
+      enabled,
+      sort,
+    ],
+    columns: [
+      { key: 'name' },
+      { key: 'value' },
+      { key: 'enabled', kind: 'status' },
+      { key: 'sort' },
+    ],
+  },
+  parameters: {
+    id: 'parameters',
+    module: 'config',
+    titleKey: 'config.parameters',
+    endpoint: '/config/parameters',
+    permission: 'config:parameter',
+    translations: true,
+    fields: [
+      name,
+      { key: 'paramKey', kind: 'text', required: true },
+      { key: 'groupKey', kind: 'select', source: 'parameterGroups', required: true },
+      nameKey,
+      {
+        key: 'valueType',
+        kind: 'select',
+        choices: ['STRING', 'BOOLEAN', 'INTEGER', 'DECIMAL', 'JSON'],
+        initial: 'STRING',
+        required: true,
+      },
+      { key: 'value', kind: 'textarea', keepEmpty: true },
+      { key: 'publicReadable', kind: 'flag', initial: false },
+      { key: 'secret', kind: 'flag', initial: false },
+      sort,
+    ],
+    columns: [
+      { key: 'name' },
+      { key: 'paramKey' },
+      { key: 'valueType', kind: 'type' },
+      { key: 'value' },
+      { key: 'groupKey' },
+      { key: 'secret', kind: 'boolean' },
+    ],
+  },
+  parameterGroups: {
+    id: 'parameterGroups',
+    module: 'config',
+    titleKey: 'config.parameterGroups',
+    endpoint: '/config/parameters/groups',
+    permission: 'config:parameter',
+    translations: true,
+    fields: [name, { key: 'groupKey', kind: 'text', required: true }, nameKey, sort],
+    columns: [{ key: 'name' }, { key: 'groupKey' }, { key: 'sort' }],
+  },
+}

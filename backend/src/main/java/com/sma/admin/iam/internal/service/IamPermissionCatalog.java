@@ -22,6 +22,8 @@ public class IamPermissionCatalog implements PermissionCatalog {
                 specs.add(new PermissionSpec("iam:"+resource+":"+action,key,"iam.action."+action,action,"BUTTON",null,null,10,"admin",true));
             }
         }
+        specs.add(new PermissionSpec("iam:role:grant","iam:role:view","iam.action.grant","角色授权","BUTTON",null,null,20,"admin",true));
+        specs.add(new PermissionSpec("iam:user:reset-password","iam:user:view","iam.action.reset-password","重置密码","BUTTON",null,null,20,"admin",true));
         return specs;
     }
 }

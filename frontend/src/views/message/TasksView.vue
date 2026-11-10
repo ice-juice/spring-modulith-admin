@@ -172,39 +172,37 @@ useMessageRefresh(load, ['todo'])
 <template>
   <el-card shadow="never"
     ><div class="toolbar">
-      <template v-if="!managed"
-        ><el-input
-          v-model="keyword"
-          :placeholder="t('common.search')"
-          clearable
-          @keyup.enter="search" /><el-select
-          v-model="state"
-          clearable
-          :placeholder="t('common.status')"
-          ><el-option
-            v-for="option in options.todo_state"
-            :key="option.value"
-            :value="Number(option.value)"
-            :label="option.label" /></el-select
-        ><el-select v-model="type" clearable :placeholder="t('message.type')"
-          ><el-option
-            v-for="option in options.todo_type"
-            :key="option.value"
-            :value="Number(option.value)"
-            :label="option.label" /></el-select
-        ><el-select v-model="dateField"
-          ><el-option
-            v-for="value in dateFields"
-            :key="value"
-            :value="value"
-            :label="t('message.dates.' + value)" /></el-select
-        ><el-date-picker
-          v-model="dates"
-          type="datetimerange"
-          value-format="YYYY-MM-DDTHH:mm:ss"
-          :start-placeholder="t('message.from')"
-          :end-placeholder="t('message.to')" /></template
-      ><el-button @click="search">{{ t('common.search') }}</el-button
+      <el-input
+        v-model="keyword"
+        :placeholder="t('common.search')"
+        clearable
+        @keyup.enter="search"
+      /><el-select v-model="state" clearable :placeholder="t('common.status')"
+        ><el-option
+          v-for="option in options.todo_state"
+          :key="option.value"
+          :value="Number(option.value)"
+          :label="option.label" /></el-select
+      ><el-select v-model="type" clearable :placeholder="t('message.type')"
+        ><el-option
+          v-for="option in options.todo_type"
+          :key="option.value"
+          :value="Number(option.value)"
+          :label="option.label" /></el-select
+      ><el-select v-model="dateField"
+        ><el-option
+          v-for="value in dateFields"
+          :key="value"
+          :value="value"
+          :label="t('message.dates.' + value)" /></el-select
+      ><el-date-picker
+        v-model="dates"
+        type="datetimerange"
+        value-format="YYYY-MM-DDTHH:mm:ss"
+        :start-placeholder="t('message.from')"
+        :end-placeholder="t('message.to')"
+      />
+      <el-button @click="search">{{ t('common.search') }}</el-button
       ><el-button v-if="!managed" type="primary" @click="edit()">{{
         t('message.createTask')
       }}</el-button

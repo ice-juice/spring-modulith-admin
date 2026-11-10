@@ -409,14 +409,18 @@ watch(
           }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="t('common.actions')" width="270" fixed="right">
+      <el-table-column
+        :label="t('common.actions')"
+        :width="resource.id === 'roles' ? 270 : resource.id === 'users' ? 220 : 140"
+        fixed="right"
+      >
         <template #default="{ row }">
           <el-button
             v-if="canEdit(row)"
             v-permission="resource.permission + ':update'"
             link
             type="primary"
-            @click="openEditor(row)"
+            @click.stop="openEditor(row)"
             >{{ t('common.edit') }}</el-button
           >
           <el-button
@@ -424,14 +428,14 @@ watch(
             v-permission="'iam:role:grant'"
             link
             type="primary"
-            @click="openGrant(row)"
+            @click.stop="openGrant(row)"
             >{{ t('iam.grant') }}</el-button
           >
           <el-button
             v-if="resource.id === 'roles'"
             v-permission="'iam:user:view'"
             link
-            @click="members(row)"
+            @click.stop="members(row)"
             >{{ t('iam.viewMembers') }}</el-button
           >
           <el-button
@@ -439,7 +443,7 @@ watch(
             v-permission="'iam:user:reset-password'"
             link
             type="warning"
-            @click="openReset(row)"
+            @click.stop="openReset(row)"
             >{{ t('iam.resetPassword') }}</el-button
           >
           <el-button
@@ -447,7 +451,7 @@ watch(
             v-permission="resource.permission + ':delete'"
             link
             type="danger"
-            @click="deleteRow(row)"
+            @click.stop="deleteRow(row)"
             >{{ t('common.remove') }}</el-button
           >
         </template>

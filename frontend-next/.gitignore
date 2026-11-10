@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+.env.local
+.env.*.local
+.e2e-runtime/
+test-results-real/

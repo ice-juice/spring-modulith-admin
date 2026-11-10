@@ -5,11 +5,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { usePreferences } from '@/stores/preferences'
 import { useBranding } from '@/stores/branding'
-import { loadLocaleModule } from '@/locales'
 import { filterMenus, findMenu } from '@/lib/menus'
+import { trackPageTab, type WorkspaceTab } from '@/lib/tabs'
 import DisplaySettings from '@/components/DisplaySettings.vue'
 import SecurityControls from '@/components/SecurityControls.vue'
 import MenuBranch from '@/components/MenuBranch.vue'
+import MenuIcon from '@/components/MenuIcon.vue'
 import BrandingFooter from '@/components/BrandingFooter.vue'
 import AvatarImage from '@/components/AvatarImage.vue'
 import { useMessages } from '@/stores/messages'
@@ -30,21 +31,25 @@ const preferences = usePreferences(),
   branding = useBranding()
 const route = useRoute()
 const router = useRouter()
-const collapsed = ref(false)
+const compactMedia = window.matchMedia('(max-width: 760px)')
+const compact = ref(compactMedia.matches)
+const collapsed = ref(compact.value)
+function resizeNavigation(event: MediaQueryListEvent) {
+  compact.value = event.matches
+  collapsed.value = event.matches
+}
+onMounted(() => compactMedia.addEventListener('change', resizeNavigation))
+onUnmounted(() => compactMedia.removeEventListener('change', resizeNavigation))
 const menuSearch = ref('')
 const activeNav = ref('')
-interface Tab {
-  path: string
-  titleKey?: string
-  fallback: string
-}
-const tabs = ref<Tab[]>([{ path: '/', titleKey: 'common.home', fallback: '' }])
+const tabs = ref<WorkspaceTab[]>([{ path: '/', titleKey: 'common.home', fallback: '' }])
+const pathname = (path: string) => router.resolve(path).path
 const tabKey = 'sma.tabs.' + auth.user?.id
 if (preferences.keepTabsAfterReload) {
   try {
-    const saved = JSON.parse(localStorage.getItem(tabKey) || '[]') as Tab[]
-    tabs.value.push(
-      ...saved.filter((tab) => {
+    const saved = JSON.parse(localStorage.getItem(tabKey) || '[]') as WorkspaceTab[]
+    saved
+      .filter((tab) => {
         if (
           typeof tab.path !== 'string' ||
           !tab.path.startsWith('/') ||
@@ -57,8 +62,10 @@ if (preferences.keepTabsAfterReload) {
           resolved.meta.titleKey !== 'common.notFound' &&
           (!resolved.meta.permission || auth.hasPermission(String(resolved.meta.permission)))
         )
-      }),
-    )
+      })
+      .forEach((tab) => {
+        tabs.value = trackPageTab(tabs.value, tab, pathname)
+      })
   } catch {
     /* Invalid saved tabs are ignored. */
   }
@@ -71,7 +78,7 @@ watch(
   },
   { deep: true },
 )
-function tabLabel(tab: Tab) {
+function tabLabel(tab: WorkspaceTab) {
   return tab.titleKey && te(tab.titleKey)
     ? t(tab.titleKey)
     : findMenu(auth.user?.menus || [], (menu) => menu.path === router.resolve(tab.path).path)
@@ -94,12 +101,17 @@ const menus = computed(() => {
 watch(
   () => route.fullPath,
   (path) => {
-    if (!tabs.value.some((tab) => tab.path === path) && route.path !== '/403')
-      tabs.value.push({
-        path,
-        titleKey: typeof route.meta.titleKey === 'string' ? route.meta.titleKey : undefined,
-        fallback: title.value,
-      })
+    if (compact.value) collapsed.value = true
+    if (route.path !== '/403')
+      tabs.value = trackPageTab(
+        tabs.value,
+        {
+          path,
+          titleKey: typeof route.meta.titleKey === 'string' ? route.meta.titleKey : undefined,
+          fallback: title.value,
+        },
+        pathname,
+      )
   },
   { immediate: true },
 )
@@ -112,12 +124,16 @@ async function logout() {
   await auth.logout()
   await router.replace('/login')
 }
-void loadLocaleModule('auth')
-void loadLocaleModule('message')
 void branding.load()
 </script>
 <template>
   <div class="admin-shell" :class="{ collapsed }">
+    <button
+      v-if="compact && !collapsed"
+      class="navigation-backdrop"
+      :aria-label="t('common.collapse')"
+      @click="collapsed = true"
+    />
     <aside class="sidebar">
       <RouterLink class="brand" to="/"
         ><b>{{ t('common.shortBrand') }}</b
@@ -134,8 +150,10 @@ void branding.load()
         text-color="#b9c6d6"
         active-text-color="#6ee7c9"
       >
-        <el-menu-item index="/"
-          ><span>{{ t('common.home') }}</span></el-menu-item
+        <el-menu-item index="/" :aria-label="t('common.home')"
+          ><MenuIcon name="HomeFilled" /><template #title>{{
+            t('common.home')
+          }}</template></el-menu-item
         >
         <MenuBranch v-for="item in menus" :key="item.id" :item="item" />
       </el-menu>
@@ -197,7 +215,7 @@ void branding.load()
         <el-tag
           v-for="tab in tabs"
           :key="tab.path"
-          :closable="tab.path !== '/'"
+          :closable="pathname(tab.path) !== '/'"
           :type="route.fullPath === tab.path ? 'primary' : 'info'"
           @click="router.push(tab.path)"
           @close="closeTab(tab.path)"

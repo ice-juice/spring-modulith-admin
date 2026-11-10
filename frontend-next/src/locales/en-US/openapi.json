@@ -1,0 +1,22 @@
+{
+  "apps": "Applications",
+  "create": "Create application",
+  "type": "Application type",
+  "appId": "AppId",
+  "appSecret": "AppSecret",
+  "signature": "Verify signatures",
+  "target": "Linked target",
+  "rotate": "Rotate secret",
+  "rotateConfirm": "Rotating the secret invalidates existing application tokens. Continue?",
+  "link": "Link",
+  "unlink": "Unlink",
+  "unlinkConfirm": "Remove the linked target?",
+  "credentials": "Application credentials",
+  "secretOnce": "This secret is shown only when generated. Save it securely.",
+  "copySecret": "Copy secret",
+  "copied": "Copied",
+  "copyFailed": "Could not copy. Select and copy the value manually",
+  "targetType": "Target type",
+  "targetId": "Target ID",
+  "targetName": "Target name"
+}

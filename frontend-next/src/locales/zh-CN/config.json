@@ -1,0 +1,43 @@
+{
+  "dictionary": "数据字典",
+  "dictionaryTypes": "字典类型",
+  "dictionaryItems": "字典项",
+  "selectType": "选择字典类型",
+  "parameters": "全局参数",
+  "parameterGroups": "参数分组",
+  "initialize": "检测并初始化",
+  "refreshCache": "刷新缓存",
+  "resetDefaults": "恢复默认",
+  "resetConfirm": "确定将所有内置参数恢复为默认值吗？",
+  "theme": "主题",
+  "tabsEnabled": "启用多选项卡",
+  "keepTabs": "刷新后保留选项卡",
+  "themes": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "fields": {
+    "name": "名称",
+    "sort": "排序",
+    "enabled": "状态",
+    "typeKey": "类型编码",
+    "nameKey": "语言包 Key",
+    "tree": "多级字典",
+    "parentId": "上级",
+    "value": "值",
+    "paramKey": "参数 Key",
+    "groupKey": "参数分组",
+    "valueType": "值类型",
+    "publicReadable": "公开读取",
+    "secret": "敏感值"
+  },
+  "choices": {
+    "STRING": "字符串",
+    "BOOLEAN": "布尔值",
+    "INTEGER": "整数",
+    "DECIMAL": "小数",
+    "JSON": "JSON"
+  },
+  "masked": "敏感值（编辑时留空保留）"
+}

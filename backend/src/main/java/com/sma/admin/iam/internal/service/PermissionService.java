@@ -105,7 +105,7 @@ public class PermissionService {
         mapper.deleteById(id); translations.delete(translationQuery(id));
         events.publishEvent(new PermissionChangedEvent(CurrentUser.tenantId(),CurrentUser.portal(),null,"resource"));
     }
-    /** Adds missing code-declared permissions, preserving administrator overrides. Requires parent-before-child order. */
+    /** Adds declarations and upgrades untouched auto-discovered logic labels, preserving administrator overrides. */
     @Transactional
     public void sync(List<PermissionSpec> specifications) {
         guard.lock();
@@ -113,7 +113,22 @@ public class PermissionService {
         entities().forEach(row -> known.put(row.getPermissionKey(),row));
         for (var spec:specifications) {
             if (!CurrentUser.portal().equals(spec.portal())) continue;
-            if (known.containsKey(spec.key())) continue;
+            var existing=known.get(spec.key());
+            if (existing!=null) {
+                // Older versions auto-discovered these actions at the root with the key as their name.
+                // Keep IDs/grants, translations, switches and sorting. Never overwrite a customized label or parent.
+                if (Boolean.TRUE.equals(existing.getBuiltin()) && "LOGIC".equals(existing.getType())
+                        && Objects.equals(existing.getName(),spec.key())
+                        && (existing.getNameKey()==null||existing.getNameKey().isBlank())
+                        && Objects.equals(existing.getParentId(),0L) && spec.parentKey()!=null && spec.nameKey()!=null) {
+                    var parent=known.get(spec.parentKey());
+                    if(parent==null) throw new IllegalStateException("Unknown permission parent: "+spec.parentKey());
+                    existing.setName(spec.defaultName()); existing.setNameKey(spec.nameKey());
+                    existing.setParentId(parent.getId()); existing.setType(spec.type());
+                    mapper.updateById(existing);
+                }
+                continue;
+            }
             var row=new PermissionEntity();
             var parent=spec.parentKey()==null?null:known.get(spec.parentKey());
             if (spec.parentKey()!=null&&parent==null) throw new IllegalStateException("Unknown permission parent: "+spec.parentKey());

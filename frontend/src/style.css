@@ -36,6 +36,30 @@ a {
   top: 0;
   height: 100vh;
   overflow: auto;
+  overflow-x: hidden;
+}
+.workspace {
+  min-width: 0;
+}
+.sidebar .el-menu--collapse {
+  width: 100%;
+  padding: 10px 7px;
+}
+.sidebar .el-menu-item > a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+.collapsed .external-menu-label {
+  display: none;
+}
+.navigation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  border: 0;
+  background: rgb(0 0 0 / 35%);
 }
 .brand {
   height: 80px;
@@ -106,6 +130,22 @@ a {
 .page-heading strong {
   font-size: 17px;
   white-space: nowrap;
+}
+.topbar-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.topbar-actions > .el-button + .el-button,
+.toolbar > .el-button + .el-button {
+  margin-left: 0;
+}
+.display-settings {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.display-settings .el-select {
+  max-width: 100%;
 }
 .user-name {
   font-size: 13px;
@@ -237,6 +277,36 @@ small {
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
+.toolbar > .el-input,
+.toolbar > .el-select {
+  width: 220px;
+  max-width: 100%;
+}
+.toolbar > .el-date-editor {
+  width: 360px;
+  max-width: 100%;
+  flex: 0 1 360px;
+}
+.el-dialog {
+  --sma-dialog-gap: min(5vh, 32px);
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 2 * var(--sma-dialog-gap));
+  margin: var(--sma-dialog-gap) auto;
+  display: flex;
+  flex-direction: column;
+}
+.el-dialog__header,
+.el-dialog__footer {
+  flex-shrink: 0;
+}
+.el-dialog__body {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.el-message-box {
+  max-width: calc(100vw - 24px);
+}
 @media (max-width: 1050px) {
   .topbar {
     flex-wrap: wrap;
@@ -255,6 +325,15 @@ small {
   .admin-shell {
     grid-template-columns: 78px minmax(0, 1fr);
   }
+  .admin-shell:not(.collapsed) .sidebar {
+    position: fixed;
+    left: 0;
+    width: min(280px, calc(100vw - 48px));
+    z-index: 1001;
+  }
+  .admin-shell:not(.collapsed) .workspace {
+    grid-column: 2;
+  }
   .brand {
     padding: 0 15px;
   }
@@ -270,6 +349,8 @@ small {
   }
   .topbar-actions {
     flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
   }
   .login-brand {
     display: none;
@@ -282,6 +363,31 @@ small {
   }
   .display-settings {
     gap: 6px;
+  }
+  .el-table .el-table__cell.el-table-fixed-column--right {
+    position: static !important;
+    right: auto !important;
+  }
+  .el-table .el-table__cell.el-table-fixed-column--right::before {
+    display: none;
+  }
+  .el-dialog .el-form-item,
+  .main-content .el-form-item {
+    display: block;
+  }
+  .el-dialog .el-form-item__label,
+  .main-content .el-form-item__label {
+    width: auto !important;
+    display: block;
+    height: auto;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    text-align: left;
+  }
+  .el-dialog .el-form-item__content,
+  .main-content .el-form-item__content {
+    margin-left: 0 !important;
+    min-width: 0;
   }
 }
 .menu-search {
@@ -444,6 +550,11 @@ html.dark {
   gap: 16px;
   margin-bottom: 20px;
 }
+@media (max-width: 760px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .summary-grid strong {
   display: block;
   font-size: 32px;
@@ -550,5 +661,13 @@ html.dark {
 @media (max-width: 1000px) {
   .home-panels {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .shortcut-grid {
+    grid-template-columns: 1fr;
+  }
+  .welcome-card {
+    padding: 20px;
   }
 }
