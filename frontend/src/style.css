@@ -426,3 +426,26 @@ html.dark {
   gap: 12px;
   flex-wrap: wrap;
 }
+.plain-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.message-excerpt {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.summary-grid strong {
+  display: block;
+  font-size: 32px;
+  margin-top: 8px;
+}

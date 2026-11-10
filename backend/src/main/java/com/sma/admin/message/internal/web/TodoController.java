@@ -20,6 +20,7 @@ public class TodoController {
  @GetMapping("/managed") @RequiresPermission("message:todo:view")
  public ApiResponse<PageResult<TodoService.View>> managed(@ModelAttribute PageQuery page){return ApiResponse.ok(service.page(page,null,null,null,null,null,null,null,null,true));}
  @GetMapping("/{id}") public ApiResponse<TodoService.View> get(@PathVariable long id){return ApiResponse.ok(service.get(id));}
+ @GetMapping("/recipients") @RequiresPermission("message:todo:assign") public ApiResponse<java.util.List<OptionItem>> recipients(@RequestParam(required=false)String keyword){return ApiResponse.ok(service.recipients(keyword));}
  @PostMapping @AuditAction(value="message:todo:create",path="/message/inbox") public ApiResponse<TodoService.View> create(@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(null,input,false));}
  @PostMapping("/assign") @RequiresPermission("message:todo:assign") public ApiResponse<TodoService.View> assign(@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(null,input,true));}
  @PutMapping("/{id}") @AuditAction(value="message:todo:update",path="/message/inbox") public ApiResponse<TodoService.View> update(@PathVariable long id,@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(id,input,false));}

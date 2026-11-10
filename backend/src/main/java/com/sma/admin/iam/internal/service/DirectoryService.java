@@ -13,4 +13,7 @@ public class DirectoryService implements DirectoryQuery {
   if(keyword!=null&&!keyword.isBlank())query.and(q->q.like(UserEntity::getName,keyword).or().like(UserEntity::getUsername,keyword));
   return accounts.selectList(query.orderByAsc(UserEntity::getName).last("LIMIT 200")).stream().map(row->new OptionItem(row.getId(),row.getName(),false)).toList();
  }
+ public java.util.Map<Long,String> names(java.util.Set<Long> ids){if(ids.isEmpty())return java.util.Map.of();if(ids.size()>200)throw new com.sma.admin.common.BizException(com.sma.admin.common.CommonErrorCode.BAD_REQUEST);
+  return accounts.selectList(new LambdaQueryWrapper<UserEntity>().select(UserEntity::getId,UserEntity::getName).in(UserEntity::getId,ids).eq(UserEntity::getPortal,CurrentUser.portal()))
+   .stream().collect(java.util.stream.Collectors.toUnmodifiableMap(UserEntity::getId,UserEntity::getName));}
 }

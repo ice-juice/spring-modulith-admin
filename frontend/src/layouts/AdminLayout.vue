@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -12,8 +12,20 @@ import SecurityControls from '@/components/SecurityControls.vue'
 import MenuBranch from '@/components/MenuBranch.vue'
 import BrandingFooter from '@/components/BrandingFooter.vue'
 import AvatarImage from '@/components/AvatarImage.vue'
+import { useMessages } from '@/stores/messages'
+import { Bell } from '@element-plus/icons-vue'
 const { t, te } = useI18n()
 const auth = useAuth()
+const messages = useMessages()
+onMounted(messages.start)
+onUnmounted(messages.stop)
+watch(
+  () => auth.user?.locked,
+  (locked) => {
+    if (locked) messages.pause()
+    else void messages.connect()
+  },
+)
 const preferences = usePreferences(),
   branding = useBranding()
 const route = useRoute()
@@ -101,6 +113,7 @@ async function logout() {
   await router.replace('/login')
 }
 void loadLocaleModule('auth')
+void loadLocaleModule('message')
 void branding.load()
 </script>
 <template>
@@ -139,6 +152,24 @@ void branding.load()
           ><strong>{{ title }}</strong>
         </div>
         <div class="topbar-actions">
+          <el-badge
+            :value="
+              Number(messages.summary.unreadNotices) +
+              Number(messages.summary.pendingTodos) +
+              Number(messages.summary.unreadMessages)
+            "
+            :max="99"
+            :hidden="
+              messages.summary.unreadNotices === '0' &&
+              messages.summary.pendingTodos === '0' &&
+              messages.summary.unreadMessages === '0'
+            "
+            ><el-button
+              text
+              :aria-label="t('message.center')"
+              @click="router.push('/message/inbox')"
+              ><el-icon><Bell /></el-icon></el-button
+          ></el-badge>
           <DisplaySettings /><AvatarImage :file-id="auth.user?.avatarFileId" /><el-button
             text
             @click="router.push('/profile')"

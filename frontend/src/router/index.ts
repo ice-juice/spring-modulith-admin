@@ -19,6 +19,21 @@ const router = createRouter({
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
         {
+          path: 'message/inbox',
+          component: () => import('@/views/message/InboxView.vue'),
+          meta: { module: 'message', titleKey: 'message.center' },
+        },
+        {
+          path: 'message/todos',
+          component: () => import('@/views/message/TasksView.vue'),
+          props: { managed: true },
+          meta: {
+            module: 'message',
+            titleKey: 'message.taskManagement',
+            permission: 'message:todo:view',
+          },
+        },
+        {
           path: 'message/notices',
           component: () => import('@/views/message/NoticesView.vue'),
           meta: {
