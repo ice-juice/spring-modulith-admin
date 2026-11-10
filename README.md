@@ -114,6 +114,12 @@ com.sma.admin.<module>
 | C2 | 表结构只能通过 Flyway 变更：公共表放 `db/migration/__root`，模块表放 `db/migration/<模块id>`，版本号在模块内独立递增，禁止修改已发布的脚本 | 代码评审 + Flyway 校验和 |
 | C3 | 对外 API 只返回 record DTO，不返回实体；DTO 不携带密码、盐等敏感字段 | 代码评审（R3 拦截引用实体的情况） |
 | C4 | 事件只携带标识和必要的快照数据，不携带实体或可变对象；监听器必须幂等（失败会被重新投递） | 代码评审 |
+| I1 | `BizException` 只接受 `ErrorCode` 与插值参数 | 编译期构造器签名 |
+| I2 | 后端语言包放在 `i18n/<模块id>/`，key 以模块 id 开头 | 自动：`I18nBundlesTests` |
+| I3 | zh-CN 与 en-US 的 key、插值占位符集合一致 | 自动：`I18nBundlesTests` |
+| I4 | 每个错误码在所有语言中都有文案 | 自动：`I18nBundlesTests` |
+| I5 | 前端语言包 key 一致，界面文本通过语言包输出 | P0-8 落地自动检查 |
+| T1 | 业务时间使用 `Instant`、MySQL `DATETIME(3)` 存 UTC，JDBC 会话固定 UTC；自然日查询先按 IANA 时区转换成半开 UTC 范围 | 自动：`UtcStorageTests`、`TimeRangeTests` |
 
 规则对“还没有出现的代码”放行，一旦出现对应类型就开始约束。R0～R12 以及 R13 中的字段注入、标准输出两项，都用故意违规的代码验证过会报错（验证代码已删除）；R13 其余三项直接使用 ArchUnit 内置规则。
 

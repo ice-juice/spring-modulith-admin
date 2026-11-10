@@ -30,8 +30,8 @@
 | P0-1 | 项目改名 | 根包 `com.sma.admin`、坐标、前端包名、脚本相对路径、数据库 `springboot_modulith_admin` | ✅ |
 | P0-2 | 引入 mvnd | mvnd 1.0.6、`JAVA_TOOL_OPTIONS`、PowerShell UTF-8、Wrapper 统一 Maven 3.9.16、性能实测 | ✅ |
 | P0-3 | 测试基础设施 | 测试库、`test` profile、测试启动时 Flyway 清空重建、集成测试基类 | ✅ |
-| P0-4 | 后端 i18n | `Accept-Language` 解析、模块语言包自动注册、`ErrorCode` 与 `BizException` 改造、异常与校验提示本地化、401/403 本地化、语言包一致性测试（I2～I4） | ⬜ |
-| P0-5 | UTC 与用户时区 | JDBC 会话时区 UTC、`Instant` 序列化、`X-Time-Zone` 请求时区上下文、按用户时区的日期范围换算 | ⬜ |
+| P0-4 | 后端 i18n | `Accept-Language` 解析、模块语言包自动注册、`ErrorCode` 与 `BizException` 改造、异常与校验提示本地化、401/403 本地化、语言包一致性测试（I2～I4） | ✅ |
+| P0-5 | UTC 与用户时区 | JDBC 会话时区 UTC、`Instant` 序列化、`X-Time-Zone` 请求时区上下文、按用户时区的日期范围换算 | ✅ |
 | P0-6 | 持久化与 Web 标准件 | `BaseEntity`（租户、审计字段、逻辑删除）、自动填充、租户插件、分页插件、当前用户/租户/portal 上下文 SPI、分页/选项/树/排序标准 DTO | ⬜ |
 | P0-7 | 数据权限框架 | 数据范围模型、数据权限插件（按 `dept_id` / `created_by` 拼接条件）、上下文 SPI | ⬜ |
 | P0-8 | 前端底座 | vue-i18n（zh-CN、en-US）、语言与时区切换、dayjs 时区、axios（令牌、`Accept-Language`、`X-Time-Zone`、错误处理）、路由守卫、权限指令、主框架骨架、`i18n:check`、单元测试 | ⬜ |
@@ -90,4 +90,5 @@
 | 2026-11-10 | P0-1 | 项目内 `rg -i` 搜索旧名为 0、无旧名目录；`mvnw clean verify` 19 个测试通过；新库 `springboot_modulith_admin` 中 Flyway 执行 V1，应用启动 5.9s，`/actuator/health` 200，`/api/iam/users` 401；前端 `npm run build` 通过 | 通过 |
 | 2026-11-10 | P0-2 | mvnd 1.0.6 SHA512 与 GPG 签名校验通过；新终端中控制台编码 UTF-8、守护进程使用 JDK 21（`JAVA_HOME` 仍为 JDK 8）、平台编码 UTF-8；Wrapper 统一 3.9.16 后 `compile` 1.7s→0.3s、`verify` 4.3s→2.5s | 通过 |
 | 2026-11-10 | P0-3 | 新增测试库 `springboot_modulith_admin_test`、`application-test.yml`、`CleanTestDatabaseListener`（每个 JVM 首次加载上下文前 Flyway clean）、`@IntegrationTest`；`tools/dev/verify-backend.ps1`（`mvnd verify`）21 个测试通过，其中 `ApplicationSmokeTests` 确认连接测试库、Flyway 建表、健康检查公开、API 返回 401 | 通过 |
+| 2026-11-10 | P0-4 / P0-5 | `mvnd verify` 31 项测试通过；MockMvc 验证中英文业务错误、校验提示和 401、语言回退、请求时区；真实 MySQL 验证 JDBC 会话 UTC；时间输出 `2026-11-10T03:00:00Z`，自然日查询覆盖夏令时切换 | 通过 |
 

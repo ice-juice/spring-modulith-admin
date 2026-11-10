@@ -1,23 +1,29 @@
 package com.sma.admin.common;
 
+import java.util.Arrays;
+
 /**
- * Expected business failure that should be reported to the caller as a readable message.
+ * Expected business failure. Only constructed from an {@link ErrorCode} plus message arguments, so no user facing text
+ * is hard coded (constraint I1); the message is resolved in the request language by the global exception handler.
  */
 public class BizException extends RuntimeException {
 
-	private final int code;
+	private final ErrorCode errorCode;
 
-	public BizException(String message) {
-		this(400, message);
+	private final transient Object[] args;
+
+	public BizException(ErrorCode errorCode, Object... args) {
+		super(errorCode.key() + (args.length == 0 ? "" : " " + Arrays.toString(args)));
+		this.errorCode = errorCode;
+		this.args = args.clone();
 	}
 
-	public BizException(int code, String message) {
-		super(message);
-		this.code = code;
+	public ErrorCode getErrorCode() {
+		return errorCode;
 	}
 
-	public int getCode() {
-		return code;
+	public Object[] getArgs() {
+		return args.clone();
 	}
 
 }

@@ -4,7 +4,8 @@ spring:
   profiles:
     default: dev
   datasource:
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:springboot_modulith_admin}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    # all times are stored in UTC: the JDBC session time zone is forced to UTC regardless of the server/JVM zone
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:springboot_modulith_admin}?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     username: ${DB_USERNAME:springboot_modulith_admin}
     password: ${DB_PASSWORD:sma_dev}
   flyway:
@@ -48,4 +49,12 @@ management:
 
 server:
   port: 8080
+
+sma:
+  i18n:
+    # first supported locale is the default; Accept-Language selects among them
+    supported-locales: zh-CN,en-US
+    default-locale: zh-CN
+    # used when a request carries no valid X-Time-Zone header
+    default-time-zone: Asia/Shanghai
 

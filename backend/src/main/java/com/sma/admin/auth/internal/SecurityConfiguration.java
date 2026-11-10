@@ -2,25 +2,26 @@ package com.sma.admin.auth.internal;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.annotation.AnnotationTemplateExpressionDefaults;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+
+import com.sma.admin.common.CommonErrorCode;
+import com.sma.admin.common.ErrorResponseWriter;
 
 /**
- * 无状态 REST 后端的安全基线：默认拒绝，URL 层要求登录，方法层由 common.security 注解细分权限。
- * 令牌认证过滤器在实现 auth 模块时加入。
+ * Security baseline of the stateless REST backend: deny by default, URL level requires authentication, method level
+ * permissions come from the common.security annotations. 401/403 bodies are localized {@code ApiResponse} JSON.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
 class SecurityConfiguration {
 
 	/**
-	 * 让 {@code @RequiresPermission("iam:user:create")} 这类元注解里的 {@code {value}} 占位符生效。
+	 * Enables the {@code {value}} placeholder in meta annotations such as {@code @RequiresPermission("iam:user:create")}.
 	 */
 	@Bean
 	static AnnotationTemplateExpressionDefaults annotationTemplateExpressionDefaults() {
@@ -28,15 +29,17 @@ class SecurityConfiguration {
 	}
 
 	@Bean
-	SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
+	SecurityFilterChain apiSecurity(HttpSecurity http, ErrorResponseWriter errors) throws Exception {
 		return http
 				.csrf(AbstractHttpConfigurer::disable)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint((request, response, e) -> errors.write(request, response, CommonErrorCode.UNAUTHORIZED))
+						.accessDeniedHandler((request, response, e) -> errors.write(request, response, CommonErrorCode.FORBIDDEN)))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
+						.requestMatchers("/actuator/health/**", "/actuator/info", "/error").permitAll()
 						.anyRequest().authenticated())
 				.build();
 	}
