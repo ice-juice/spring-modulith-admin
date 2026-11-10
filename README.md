@@ -36,7 +36,13 @@ spring Modulith/
 │  ├─ src/main/java/com/sma/admin/
 │  │  ├─ SpringbootModulithAdminApplication.java  @Modulithic(sharedModules = "common")
 │  │  ├─ common/                     共享内核
-│  │  └─ auth/                       认证与会话（当前只有安全基线）
+│  │  ├─ auth/                       认证与会话
+│  │  ├─ iam/                        组织权限与个人资料
+│  │  ├─ config/                     字典、参数与偏好
+│  │  ├─ audit/                      登录与操作审计
+│  │  ├─ file/                       本地文件与引用保护
+│  │  ├─ message/                    通知、待办、私信与实时推送
+│  │  └─ monitor/                    服务器、缓存、事件与数据库文档
 │  ├─ src/main/resources/
 │  │  ├─ application.yml
 │  │  └─ db/migration/__root/        公共表结构（事件发布表）
@@ -57,9 +63,9 @@ spring Modulith/
 | iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围、个人资料与头像 | common、common :: security、common :: persistence、file | P1 完成，P3 扩展 |
 | config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 完成 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、common :: persistence、auth | P2 完成 |
-| message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、common :: persistence、iam、file、auth | P3 实施 |
-| file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 实施 |
-| monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试） | common、common :: security、common :: persistence | P3 实施 |
+| message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、common :: persistence、iam、file、auth | P3 完成 |
+| file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 完成 |
+| monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试）、数据库文档 | common、common :: security、common :: persistence | P3 完成 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
 | openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security | 规划 |
 

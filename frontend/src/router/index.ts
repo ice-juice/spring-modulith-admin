@@ -19,6 +19,34 @@ const router = createRouter({
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
         {
+          path: 'monitor/server',
+          component: () => import('@/views/monitor/ServerView.vue'),
+          meta: {
+            module: 'monitor',
+            titleKey: 'monitor.server',
+            permission: 'monitor:server:view',
+          },
+        },
+        {
+          path: 'monitor/caches',
+          component: () => import('@/views/monitor/CachesView.vue'),
+          meta: { module: 'monitor', titleKey: 'monitor.caches', permission: 'monitor:cache:view' },
+        },
+        {
+          path: 'monitor/events',
+          component: () => import('@/views/monitor/PublicationsView.vue'),
+          meta: { module: 'monitor', titleKey: 'monitor.events', permission: 'monitor:event:view' },
+        },
+        {
+          path: 'monitor/database',
+          component: () => import('@/views/monitor/DatabaseView.vue'),
+          meta: {
+            module: 'monitor',
+            titleKey: 'monitor.database',
+            permission: 'monitor:database:view',
+          },
+        },
+        {
           path: 'message/inbox',
           component: () => import('@/views/message/InboxView.vue'),
           meta: { module: 'message', titleKey: 'message.center' },
