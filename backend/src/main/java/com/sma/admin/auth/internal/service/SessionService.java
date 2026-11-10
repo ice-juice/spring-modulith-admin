@@ -29,15 +29,17 @@ public class SessionService {
     private final AuthProperties properties;
     private final LoginEvents events;
     private final SessionIssuer issuer;
+    private final SessionManager manager;
     public SessionService(SessionMapper mapper,AccountQuery accounts,RoleAccessQuery scopes,PermissionQuery permissions,NavigationQuery navigation,
-            CaptchaService captchas,LoginThrottle throttle,AuthProperties properties,LoginEvents events,SessionIssuer issuer) {
+            CaptchaService captchas,LoginThrottle throttle,AuthProperties properties,LoginEvents events,SessionIssuer issuer,SessionManager manager) {
         this.mapper=mapper; this.accounts=accounts; this.scopes=scopes; this.permissions=permissions; this.navigation=navigation;
         this.captchas=captchas; this.throttle=throttle; this.properties=properties; this.events=events; this.issuer=issuer;
+        this.manager=manager;
     }
     public record LoginResult(String token,Instant expiresAt) {}
     public record Resolved(SessionEntity session,SmaPrincipal principal) {}
     public record Me(Long id,String username,String name,String portal,Long departmentId,boolean superAdmin,Set<String> permissions,
-            List<MenuView> menus,List<NavigationView> navigation,String locale,String timeZone,boolean locked,Instant passwordChangedAt) {}
+            List<MenuView> menus,List<NavigationView> navigation,String locale,String timeZone,boolean locked,Instant passwordChangedAt,boolean passwordChangeSuggested) {}
 
     public LoginResult login(String username,String password,String portal,String captchaId,String captcha,boolean remember,String ip,String userAgent) {
         String key=throttle.key(ip,username);
@@ -59,10 +61,13 @@ public class SessionService {
                 ||account.get().credentialVersion()!=row.getCredentialVersion()) return Optional.empty();
         var user=account.get();
         return asIdentity(user,() -> {
+            if(!properties.autoLockAfter().isZero() && !row.getLocked() && row.getLastSeenAt().plus(properties.autoLockAfter()).isBefore(Instant.now())) {
+                row.setLocked(true); mapper.updateById(row);
+            }
             var principal=new SmaPrincipal(user.id(),user.username(),user.tenantId(),user.portal(),user.departmentId(),user.superAdmin(),
                     user.superAdmin()?DataAccess.unrestricted():scopes.resolve(user.roleIds(),user.departmentId()),
                     permissions.keys(user.roleIds(),user.superAdmin()),user.timeZone());
-            if(row.getLastSeenAt().isBefore(Instant.now().minusSeconds(60))) {
+            if(!row.getLocked() && row.getLastSeenAt().isBefore(Instant.now().minusSeconds(60))) {
                 var update=new SessionEntity(); update.setId(row.getId()); update.setLastSeenAt(Instant.now()); mapper.updateById(update);
             }
             return Optional.of(new Resolved(row,principal));
@@ -75,9 +80,9 @@ public class SessionService {
         var session=mapper.selectById(sessionId);
         return new Me(user.id(),user.username(),user.name(),user.portal(),user.departmentId(),user.superAdmin(),principal.permissions(),menus,
                 navigation.visible(menus.stream().map(MenuView::id).collect(java.util.stream.Collectors.toSet())),user.locale(),user.timeZone(),
-                session!=null&&session.getLocked(),user.passwordChangedAt());
+                session!=null&&session.getLocked(),user.passwordChangedAt(),properties.passwordNoticeDays()>0&&user.passwordChangedAt().plus(Duration.ofDays(properties.passwordNoticeDays())).isBefore(Instant.now()));
     }
-    @Transactional public void logout(long sessionId) { mapper.deleteById(sessionId); }
+    public void logout(long sessionId) { manager.logout(sessionId); }
     private void publish(Long userId,String username,String portal,String status,String ip,String userAgent) {
         events.record(userId,username,portal,status,ip,userAgent);
     }

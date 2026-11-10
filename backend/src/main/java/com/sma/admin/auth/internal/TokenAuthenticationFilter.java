@@ -28,6 +28,9 @@ final class TokenAuthenticationFilter extends OncePerRequestFilter {
                 session.principal().permissions().stream().map(SimpleGrantedAuthority::new).toList());
         var context=SecurityContextHolder.createEmptyContext(); context.setAuthentication(authentication); SecurityContextHolder.setContext(context);
         request.setAttribute(SESSION_ATTRIBUTE,session.session().getId());
+        if(session.session().getLocked()&&!java.util.Set.of("/api/auth/me","/api/auth/logout","/api/auth/unlock").contains(request.getRequestURI())) {
+            errors.write(request,response,com.sma.admin.auth.AuthErrorCode.SCREEN_LOCKED); return;
+        }
         chain.doFilter(request,response);
     }
 }

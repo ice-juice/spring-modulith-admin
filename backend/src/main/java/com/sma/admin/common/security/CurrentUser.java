@@ -18,7 +18,7 @@ public final class CurrentUser {
         return Optional.of(principal);
     }
     public static SmaPrincipal require() { return optional().orElseThrow(() -> new AccessDeniedException("Authentication required")); }
-    public static long tenantId() { return optional().map(SmaPrincipal::tenantId).orElse(1L); }
+    public static long tenantId() { return optional().map(SmaPrincipal::tenantId).orElseGet(TenantScope::current); }
     public static long userId() { return optional().map(SmaPrincipal::userId).orElse(0L); }
     public static String portal() { return optional().map(SmaPrincipal::portal).orElse("admin"); }
 }

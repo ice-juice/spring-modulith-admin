@@ -80,7 +80,7 @@ public class UserService implements AccountQuery {
         for(long roleId:input.roleIds()) { var relation=new UserRoleEntity(); relation.setUserId(row.getId()); relation.setRoleId(roleId); userRoles.insert(relation); }
         userPosts.delete(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getUserId,row.getId()));
         for(long postId:input.postIds()) { var relation=new UserPostEntity(); relation.setUserId(row.getId()); relation.setPostId(postId); userPosts.insert(relation); }
-        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),row.getId(),id==null?"create":"update"));
+        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),row.getId(),id==null?"create":"update",row.getCredentialVersion()));
         return view(row);
     }
     private void validate(Input input) {
@@ -104,13 +104,13 @@ public class UserService implements AccountQuery {
         mapper.deleteById(id);
         userRoles.delete(new LambdaQueryWrapper<UserRoleEntity>().eq(UserRoleEntity::getUserId,id));
         userPosts.delete(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getUserId,id));
-        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"delete"));
+        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"delete",row.getCredentialVersion()));
     }
     @Transactional
     public void resetPassword(long id,String password) {
         guard.lock(); var row=require(id); protect(row);
         row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); mapper.updateById(row);
-        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password"));
+        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password",row.getCredentialVersion()));
     }
     @Transactional
     public void changeOwnPassword(String oldPassword,String newPassword) {
@@ -118,7 +118,7 @@ public class UserService implements AccountQuery {
         guard.lock(); var row=accounts.selectById(id);
         if(row==null||!passwords.matches(oldPassword,row.getPasswordHash())) throw new BizException(IamErrorCode.INVALID_PASSWORD);
         row.setPasswordHash(hash(newPassword)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); accounts.updateById(row);
-        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password"));
+        events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password",row.getCredentialVersion()));
     }
     private void protect(UserEntity row) {
         if(row.getSuperAdmin()||row.getId()==CurrentUser.userId()) throw new BizException(IamErrorCode.PROTECTED_USER);
@@ -135,6 +135,11 @@ public class UserService implements AccountQuery {
     @Override public Optional<AccountView> findById(long id) { return Optional.ofNullable(accounts.selectById(id)).map(this::account); }
     @Override public boolean matchesPassword(long id,String password) {
         var row=accounts.selectById(id); return row!=null&&row.getEnabled()&&passwords.matches(password,row.getPasswordHash());
+    }
+    @Override public Set<Long> searchIds(String keyword) {
+        return accounts.selectList(new LambdaQueryWrapper<UserEntity>().select(UserEntity::getId).eq(UserEntity::getPortal,CurrentUser.portal())
+                .and(query -> query.like(UserEntity::getUsername,keyword).or().like(UserEntity::getName,keyword)))
+                .stream().map(UserEntity::getId).collect(java.util.stream.Collectors.toSet());
     }
     private View view(UserEntity row) {
         var account=account(row);

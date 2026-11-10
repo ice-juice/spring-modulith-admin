@@ -12,7 +12,8 @@ public class AuthController {
     private final SessionService sessions;
     private final CaptchaService captchas;
     private final LoginThrottle throttle;
-    public AuthController(SessionService sessions,CaptchaService captchas,LoginThrottle throttle) { this.sessions=sessions; this.captchas=captchas; this.throttle=throttle; }
+    private final SessionManager manager;
+    public AuthController(SessionService sessions,CaptchaService captchas,LoginThrottle throttle,SessionManager manager) { this.sessions=sessions; this.captchas=captchas; this.throttle=throttle; this.manager=manager; }
     @GetMapping("/captcha") @PermitAnonymous
     public ApiResponse<CaptchaService.Challenge> captcha(HttpServletRequest request) { throttle.claimCaptcha(request.getRemoteAddr()); return ApiResponse.ok(captchas.issue()); }
     public record Login(@NotBlank @Size(max=64) String username,@NotBlank @Size(max=128) String password,
@@ -26,4 +27,11 @@ public class AuthController {
     public ApiResponse<SessionService.Me> me(@RequestAttribute("sma.session-id") long sessionId) { return ApiResponse.ok(sessions.me(sessionId)); }
     @PostMapping("/logout") @PermitLoggedIn
     public ApiResponse<Void> logout(@RequestAttribute("sma.session-id") long sessionId) { sessions.logout(sessionId); return ApiResponse.ok(); }
+    @PostMapping("/lock") @PermitLoggedIn
+    public ApiResponse<Void> lock(@RequestAttribute("sma.session-id") long sessionId) { manager.lock(sessionId); return ApiResponse.ok(); }
+    public record Unlock(@NotBlank @Size(max=128) String password) {}
+    @PostMapping("/unlock") @PermitLoggedIn
+    public ApiResponse<Void> unlock(@RequestAttribute("sma.session-id") long sessionId,@Valid @RequestBody Unlock input,HttpServletRequest request) {
+        manager.unlock(sessionId,input.password(),request.getRemoteAddr()); return ApiResponse.ok();
+    }
 }

@@ -75,11 +75,16 @@ class AuthFlowTests {
         var input=new UserService.Input("version-tester","Version Tester",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,"UTC");
         var created=users.create(new UserService.Create(input,"Test@Secure2026"));
         var oldSnapshot=users.authenticate("version-tester","Test@Secure2026","admin").orElseThrow();
+        var previous=issuer.issue(oldSnapshot,false,java.time.Duration.ofHours(8),"127.0.0.1","existing-session-fixture");
         users.resetPassword(created.id(),"Changed@Secure2026");
         var stale=issuer.issue(oldSnapshot,false,java.time.Duration.ofHours(8),"127.0.0.1","stale-login-fixture");
         assertThat(sessionService.resolve(stale.token())).isEmpty();
         var current=users.authenticate("version-tester","Changed@Secure2026","admin").orElseThrow();
         var good=issuer.issue(current,false,java.time.Duration.ofHours(8),"127.0.0.1","current-fixture");
+        assertThat(sessionService.resolve(good.token())).isPresent();
+        org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(5)).untilAsserted(() ->
+            assertThat(sessions.selectList(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SessionEntity>()
+                    .eq(SessionEntity::getTokenHash,Tokens.hash(previous.token())))).isEmpty());
         assertThat(sessionService.resolve(good.token())).isPresent();
     }
     @Test
