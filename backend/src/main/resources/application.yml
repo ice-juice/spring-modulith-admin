@@ -51,6 +51,9 @@ server:
   port: 8080
 
 sma:
+  bootstrap:
+    # Set for first startup only; blank means no automatic administrator creation.
+    admin-password: ${SMA_ADMIN_PASSWORD:}
   i18n:
     # first supported locale is the default; Accept-Language selects among them
     supported-locales: zh-CN,en-US

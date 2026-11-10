@@ -8,7 +8,9 @@ public enum IamErrorCode implements ErrorCode {
     REFERENCED("iam.error.referenced"),
     DUPLICATE_CODE("iam.error.duplicate-code"),
     DISABLED_PARENT("iam.error.disabled-parent"),
-    PROTECTED_USER("iam.error.protected-user");
+    PROTECTED_USER("iam.error.protected-user"),
+    INVALID_PASSWORD("iam.error.invalid-password"),
+    WEAK_PASSWORD("iam.error.weak-password");
     private final String key;
     IamErrorCode(String key) { this.key = key; }
     @Override public String key() { return key; }

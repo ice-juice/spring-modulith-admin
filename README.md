@@ -54,12 +54,12 @@ spring Modulith/
 | common | 共享内核 | 统一响应、业务异常、访问控制注解、序列化、全局异常处理 | 无 | 已建 |
 | auth | 认证与会话 | 登录、验证码、服务端令牌、在线用户、强制下线、锁屏、安全过滤链 | common、common :: security；实现时加入 iam | 已建（安全基线） |
 | iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围 | common、common :: security | 规划 |
-| config | 系统配置 | 数据字典、全局参数、用户界面偏好、敏感词 | common、common :: security | 规划 |
+| config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | 规划 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、auth、iam（仅引用事件类型） | 规划 |
 | message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、iam | 规划 |
 | file | 文件 | 文件元数据、本地/对象存储适配 | common、common :: security | 规划 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试） | common、common :: security | 规划 |
-| devtools | 开发工具 | 代码生成器、数据库文档 | common、common :: security、iam | 规划 |
+| devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
 | openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security | 规划 |
 
 ```mermaid
@@ -176,7 +176,7 @@ void on(UserCreatedEvent event) { /* 写操作日志，必须幂等 */ }
 - 时间：`DATETIME(3)` 一律存 UTC，Java 侧用 `Instant`；JDBC 连接固定会话时区为 UTC（`connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true`），与服务器时区无关。
 - 数据权限字段：需要数据范围控制的表带 `dept_id`（归属部门）与 `created_by`（归属人），由数据权限插件使用。
 - 多对多一律用关联表，不用 JBolt 的逗号分隔字符串；唯一性用唯一索引保证（如 username、权限 key、字典类型+编码）。
-- Java 时间类型用 `LocalDateTime` / `Instant`（R13 禁止 `java.util.Date`）。
+- 业务时刻用 `Instant`，自然日用 `LocalDate`；`LocalDateTime` 只用于显式的本地日历计算，不能作为跨时区业务时刻入库（R13 禁止 `java.util.Date`）。
 
 ## 8. Web API 约定
 

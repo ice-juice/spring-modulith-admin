@@ -44,7 +44,7 @@ flowchart LR
 
 - 语言标识采用 BCP 47：`zh-CN`、`en-US`。
 - 前端初始语言：个人偏好 > 本地存储 > 浏览器语言 > `zh-CN`；登录前使用本地存储或浏览器语言。
-- 后端：`AcceptHeaderLocaleResolver`，配置支持列表与默认语言 `zh-CN`；不支持的语言回退默认语言。
+- 后端：`HeaderLocaleContextResolver` 同时解析语言和 `X-Time-Zone`；支持列表与默认语言 `zh-CN` 可配置，不支持的语言回退默认语言。
 - 个人偏好由 config 模块的用户偏好保存（对应 JBolt 的 `jb_user_config`），键为 `locale`。
 
 ## 4. 前端
@@ -64,14 +64,14 @@ flowchart LR
 
 ### 5.1 语言包
 
-- 每个模块自带语言包：`src/main/resources/i18n/<模块id>/messages.properties`（默认，zh-CN 内容）、`messages_en_US.properties`，UTF-8 编码。
+- 每个模块自带语言包：`src/main/resources/i18n/<模块id>/messages.properties`（默认，zh-CN 内容）、`messages_en.properties`（en-US），UTF-8 编码。
 - common 中提供一个配置组件，启动时扫描 `classpath*:i18n/*/messages*.properties` 自动注册所有模块的 basename，模块新增语言包无需改公共配置，符合“模块自带资源”的原则。
 - key 以模块 id 开头：`iam.user.username-exists`、`common.error.forbidden`。
 
 ### 5.2 错误码化
 
-- 新增 `ErrorCode` 接口（`code()`、`messageKey()`），各模块用枚举实现，例如 `IamErrorCode.USERNAME_EXISTS`。
-- `BizException` 改为只接受 `ErrorCode` + 参数，不再接受字符串文本；`GlobalExceptionHandler` 按请求语言从 MessageSource 解析 `message`。前端依据稳定的 `code` 做逻辑判断，`message` 只用于展示。
+- `ErrorCode` 接口提供 `key()` 与 `status()`，各模块用枚举实现。
+- `BizException` 只接受 `ErrorCode` + 参数；`GlobalExceptionHandler` 按请求语言从 MessageSource 解析 `message`。响应 `code` 为数值分类，`error` 为稳定业务 key，前端依据 `error` 做业务判断，`message` 用于展示。
 - 401、403、400、500 等通用提示使用 `common.error.*` 的 key。
 
 ### 5.3 参数校验
@@ -114,7 +114,7 @@ CREATE TABLE iam_i18n_text (
 ### 5.7 时间与数字
 
 - 接口中的时间统一为带时区偏移的 ISO-8601 字符串，由前端按用户语言和时区格式化；数字、金额的格式化也由前端完成。
-- 数据库首版沿用单一时区（`Asia/Shanghai`），接口层已带偏移，以后支持多时区时不需要修改接口。
+- 数据库从首版起统一存 UTC（`DATETIME(3)` + JDBC 会话 UTC），业务时刻使用 `Instant`；接口输出 `Z` 后缀。用户显示时区按个人偏好 > 租户默认 > 浏览器 > UTC 解析，使用 IANA 时区名支持夏令时。后台未携带有效时区头时使用配置的默认时区。
 
 ## 6. 新增的框架约束（实施后写入 README 第 5 节）
 
@@ -132,9 +132,9 @@ CREATE TABLE iam_i18n_text (
 2. **随模块落地**：每个模块提交 zh-CN 与 en-US 两份语言包，前后端同步。
 3. **内置数据与翻译表**：实现 iam 菜单、config 字典与参数时加入 `name_key` 和 `*_i18n_text` 表。
 
-## 8. 待确认
+## 8. 确认结果
 
-1. 首批语言是否为 zh-CN、en-US 两种？
-2. 用户录入数据的翻译首版是否只覆盖菜单、字典、参数名称？
-3. 数据库时间是否维持单一时区 `Asia/Shanghai`（接口带偏移），还是一开始就统一存 UTC？
+1. 首批语言已确认为 zh-CN、en-US。
+2. 用户录入数据首版只翻译菜单、字典、参数名称。
+3. 数据库时间从一开始就统一存 UTC。
 

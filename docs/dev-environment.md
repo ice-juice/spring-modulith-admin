@@ -31,6 +31,10 @@
 
 项目共享的 mvnd 设置在 `backend/.mvn/mvnd.properties`（线程数 2、空闲 3 小时退出）。实测数据见 [P02 决策记录](proposals/P02-mvnd-build.md)。
 
+从项目根目录可运行 `pwsh -NoProfile -File tools/dev/verify-backend.ps1`；加 `-Standard` 使用 Wrapper。前端统一验证入口为 `tools/dev/verify-frontend.ps1`。后端打包后用 `tools/dev/run-backend.ps1` 启动独立 JAR 副本，避免 Windows 锁定构建产物。
+
+初始化管理员：首次启动前在当前终端设置 `$env:SMA_ADMIN_PASSWORD='自行设置至少12字符的密码'`。只在默认租户没有超级管理员时创建 `admin`；未设置时不会创建。此值不写入仓库、不打印到日志；数据库只存 BCrypt。已有管理员不会被该环境变量重置。
+
 ## 4. 数据库
 
 WSL 尚未启用（需要管理员授权并重启），当前使用 Windows 上的免安装 MySQL 8.4.10：

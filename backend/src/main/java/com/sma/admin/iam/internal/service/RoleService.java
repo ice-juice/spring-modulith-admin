@@ -52,6 +52,13 @@ public class RoleService implements RoleAccessQuery {
     public View save(Long id, Input input) {
         guard.lock();
         var row = id == null ? new RoleEntity() : require(id);
+        CurrentUser.optional().filter(actor -> !actor.superAdmin() && !actor.dataAccess().all()).ifPresent(actor -> {
+            // A role may already be assigned outside this administrator's visible departments.
+            // Changing its data grants therefore requires organization-wide scope.
+            if (id == null || !row.getDataScope().equals(input.dataScope().name()) || input.dataScope() == DataScope.CUSTOM) {
+                throw new org.springframework.security.access.AccessDeniedException("Changing role data grants requires full data scope");
+            }
+        });
         long parentId = input.parentId() == null ? 0 : input.parentId();
         Long cursor = parentId; Set<Long> seen = new HashSet<>();
         while (cursor != 0) {
