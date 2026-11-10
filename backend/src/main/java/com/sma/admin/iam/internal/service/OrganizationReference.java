@@ -5,4 +5,5 @@ public interface OrganizationReference {
     default boolean departmentUsed(long id) { return false; }
     default boolean postUsed(long id) { return false; }
     default boolean roleUsed(long id) { return false; }
+    default boolean permissionUsed(long id) { return false; }
 }

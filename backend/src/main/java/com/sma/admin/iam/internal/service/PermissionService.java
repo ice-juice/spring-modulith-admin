@@ -22,8 +22,10 @@ public class PermissionService {
     private final StructureGuard guard;
     private final MessageSource messages;
     private final ApplicationEventPublisher events;
-    public PermissionService(PermissionMapper mapper,I18nTextMapper translations,StructureGuard guard,MessageSource messages,ApplicationEventPublisher events) {
+    private final List<OrganizationReference> references;
+    public PermissionService(PermissionMapper mapper,I18nTextMapper translations,StructureGuard guard,MessageSource messages,ApplicationEventPublisher events,List<OrganizationReference> references) {
         this.mapper=mapper; this.translations=translations; this.guard=guard; this.messages=messages; this.events=events;
+        this.references=references;
     }
     public record Input(Long parentId, @NotBlank @Pattern(regexp="[a-z]+(:[a-z][a-z0-9-]*){1,3}") String permissionKey,
             @NotBlank @Size(max=128) String name, @Size(max=256) String nameKey,
@@ -98,6 +100,7 @@ public class PermissionService {
     public void delete(long id) {
         guard.lock(); var row=require(id);
         if (row.getBuiltin()) throw new BizException(CommonErrorCode.FORBIDDEN);
+        if (references.stream().anyMatch(ref -> ref.permissionUsed(id))) throw new BizException(IamErrorCode.REFERENCED);
         if (mapper.selectCount(inPortal().eq(PermissionEntity::getParentId,id))>0) throw new BizException(IamErrorCode.HAS_CHILDREN);
         mapper.deleteById(id); translations.delete(translationQuery(id));
         events.publishEvent(new PermissionChangedEvent(CurrentUser.tenantId(),CurrentUser.portal(),null,"resource"));

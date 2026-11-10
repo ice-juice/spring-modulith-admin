@@ -22,10 +22,12 @@ public class RoleService implements RoleAccessQuery {
     private final StructureGuard guard;
     private final List<OrganizationReference> references;
     private final ApplicationEventPublisher events;
+    private final RolePermissionMapper rolePermissions;
     public RoleService(RoleMapper mapper, RoleDepartmentMapper departments, DepartmentService departmentService,
-            StructureLockMapper structure, StructureGuard guard, List<OrganizationReference> references, ApplicationEventPublisher events) {
+            StructureLockMapper structure, StructureGuard guard, List<OrganizationReference> references, ApplicationEventPublisher events, RolePermissionMapper rolePermissions) {
         this.mapper = mapper; this.departments = departments; this.departmentService = departmentService;
         this.structure = structure; this.guard = guard; this.references = references; this.events = events;
+        this.rolePermissions = rolePermissions;
     }
     public record Input(Long parentId, @NotBlank @Size(max=128) String name,
             @NotBlank @Pattern(regexp="[A-Za-z][A-Za-z0-9_-]{0,63}") String code,
@@ -79,6 +81,7 @@ public class RoleService implements RoleAccessQuery {
         if (mapper.selectCount(inPortal().eq(RoleEntity::getParentId,id)) > 0) throw new BizException(IamErrorCode.HAS_CHILDREN);
         if (references.stream().anyMatch(ref -> ref.roleUsed(id))) throw new BizException(IamErrorCode.REFERENCED);
         mapper.deleteById(id); departments.delete(new LambdaQueryWrapper<RoleDepartmentEntity>().eq(RoleDepartmentEntity::getRoleId,id));
+        rolePermissions.delete(new LambdaQueryWrapper<RolePermissionEntity>().eq(RolePermissionEntity::getRoleId,id));
         events.publishEvent(new RoleChangedEvent(CurrentUser.tenantId(),id,"delete"));
     }
     @Override
