@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { get, post, put, remove, type PageResult } from '@/api/http'
 import { usePreferences } from '@/stores/preferences'
@@ -15,7 +15,8 @@ const props = defineProps<{ managed?: boolean }>(),
   { t, locale } = useI18n(),
   preferences = usePreferences(),
   messages = useMessages(),
-  router = useRouter()
+  router = useRouter(),
+  route = useRoute()
 const {
   options,
   label,
@@ -152,6 +153,20 @@ function search() {
   void load()
 }
 watch([() => props.managed, locale], search, { immediate: true })
+watch(
+  () => route.query.focus,
+  async (id) => {
+    if (typeof id === 'string')
+      try {
+        detail.value = await get<Task>(
+          '/message/todos/' + (props.managed ? 'managed/' : '') + encodeURIComponent(id),
+        )
+      } catch (e) {
+        error.value = (e as Error).message
+      }
+  },
+  { immediate: true },
+)
 useMessageRefresh(load, ['todo'])
 </script>
 <template>

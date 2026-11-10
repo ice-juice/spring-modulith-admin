@@ -19,14 +19,15 @@ public class TodoController {
   @RequestParam(required=false)String dateField,@RequestParam(required=false)Instant from,@RequestParam(required=false)Instant to){return ApiResponse.ok(service.page(page,keyword,state,type,priority,active,dateField,from,to,false));}
  @GetMapping("/managed") @RequiresPermission("message:todo:view")
  public ApiResponse<PageResult<TodoService.View>> managed(@ModelAttribute PageQuery page){return ApiResponse.ok(service.page(page,null,null,null,null,null,null,null,null,true));}
+ @GetMapping("/managed/{id}") @RequiresPermission("message:todo:view") public ApiResponse<TodoService.View> managed(@PathVariable long id){return ApiResponse.ok(service.managed(id));}
  @GetMapping("/{id}") public ApiResponse<TodoService.View> get(@PathVariable long id){return ApiResponse.ok(service.get(id));}
  @GetMapping("/recipients") @RequiresPermission("message:todo:assign") public ApiResponse<java.util.List<OptionItem>> recipients(@RequestParam(required=false)String keyword){return ApiResponse.ok(service.recipients(keyword));}
- @PostMapping @AuditAction(value="message:todo:create",path="/message/inbox") public ApiResponse<TodoService.View> create(@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(null,input,false));}
+ @PostMapping @AuditAction(value="message:todo:create",path="/message/inbox?tab=tasks") public ApiResponse<TodoService.View> create(@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(null,input,false));}
  @PostMapping("/assign") @RequiresPermission("message:todo:assign") public ApiResponse<TodoService.View> assign(@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(null,input,true));}
- @PutMapping("/{id}") @AuditAction(value="message:todo:update",path="/message/inbox") public ApiResponse<TodoService.View> update(@PathVariable long id,@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(id,input,false));}
- @PutMapping("/{id}/state") @AuditAction(value="message:todo:state",path="/message/inbox") public ApiResponse<TodoService.View> state(@PathVariable long id,@Valid @RequestBody State input){return ApiResponse.ok(service.state(id,input.state()));}
+ @PutMapping("/{id}") @AuditAction(value="message:todo:update",path="/message/inbox?tab=tasks") public ApiResponse<TodoService.View> update(@PathVariable long id,@Valid @RequestBody TodoService.Input input){return ApiResponse.ok(service.save(id,input,false));}
+ @PutMapping("/{id}/state") @AuditAction(value="message:todo:state",path="/message/inbox?tab=tasks") public ApiResponse<TodoService.View> state(@PathVariable long id,@Valid @RequestBody State input){return ApiResponse.ok(service.state(id,input.state()));}
  @PutMapping("/{id}/read") public ApiResponse<TodoService.View> read(@PathVariable long id){return ApiResponse.ok(service.read(id));}
- @PostMapping("/batch-state") @AuditAction(value="message:todo:state",path="/message/inbox") public ApiResponse<Void> stateMany(@Valid @RequestBody BatchState input){service.batchState(input.ids(),input.state());return ApiResponse.ok();}
- @DeleteMapping("/{id}") @AuditAction(value="message:todo:delete",path="/message/inbox") public ApiResponse<Void> delete(@PathVariable long id){service.deleteMany(Set.of(id));return ApiResponse.ok();}
- @PostMapping("/batch-delete") @AuditAction(value="message:todo:delete",path="/message/inbox") public ApiResponse<Void> deleteMany(@Valid @RequestBody Batch input){service.deleteMany(input.ids());return ApiResponse.ok();}
+ @PostMapping("/batch-state") @AuditAction(value="message:todo:state",path="/message/inbox?tab=tasks") public ApiResponse<Void> stateMany(@Valid @RequestBody BatchState input){service.batchState(input.ids(),input.state());return ApiResponse.ok();}
+ @DeleteMapping("/{id}") @AuditAction(value="message:todo:delete",path="/message/inbox?tab=tasks") public ApiResponse<Void> delete(@PathVariable long id){service.deleteMany(Set.of(id));return ApiResponse.ok();}
+ @PostMapping("/batch-delete") @AuditAction(value="message:todo:delete",path="/message/inbox?tab=tasks") public ApiResponse<Void> deleteMany(@Valid @RequestBody Batch input){service.deleteMany(input.ids());return ApiResponse.ok();}
 }

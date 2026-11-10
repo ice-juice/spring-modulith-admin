@@ -42,7 +42,9 @@ spring Modulith/
 │  │  ├─ audit/                      登录与操作审计
 │  │  ├─ file/                       本地文件与引用保护
 │  │  ├─ message/                    通知、待办、私信与实时推送
-│  │  └─ monitor/                    服务器、缓存、事件与数据库文档
+│  │  ├─ monitor/                    服务器、缓存、事件与数据库文档
+│  │  ├─ openapi/                    应用中心与对外鉴权
+│  │  └─ workspace/                  操作台聚合
 │  ├─ src/main/resources/
 │  │  ├─ application.yml
 │  │  └─ db/migration/__root/        公共表结构（事件发布表）
@@ -66,6 +68,7 @@ spring Modulith/
 | message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、common :: persistence、iam、file、auth | P3 完成 |
 | file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 完成 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试）、数据库文档 | common、common :: security、common :: persistence | P3 完成 |
+| workspace | 操作台 | 汇总模块贡献的权限内统计和个人事项 | common、common :: security | P4 完成 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
 | openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security、common :: persistence | P4 鉴权完成 |
 

@@ -9,6 +9,7 @@ import type zhFile from './zh-CN/file.json'
 import type zhMessage from './zh-CN/message.json'
 import type zhMonitor from './zh-CN/monitor.json'
 import type zhOpenapi from './zh-CN/openapi.json'
+import type zhWorkspace from './zh-CN/workspace.json'
 
 export const supportedLocales = ['zh-CN', 'en-US'] as const
 export type AppLocale = (typeof supportedLocales)[number]
@@ -22,6 +23,7 @@ export interface MessageSchema {
   message: typeof zhMessage
   monitor: typeof zhMonitor
   openapi: typeof zhOpenapi
+  workspace: typeof zhWorkspace
 }
 declare module 'vue-i18n' {
   export interface DefineLocaleMessage {
@@ -34,6 +36,7 @@ declare module 'vue-i18n' {
     message: MessageSchema['message']
     monitor: MessageSchema['monitor']
     openapi: MessageSchema['openapi']
+    workspace: MessageSchema['workspace']
   }
 }
 

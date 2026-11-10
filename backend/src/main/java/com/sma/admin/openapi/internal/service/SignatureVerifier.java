@@ -15,7 +15,7 @@ import com.sma.admin.openapi.internal.persistence.*;
 
 @Service
 public class SignatureVerifier {
- private final NonceMapper nonces;public SignatureVerifier(NonceMapper nonces){this.nonces=nonces;}
+ private final NonceMapper nonces;private final NonceMaintenance maintenance;public SignatureVerifier(NonceMapper nonces,NonceMaintenance maintenance){this.nonces=nonces;this.maintenance=maintenance;}
  @Transactional public void verify(ApplicationEntity app,RequestProof proof,String secret){
   if(!app.getSignatureRequired())return;
   try{
@@ -25,8 +25,8 @@ public class SignatureVerifier {
    var mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),"HmacSHA256"));
    if(!MessageDigest.isEqual(mac.doFinal(canonical.getBytes(StandardCharsets.UTF_8)),HexFormat.of().parseHex(proof.signature())))throw new IllegalArgumentException();
   }catch(GeneralSecurityException|IllegalArgumentException invalid){throw new BizException(OpenapiErrorCode.INVALID_SIGNATURE);}
-  nonces.purge(Instant.now());var nonce=new NonceEntity();nonce.setApplicationId(app.getId());nonce.setNonce(proof.nonce());nonce.setExpiresAt(Instant.now().plusSeconds(600));
-  try{nonces.insert(nonce);}catch(DuplicateKeyException replay){throw new BizException(OpenapiErrorCode.REPLAY);}
+  var nonce=new NonceEntity();nonce.setApplicationId(app.getId());nonce.setNonce(proof.nonce());nonce.setExpiresAt(Instant.now().plusSeconds(600));
+  try{nonces.insert(nonce);maintenance.seen();}catch(DuplicateKeyException replay){throw new BizException(OpenapiErrorCode.REPLAY);}
  }
  public static String canonicalQuery(String query){
   if(query==null||query.isEmpty())return "";

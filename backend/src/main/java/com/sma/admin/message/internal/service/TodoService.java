@@ -45,6 +45,7 @@ public class TodoService {
   var row=todos.selectOne(query);if(row==null)throw new BizException(CommonErrorCode.DATA_NOT_FOUND);return row;
  }
  public View get(long id){return view(own(id,false));}
+ public View managed(long id){var row=managed.selectOne(inPortal().eq(TodoEntity::getId,id));if(row==null)throw new BizException(CommonErrorCode.DATA_NOT_FOUND);return view(row);}
  @Transactional public View save(Long id,Input input,boolean assign){
   var row=id==null?new TodoEntity():own(id,true);
   if(id!=null&&!OPEN.contains(row.getState()))throw new BizException(MessageErrorCode.INVALID_STATE);

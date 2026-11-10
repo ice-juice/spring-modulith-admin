@@ -150,7 +150,7 @@ const router = createRouter({
           path: '',
           name: 'home',
           component: () => import('@/views/HomeView.vue'),
-          meta: { titleKey: 'common.home' },
+          meta: { module: 'workspace', titleKey: 'common.home' },
         },
         {
           path: '403',

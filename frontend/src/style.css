@@ -489,3 +489,66 @@ html.dark {
     max-height: 220px;
   }
 }
+.home-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.metric-tile {
+  text-align: left;
+  padding: 20px;
+  border: 1px solid var(--el-border-color);
+  background: var(--el-bg-color);
+  border-radius: 8px;
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+}
+.metric-tile strong {
+  display: block;
+  font-size: 30px;
+  margin-top: 12px;
+  color: var(--el-text-color-primary);
+}
+.metric-tile:hover {
+  border-color: var(--el-color-primary);
+}
+.home-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+.activity-row .el-button {
+  min-width: 0;
+  max-width: 55%;
+  white-space: normal;
+  text-align: left;
+}
+.activity-row small {
+  margin-left: auto;
+  color: var(--el-text-color-secondary);
+}
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.shortcut-grid .el-button {
+  margin-left: 0;
+  white-space: normal;
+  height: auto;
+  min-height: 44px;
+}
+@media (max-width: 1000px) {
+  .home-panels {
+    grid-template-columns: 1fr;
+  }
+}

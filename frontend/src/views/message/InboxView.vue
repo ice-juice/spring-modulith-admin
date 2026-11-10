@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { get, put, type PageResult } from '@/api/http'
 import { usePreferences } from '@/stores/preferences'
@@ -12,6 +13,7 @@ import TasksView from './TasksView.vue'
 import PrivateView from './PrivateView.vue'
 import AttachmentList from '@/components/AttachmentList.vue'
 const { t, locale } = useI18n(),
+  route = useRoute(),
   preferences = usePreferences(),
   messages = useMessages(),
   { label } = useDictionaries(['sys_notice_priority_level'])
@@ -24,6 +26,27 @@ const tab = ref('notices'),
   error = ref(''),
   detail = ref<Notice>(),
   selected = ref<Notice[]>([])
+watch(
+  () => route.query.tab,
+  (value) => {
+    if (typeof value === 'string' && ['notices', 'tasks', 'private'].includes(value))
+      tab.value = value
+  },
+  { immediate: true },
+)
+watch(
+  () => route.query.focus,
+  async (id) => {
+    if (typeof id === 'string' && (!route.query.tab || route.query.tab === 'notices'))
+      try {
+        detail.value = await put('/message/notices/inbox/' + encodeURIComponent(id) + '/read')
+        await messages.refresh()
+      } catch (e) {
+        error.value = (e as Error).message
+      }
+  },
+  { immediate: true },
+)
 async function load() {
   busy.value = true
   try {
