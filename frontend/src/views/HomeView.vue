@@ -1,45 +1,52 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import axios from 'axios'
-
-const status = ref<'checking' | 'UP' | 'DOWN' | 'unreachable'>('checking')
-
+import { useI18n } from 'vue-i18n'
+import { useAuth } from '@/stores/auth'
+import { usePreferences } from '@/stores/preferences'
+import { formatInstant } from '@/lib/time'
+const { t, locale } = useI18n()
+const auth = useAuth()
+const preferences = usePreferences()
+const healthy = ref(false)
+const now = ref(new Date().toISOString())
+let timer: ReturnType<typeof setInterval>
 onMounted(async () => {
+  timer = setInterval(() => {
+    now.value = new Date().toISOString()
+  }, 1000)
   try {
-    const { data } = await axios.get<{ status: 'UP' | 'DOWN' }>('/actuator/health')
-    status.value = data.status
+    healthy.value = (await axios.get('/actuator/health')).data.status === 'UP'
   } catch {
-    status.value = 'unreachable'
+    healthy.value = false
   }
 })
+onUnmounted(() => clearInterval(timer))
 </script>
-
 <template>
-  <el-container class="page">
-    <el-main>
-      <el-card>
-        <template #header>Springboot Modulith Admin 开发环境</template>
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="前端"
-            >Vue 3 + Vite + TypeScript + Element Plus</el-descriptions-item
-          >
-          <el-descriptions-item label="后端"
-            >Spring Boot 4.1 + Spring Modulith 2.1（端口 8080）</el-descriptions-item
-          >
-          <el-descriptions-item label="后端健康检查">
-            <el-tag v-if="status === 'UP'" type="success">UP</el-tag>
-            <el-tag v-else-if="status === 'checking'" type="info">检查中</el-tag>
-            <el-tag v-else type="danger">{{ status }}</el-tag>
-          </el-descriptions-item>
-        </el-descriptions>
-      </el-card>
-    </el-main>
-  </el-container>
+  <section class="welcome-card">
+    <div class="eyebrow">{{ t('common.workspace') }}</div>
+    <h1>{{ t('common.welcome', { name: auth.user?.name || '' }) }}</h1>
+    <p>{{ t('common.welcomeHint') }}</p>
+  </section>
+  <div class="dashboard-grid">
+    <el-card shadow="never"
+      ><div class="muted">{{ t('common.health') }}</div>
+      <p>
+        <el-tag :type="healthy ? 'success' : 'danger'">{{
+          t(healthy ? 'common.healthy' : 'common.unavailable')
+        }}</el-tag>
+      </p></el-card
+    >
+    <el-card shadow="never"
+      ><div class="muted">{{ t('common.currentTime') }}</div>
+      <p class="metric-value">{{ formatInstant(now, preferences.timeZone, locale) }}</p>
+      <small>{{ preferences.timeZone }}</small></el-card
+    >
+    <el-card shadow="never"
+      ><div class="muted">{{ t('common.portal') }}</div>
+      <p class="metric-value">{{ auth.user?.portal }}</p>
+      <small>{{ auth.user?.username }}</small></el-card
+    >
+  </div>
 </template>
-
-<style scoped>
-.page {
-  max-width: 880px;
-  margin: 48px auto;
-}
-</style>

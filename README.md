@@ -118,7 +118,7 @@ com.sma.admin.<module>
 | I2 | 后端语言包放在 `i18n/<模块id>/`，key 以模块 id 开头 | 自动：`I18nBundlesTests` |
 | I3 | zh-CN 与 en-US 的 key、插值占位符集合一致 | 自动：`I18nBundlesTests` |
 | I4 | 每个错误码在所有语言中都有文案 | 自动：`I18nBundlesTests` |
-| I5 | 前端语言包 key 一致，界面文本通过语言包输出 | P0-8 落地自动检查 |
+| I5 | 前端语言包 key 与占位符一致，模板显示文本及 label/placeholder/title/aria-label/alt 必须翻译（语言自称和时区标识除外） | 自动：`i18n:check`、ESLint `no-raw-text` |
 | T1 | 业务时间使用 `Instant`、MySQL `DATETIME(3)` 存 UTC，JDBC 会话固定 UTC；自然日查询先按 IANA 时区转换成半开 UTC 范围 | 自动：`UtcStorageTests`、`TimeRangeTests` |
 | P1 | 业务实体继承 `common :: persistence` 的 `TenantEntity`；租户由认证上下文获取，插入强制填充，更新不可更换；超管同样受租户隔离 | 自动：`PersistenceTests` |
 | P2 | 插件顺序：防全表更新 → 租户 → 数据权限（P0-7）→ 分页；未知 MyBatis 表不自动豁免租户隔离 | 自动：`PersistenceTests` |
