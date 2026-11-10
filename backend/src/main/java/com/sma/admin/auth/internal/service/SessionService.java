@@ -31,17 +31,19 @@ public class SessionService {
     private final SessionIssuer issuer;
     private final SessionManager manager;
     private final com.sma.admin.config.ParameterQuery settings;
+    private final com.sma.admin.config.PreferenceQuery preferences;
     public SessionService(SessionMapper mapper,AccountQuery accounts,RoleAccessQuery scopes,PermissionQuery permissions,NavigationQuery navigation,
-            CaptchaService captchas,LoginThrottle throttle,AuthProperties properties,LoginEvents events,SessionIssuer issuer,SessionManager manager,com.sma.admin.config.ParameterQuery settings) {
+            CaptchaService captchas,LoginThrottle throttle,AuthProperties properties,LoginEvents events,SessionIssuer issuer,SessionManager manager,com.sma.admin.config.ParameterQuery preferencesSettings,com.sma.admin.config.PreferenceQuery preferences) {
         this.mapper=mapper; this.accounts=accounts; this.scopes=scopes; this.permissions=permissions; this.navigation=navigation;
         this.captchas=captchas; this.throttle=throttle; this.properties=properties; this.events=events; this.issuer=issuer;
         this.manager=manager;
-        this.settings=settings;
+        this.settings=preferencesSettings;this.preferences=preferences;
     }
     public record LoginResult(String token,Instant expiresAt) {}
     public record Resolved(SessionEntity session,SmaPrincipal principal) {}
     public record Me(Long id,String username,String name,String portal,Long departmentId,boolean superAdmin,Set<String> permissions,
-            List<MenuView> menus,List<NavigationView> navigation,String locale,String timeZone,boolean locked,Instant passwordChangedAt,boolean passwordChangeSuggested) {}
+            List<MenuView> menus,List<NavigationView> navigation,String locale,String timeZone,boolean locked,Instant passwordChangedAt,boolean passwordChangeSuggested,
+            String tenantTimeZone,String theme,boolean tabsEnabled,boolean keepTabsAfterReload) {}
 
     public LoginResult login(String username,String password,String portal,String captchaId,String captcha,boolean remember,String ip,String userAgent) {
         String key=throttle.key(ip,username);
@@ -84,10 +86,12 @@ public class SessionService {
         var user=accounts.findById(principal.userId()).orElseThrow(() -> new BizException(CommonErrorCode.UNAUTHORIZED));
         var menus=permissions.menus(user.roleIds(),user.superAdmin());
         var session=mapper.selectById(sessionId);
+        var preference=preferences.get(user.id(),user.locale(),user.timeZone());
         return new Me(user.id(),user.username(),user.name(),user.portal(),user.departmentId(),user.superAdmin(),principal.permissions(),menus,
-                navigation.visible(menus.stream().map(MenuView::id).collect(java.util.stream.Collectors.toSet())),user.locale(),user.timeZone(),
+                navigation.visible(menus.stream().map(MenuView::id).collect(java.util.stream.Collectors.toSet())),preference.locale(),preference.timeZone(),
                 session!=null&&session.getLocked(),user.passwordChangedAt(),settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays())>0
-                        &&user.passwordChangedAt().plus(Duration.ofDays(settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays()))).isBefore(Instant.now()));
+                        &&user.passwordChangedAt().plus(Duration.ofDays(settings.longValue("auth.passwordNoticeDays",properties.passwordNoticeDays()))).isBefore(Instant.now()),
+                preference.tenantTimeZone(),preference.theme(),preference.tabsEnabled(),preference.keepTabsAfterReload());
     }
     public void logout(long sessionId) { manager.logout(sessionId); }
     private void publish(Long userId,String username,String portal,String status,String ip,String userAgent) {

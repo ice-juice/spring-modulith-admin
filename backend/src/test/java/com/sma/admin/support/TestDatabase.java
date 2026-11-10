@@ -22,8 +22,16 @@ public final class TestDatabase {
 	 * Drops every object in the test schema. The application's own Flyway run recreates it afterwards.
 	 */
 	public static void clean() {
+        ensureSafeDatabase(URL);
 		Flyway.configure().dataSource(URL, USERNAME, PASSWORD).cleanDisabled(false).load().clean();
 	}
+    static void ensureSafeDatabase(String url) {
+        if (!url.startsWith("jdbc:mysql://")) throw new IllegalArgumentException("Tests require an explicitly named MySQL test database");
+        String path=java.net.URI.create(url.substring(5)).getPath();
+        if(path==null||!path.matches("/(springboot_modulith_admin_test|sma_test_[a-z0-9_]+)")) {
+            throw new IllegalArgumentException("Refusing Flyway clean outside the dedicated test database");
+        }
+    }
 
 	private static String env(String name, String fallback) {
 		String value = System.getenv(name);
