@@ -55,6 +55,8 @@ server:
   port: 8080
 
 sma:
+  openapi:
+    master-key: ${SMA_APP_MASTER_KEY:}
   bootstrap:
     # Set for first startup only; blank means no automatic administrator creation.
     admin-password: ${SMA_ADMIN_PASSWORD:}

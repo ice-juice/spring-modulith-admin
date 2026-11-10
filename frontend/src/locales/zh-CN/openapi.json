@@ -1,0 +1,22 @@
+{
+  "apps": "应用中心",
+  "create": "创建应用",
+  "type": "应用类型",
+  "appId": "AppId",
+  "appSecret": "AppSecret",
+  "signature": "校验签名",
+  "target": "关联对象",
+  "rotate": "轮换密钥",
+  "rotateConfirm": "轮换后旧应用令牌将失效，继续吗？",
+  "link": "关联",
+  "unlink": "解除关联",
+  "unlinkConfirm": "解除应用的关联对象？",
+  "credentials": "应用凭据",
+  "secretOnce": "密钥仅在本次生成时显示，请妥善保存。",
+  "copySecret": "复制密钥",
+  "copied": "已复制",
+  "copyFailed": "复制失败，请手动选择并复制",
+  "targetType": "对象类型",
+  "targetId": "对象 ID",
+  "targetName": "对象名称"
+}

@@ -67,7 +67,7 @@ spring Modulith/
 | file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 完成 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试）、数据库文档 | common、common :: security、common :: persistence | P3 完成 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
-| openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security | 规划 |
+| openapi | 开放平台 | 应用 AppId/Secret、签名、对外令牌 | common、common :: security、common :: persistence | P4 应用中心完成 |
 
 ```mermaid
 flowchart LR
@@ -163,6 +163,8 @@ WebSocket 位于 `/api/message/ws`，仅接受已登录 REST 接口签发的一�
 服务器监控只输出 CPU、物理内存、磁盘、JVM 和连接池运行指标，不输出进程环境变量或数据库连接串。模块通过 `CacheRegion` SPI 提供当前租户的缓存数量、命中/未命中统计及清理操作，Monitor 不反向依赖业务模块，也不返回缓存值。参数缓存的版本与清理均按租户隔离，安全限流、验证码与握手票据不参与管理清理。
 
 事件发布管理使用 Modulith 2.1 的仓储和失败重投 API，只返回当前租户的事件类型、目标监听器、状态、尝试次数与时间，不能读取事件正文或重投其他租户的事件；只允许手动重试 FAILED 状态。事件必须携带 `tenantId`，缺少租户信息的记录不向业务管理界面开放。事件存储正文已扩为 MEDIUMTEXT，支持通知接收快照。升级 Modulith 时必须回归重投及事件表兼容性测试。数据库文档通过 JDBC DatabaseMetaData 读取当前库的表、字段与索引，允许结构元数据读取，不读取业务行数据；支持双语言 Markdown 导出，敏感列默认值遮蔽。
+
+应用中心保留 13 种分类及关联对象元数据，受租户/portal/数据范围保护。AppSecret 只在创建/轮换时返回，数据库采用 AES-256-GCM 加密并绑定 AppId。主密钥由 `SMA_APP_MASTER_KEY` 提供；本机未设置时自动生成并持久化到忽略版本控制的 `data/keys/openapi.key`，部署需保留该密钥。关联元数据不授予对象访问权。详见 [docs/openapi-design.md](docs/openapi-design.md)。
 
 关键操作日志由 Common 的 MVC 拦截器捕获带 `@RequiresPermission` 的写请求；登录即可的关键写操作显式加 `@AuditAction`。只记录操作者、动作、目标 ID、路径、结果码、耗时和设备，不记录请求体、查询参数、认证头或响应内容。事件在独立事务中发布，由 Audit 的 `@ApplicationModuleListener` 幂等写入。文案使用 `<模块>.audit.<资源>.<动作>` 与目标 ID 参数，保存中文快照，查询时按语言重新渲染；目标回跳地址仅由受控路径和 ID 构成。
 

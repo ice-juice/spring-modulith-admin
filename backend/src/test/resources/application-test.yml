@@ -7,6 +7,8 @@ spring:
     password: ${SMA_TEST_DB_PASSWORD:sma_dev}
 
 sma:
+  openapi:
+    key-file: target/test-keys/openapi.key
   file:
     directory: target/test-storage
 
