@@ -43,6 +43,8 @@ class SecurityConfiguration {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/actuator/health/**", "/actuator/info", "/error").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/captcha", "/api/config/parameters/public").permitAll()
+                        // Handshake validates a one-use ticket bound to a live session before upgrade.
+                        .requestMatchers("/api/message/ws").permitAll()
 						.anyRequest().authenticated())
                 .addFilterBefore(new TokenAuthenticationFilter(sessions, errors), UsernamePasswordAuthenticationFilter.class)
 				.build();

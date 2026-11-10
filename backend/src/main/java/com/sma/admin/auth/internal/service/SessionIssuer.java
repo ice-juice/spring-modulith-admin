@@ -11,7 +11,8 @@ public class SessionIssuer {
     private final SessionMapper mapper;
     private final SessionGuardMapper guard;
     private final LoginEvents events;
-    public SessionIssuer(SessionMapper mapper,SessionGuardMapper guard,LoginEvents events) { this.mapper=mapper; this.guard=guard; this.events=events; }
+    private final org.springframework.context.ApplicationEventPublisher publisher;
+    public SessionIssuer(SessionMapper mapper,SessionGuardMapper guard,LoginEvents events,org.springframework.context.ApplicationEventPublisher publisher) { this.mapper=mapper; this.guard=guard; this.events=events;this.publisher=publisher; }
     @Transactional
     public SessionService.LoginResult issue(AccountView user,boolean singleTerminal,Duration ttl,String ip,String userAgent) {
         return issue(user,singleTerminal,ttl,ip,userAgent,false);
@@ -19,7 +20,11 @@ public class SessionIssuer {
     @Transactional
     public SessionService.LoginResult issue(AccountView user,boolean singleTerminal,Duration ttl,String ip,String userAgent,boolean locked) {
         guard.lock(user.id(),user.tenantId());
-        if(singleTerminal) mapper.delete(new LambdaQueryWrapper<SessionEntity>().eq(SessionEntity::getUserId,user.id()).eq(SessionEntity::getPortal,user.portal()));
+        if(singleTerminal){
+            var query=new LambdaQueryWrapper<SessionEntity>().eq(SessionEntity::getUserId,user.id()).eq(SessionEntity::getPortal,user.portal());
+            var previous=mapper.selectList(query);mapper.delete(query);
+            previous.forEach(session->publisher.publishEvent(new com.sma.admin.auth.SessionEndedEvent(user.tenantId(),user.id(),session.getId(),"REPLACED")));
+        }
         String token=Tokens.create();
         var row=new SessionEntity(); row.setUserId(user.id()); row.setPortal(user.portal()); row.setTokenHash(Tokens.hash(token));
         row.setExpiresAt(Instant.now().plus(ttl)); row.setLastSeenAt(Instant.now()); row.setIp(ip);

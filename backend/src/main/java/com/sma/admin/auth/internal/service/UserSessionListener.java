@@ -10,14 +10,16 @@ import com.sma.admin.iam.UserChangedEvent;
 @Component
 public class UserSessionListener {
     private final SessionMapper mapper;
-    public UserSessionListener(SessionMapper mapper) { this.mapper = mapper; }
+    private final org.springframework.context.ApplicationEventPublisher events;
+    public UserSessionListener(SessionMapper mapper,org.springframework.context.ApplicationEventPublisher events) { this.mapper = mapper;this.events=events; }
     @ApplicationModuleListener
     public void on(UserChangedEvent event) {
         if (event.action().equals("create")) return;
         TenantScope.within(event.tenantId(), () -> {
             var query = new LambdaQueryWrapper<SessionEntity>().eq(SessionEntity::getUserId, event.userId());
             if (!event.action().equals("delete")) query.lt(SessionEntity::getCredentialVersion, event.credentialVersion());
-            mapper.delete(query);
+            var previous=mapper.selectList(query);mapper.delete(query);
+            previous.forEach(session->events.publishEvent(new com.sma.admin.auth.SessionEndedEvent(event.tenantId(),event.userId(),session.getId(),"ACCOUNT_CHANGED")));
             return null;
         });
     }

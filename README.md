@@ -57,7 +57,7 @@ spring Modulith/
 | iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围、个人资料与头像 | common、common :: security、common :: persistence、file | P1 完成，P3 扩展 |
 | config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 完成 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、common :: persistence、auth | P2 完成 |
-| message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、common :: persistence、iam、file | P3 实施 |
+| message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、common :: persistence、iam、file、auth | P3 实施 |
 | file | 文件 | 文件元数据、本地存储适配、受控下载、引用保护 | common、common :: security、common :: persistence | P3 实施 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试） | common、common :: security | 规划 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
@@ -69,6 +69,7 @@ flowchart LR
   iam --> file
   message --> iam
   message --> file
+  message --> auth
   devtools --> iam
   audit -. 监听事件 .-> auth
   audit -. 监听事件 .-> iam
@@ -150,6 +151,8 @@ com.sma.admin.<module>
 系统通知通过 IAM 的 `AudienceQuery` 展开接收人，并在发布时保存快照；全部指发布者可见数据范围内的有效用户。管理列表按发布者部门/本人数据权限过滤，个人收件箱按接收关系授权。已读时间首次写入后保留，编辑只变更接收人差集；回收站保留阅读与附件引用，恢复不重置阅读状态。正文用 jsoup 安全 HTML 白名单清洗，附件通过 FileAccessPolicy 授权。详细协同约定见 [docs/message-design.md](docs/message-design.md)。
 
 个人待办的查看、编辑、状态和删除均限定本人；分配接口另需权限，并通过 AudienceQuery 验证目标数据范围。管理数据范围不赋予代替接收人处理待办的能力。状态 1/2/5 可处理，3/4 结束，结束后不可重新编辑；实际完成/取消时间由服务端写入。私信只允许同租户同 portal 的有效用户，查询限定双方、已读操作限定收件人；通讯录仅返回用户 ID 与姓名。待办内容和私信均按普通文本渲染，链接拒绝脚本协议及协议相对地址。
+
+WebSocket 位于 `/api/message/ws`，仅接受已登录 REST 接口签发的一次性 30 秒票据；URL 不携带长期 Bearer，服务端只保存票据哈希。连接绑定租户、portal、用户和会话，每次推送及每 30 秒心跳均检查会话有效性。新通知/待办/私信使用 Modulith 事务监听推送对象 ID，前端再经 REST 鉴权读取内容。强退、顶替登录、账号凭据变更发布会话结束事件，关闭对应连接。首版连接与票据存单进程内存，重启后重新连接；集群化需共享分发。`sma.message.socket.allowed-origins` 配置额外允许的前端来源（默认本地 5173），不允许通配符；同源页面由 Spring 标准来源校验处理。
 
 关键操作日志由 Common 的 MVC 拦截器捕获带 `@RequiresPermission` 的写请求；登录即可的关键写操作显式加 `@AuditAction`。只记录操作者、动作、目标 ID、路径、结果码、耗时和设备，不记录请求体、查询参数、认证头或响应内容。事件在独立事务中发布，由 Audit 的 `@ApplicationModuleListener` 幂等写入。文案使用 `<模块>.audit.<资源>.<动作>` 与目标 ID 参数，保存中文快照，查询时按语言重新渲染；目标回跳地址仅由受控路径和 ID 构成。
 
