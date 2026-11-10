@@ -11,9 +11,9 @@ public class IamPermissionCatalog implements PermissionCatalog {
     public List<PermissionSpec> permissions() {
         var specs=new ArrayList<PermissionSpec>();
         specs.add(new PermissionSpec("iam:organization",null,"iam.menu.organization","组织与权限","DIRECTORY",null,"Setting",10,"admin",true));
-        String[] resources={"department","post","role","permission","user"};
-        String[] names={"部门管理","岗位管理","角色管理","权限资源","用户管理"};
-        String[] paths={"/iam/departments","/iam/posts","/iam/roles","/iam/permissions","/iam/users"};
+        String[] resources={"department","post","role","permission","user","navigation"};
+        String[] names={"部门管理","岗位管理","角色管理","权限资源","用户管理","顶部导航"};
+        String[] paths={"/iam/departments","/iam/posts","/iam/roles","/iam/permissions","/iam/users","/iam/navigation"};
         for(int i=0;i<resources.length;i++) {
             String resource=resources[i];
             String key="iam:"+resource+":view";
