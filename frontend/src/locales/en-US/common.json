@@ -57,5 +57,7 @@
   "nameZhCN": "Chinese name",
   "nameEnUS": "English name",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "profile": "My profile",
+  "createdAt": "Created at"
 }

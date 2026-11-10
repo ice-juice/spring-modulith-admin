@@ -21,6 +21,7 @@ export interface CurrentUser {
   username: string
   name: string
   portal: string
+  avatarFileId?: string | null
   superAdmin: boolean
   permissions: string[]
   menus: MenuItem[]

@@ -1,0 +1,16 @@
+{
+  "files": "文件管理",
+  "name": "文件名",
+  "kind": "文件类型",
+  "size": "文件大小",
+  "uploader": "上传人",
+  "upload": "上传文件",
+  "download": "下载",
+  "contentType": "内容类型",
+  "checksum": "SHA-256 校验值",
+  "kinds": { "IMAGE": "图片", "VIDEO": "视频", "DOCUMENT": "文档附件" },
+  "attachments": "附件",
+  "uploadHint": "单个文件不超过 20 MiB",
+  "preview": "预览",
+  "remove": "移除附件"
+}

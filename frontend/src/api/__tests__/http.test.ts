@@ -10,6 +10,53 @@ beforeEach(() => {
   localStorage.clear()
   sessionStorage.clear()
 })
+it('keeps localized errors in binary downloads and activates the lock screen on HTTP 423', async () => {
+  const locked = vi.fn()
+  window.addEventListener('sma:locked', locked, { once: true })
+  const client = configureHttp(
+    axios.create({
+      adapter: async (config) => {
+        const response: AxiosResponse = {
+          data: new Blob(
+            [JSON.stringify({ code: 423, error: 'auth.error.screen-locked', message: 'Locked' })],
+            { type: 'application/json' },
+          ),
+          status: 423,
+          statusText: 'Locked',
+          headers: new AxiosHeaders(),
+          config,
+        }
+        throw new AxiosError('Locked', 'ERR_BAD_REQUEST', config, undefined, response)
+      },
+    }),
+  )
+  await expect(client.get('/download', { responseType: 'blob' })).rejects.toMatchObject({
+    code: 423,
+    message: 'Locked',
+  })
+  expect(locked).toHaveBeenCalledOnce()
+})
+it('rejects business errors returned as JSON blobs but preserves downloaded JSON files', async () => {
+  const body = new Blob(
+    [JSON.stringify({ code: 400, error: 'file.error.in-use', message: 'In use' })],
+    { type: 'application/json' },
+  )
+  let attachment = false
+  const client = configureHttp(
+    axios.create({
+      adapter: async (config) => ({
+        data: body,
+        status: 200,
+        statusText: 'OK',
+        headers: attachment ? { 'content-disposition': 'attachment; filename="data.json"' } : {},
+        config,
+      }),
+    }),
+  )
+  await expect(client.get('/download')).rejects.toMatchObject({ key: 'file.error.in-use' })
+  attachment = true
+  expect((await client.get('/download')).data).toBe(body)
+})
 it('sends identity, selected language and user zone with every request', async () => {
   saveToken('test-token', false)
   i18n.global.locale.value = 'en-US'

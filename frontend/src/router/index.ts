@@ -18,6 +18,16 @@ const router = createRouter({
       path: '/',
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
+        {
+          path: 'profile',
+          component: () => import('@/views/iam/ProfileView.vue'),
+          meta: { module: 'iam', titleKey: 'common.profile' },
+        },
+        {
+          path: 'file/files',
+          component: () => import('@/views/file/FilesView.vue'),
+          meta: { module: 'file', titleKey: 'file.files', permission: 'file:file:view' },
+        },
         ...Object.values(resources)
           .filter((resource) => resource.module !== 'config')
           .map((resource) => ({

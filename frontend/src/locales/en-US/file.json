@@ -1,0 +1,16 @@
+{
+  "files": "Files",
+  "name": "File name",
+  "kind": "File type",
+  "size": "File size",
+  "uploader": "Uploaded by",
+  "upload": "Upload file",
+  "download": "Download",
+  "contentType": "Content type",
+  "checksum": "SHA-256 checksum",
+  "kinds": { "IMAGE": "Image", "VIDEO": "Video", "DOCUMENT": "Document" },
+  "attachments": "Attachments",
+  "uploadHint": "Maximum 20 MiB per file",
+  "preview": "Preview",
+  "remove": "Remove attachment"
+}

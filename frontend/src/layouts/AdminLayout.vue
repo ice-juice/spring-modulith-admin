@@ -11,6 +11,7 @@ import DisplaySettings from '@/components/DisplaySettings.vue'
 import SecurityControls from '@/components/SecurityControls.vue'
 import MenuBranch from '@/components/MenuBranch.vue'
 import BrandingFooter from '@/components/BrandingFooter.vue'
+import AvatarImage from '@/components/AvatarImage.vue'
 const { t, te } = useI18n()
 const auth = useAuth()
 const preferences = usePreferences(),
@@ -138,7 +139,10 @@ void branding.load()
           ><strong>{{ title }}</strong>
         </div>
         <div class="topbar-actions">
-          <DisplaySettings /><span class="user-name">{{ auth.user?.name }}</span
+          <DisplaySettings /><AvatarImage :file-id="auth.user?.avatarFileId" /><el-button
+            text
+            @click="router.push('/profile')"
+            >{{ auth.user?.name }}</el-button
           ><el-button text @click="router.push('/preferences')">{{
             t('common.preferences')
           }}</el-button

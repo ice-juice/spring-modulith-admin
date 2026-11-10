@@ -41,6 +41,10 @@
     "timeZone": "Time zone",
     "menuIds": "Top-level menus"
   },
+  "avatar": "Avatar",
+  "uploadAvatar": "Upload avatar",
+  "removeAvatar": "Remove avatar",
+  "profileNameRequired": "Please enter your name",
   "choices": {
     "ALL": "All data",
     "DEPARTMENT_TREE": "Department and descendants",

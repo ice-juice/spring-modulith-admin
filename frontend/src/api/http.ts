@@ -34,20 +34,39 @@ export function configureHttp(client: AxiosInstance) {
     return config
   })
   client.interceptors.response.use(
-    (response: AxiosResponse<ApiResponse<unknown>>) => {
-      const body = response.data
+    async (response: AxiosResponse<ApiResponse<unknown>>) => {
+      let body = response.data
+      if (
+        body instanceof Blob &&
+        body.type.includes('json') &&
+        !response.headers['content-disposition']
+      ) {
+        try {
+          body = JSON.parse(await body.text())
+        } catch {
+          /* A binary response remains a binary response. */
+        }
+      }
       if (body && typeof body.code === 'number' && body.code !== 0) {
         throw new ApiError(body.code, body.error, body.message, body.data)
       }
       return response
     },
-    (error) => {
+    async (error) => {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           clearToken()
           window.dispatchEvent(new Event('sma:unauthorized'))
         }
-        const body = error.response?.data as ApiResponse<unknown> | undefined
+        if (error.response?.status === 423) window.dispatchEvent(new Event('sma:locked'))
+        let body = error.response?.data as ApiResponse<unknown> | undefined
+        if (body instanceof Blob) {
+          try {
+            body = JSON.parse(await body.text())
+          } catch {
+            body = undefined
+          }
+        }
         return Promise.reject(
           new ApiError(
             error.response?.status || 0,
@@ -57,7 +76,6 @@ export function configureHttp(client: AxiosInstance) {
           ),
         )
       }
-      if (error.response?.status === 423) window.dispatchEvent(new Event('sma:locked'))
       return Promise.reject(error)
     },
   )

@@ -57,5 +57,7 @@
   "nameZhCN": "简体中文名称",
   "nameEnUS": "英文名称",
   "yes": "是",
-  "no": "否"
+  "no": "否",
+  "profile": "个人资料",
+  "createdAt": "创建时间"
 }

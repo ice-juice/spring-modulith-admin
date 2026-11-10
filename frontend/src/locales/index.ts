@@ -5,6 +5,7 @@ import type zhAuth from './zh-CN/auth.json'
 import type zhIam from './zh-CN/iam.json'
 import type zhConfig from './zh-CN/config.json'
 import type zhAudit from './zh-CN/audit.json'
+import type zhFile from './zh-CN/file.json'
 
 export const supportedLocales = ['zh-CN', 'en-US'] as const
 export type AppLocale = (typeof supportedLocales)[number]
@@ -14,6 +15,7 @@ export interface MessageSchema {
   iam: typeof zhIam
   config: typeof zhConfig
   audit: typeof zhAudit
+  file: typeof zhFile
 }
 declare module 'vue-i18n' {
   export interface DefineLocaleMessage {
@@ -22,6 +24,7 @@ declare module 'vue-i18n' {
     iam: MessageSchema['iam']
     config: MessageSchema['config']
     audit: MessageSchema['audit']
+    file: MessageSchema['file']
   }
 }
 

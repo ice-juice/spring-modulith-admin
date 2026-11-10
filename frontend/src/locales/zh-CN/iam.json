@@ -41,6 +41,10 @@
     "timeZone": "时区",
     "menuIds": "一级菜单"
   },
+  "avatar": "头像",
+  "uploadAvatar": "上传头像",
+  "removeAvatar": "移除头像",
+  "profileNameRequired": "请填写姓名",
   "choices": {
     "ALL": "全部数据",
     "DEPARTMENT_TREE": "本部门及下级",

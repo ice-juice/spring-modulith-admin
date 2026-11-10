@@ -386,3 +386,11 @@ html.dark {
   right: 0;
   color: #adbfcd;
 }
+.break-all {
+  overflow-wrap: anywhere;
+}
+.file-preview {
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+}
