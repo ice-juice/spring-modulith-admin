@@ -25,11 +25,22 @@ public class FileService implements FileQuery {
   this.mapper=mapper;this.lookup=lookup;this.storage=storage;this.properties=properties;this.policies=policies;
  }
  public PageResult<FileView> page(PageQuery page,String keyword,String kind){
-  var query=new LambdaQueryWrapper<FileEntity>().eq(FileEntity::getPortal,CurrentUser.portal()).orderByDesc(FileEntity::getId);
+  var query=new LambdaQueryWrapper<FileEntity>().eq(FileEntity::getPortal,CurrentUser.portal()).orderByDesc(FileEntity::getCreatedAt).orderByDesc(FileEntity::getId);
   if(keyword!=null&&!keyword.isBlank())query.like(FileEntity::getOriginalName,keyword);if(kind!=null&&!kind.isBlank())query.eq(FileEntity::getKind,kind);
   return PageResult.of(mapper.selectPage(page.toPage(Map.of("name","original_name","size","size_bytes","createdAt","created_at")),query),this::view);
  }
- @Transactional public FileView upload(MultipartFile file){
+ @Transactional public FileView upload(MultipartFile file){return write(file,null);}
+ /** Called through the transaction proxy, outside the common acceptance transaction. */
+ @Transactional public FileView uploadAccepted(MultipartFile file,long reservedId,boolean imageOnly,long expectedSize,String expectedChecksum,java.util.function.IntConsumer completion){
+  TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
+   @Override public void afterCompletion(int status){completion.accept(status);}
+  });
+  var result=write(file,reservedId);
+  if(result.sizeBytes()!=expectedSize||!result.checksum().equals(expectedChecksum))throw new BizException(CommonErrorCode.BAD_REQUEST);
+  if(imageOnly&&!RASTER.contains(result.contentType()))throw new BizException(FileErrorCode.INVALID_IMAGE);
+  return result;
+ }
+ private FileView write(MultipartFile file,Long reservedId){
   var user=CurrentUser.require();
   if(file.isEmpty())throw new BizException(CommonErrorCode.BAD_REQUEST);
   if(file.getSize()>properties.maxBytes())throw new BizException(FileErrorCode.TOO_LARGE,properties.maxBytes());
@@ -38,10 +49,10 @@ public class FileService implements FileQuery {
   catch(LocalStorage.TooLarge tooLarge){throw new BizException(FileErrorCode.TOO_LARGE,properties.maxBytes());}
   catch(IOException failure){log.error("Could not write uploaded asset",failure);throw new BizException(FileErrorCode.STORAGE);}
   TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
-   @Override public void afterCompletion(int status){if(status!=STATUS_COMMITTED)try{storage.remove(object.key());}catch(IOException failure){log.error("Could not remove rolled-back asset {}",object.key(),failure);}}
+   @Override public void afterCompletion(int status){if(status==STATUS_ROLLED_BACK)try{storage.remove(object.key());}catch(IOException failure){log.error("Could not remove rolled-back asset {}",object.key(),failure);}}
   });
   String type=detect(storage.path(object.key()),file.getContentType());
-  var row=new FileEntity();row.setPortal(user.portal());row.setDeptId(user.departmentId());row.setOriginalName(name(file.getOriginalFilename()));
+  var row=new FileEntity();if(reservedId!=null)row.setId(reservedId);row.setPortal(user.portal());row.setDeptId(user.departmentId());row.setOriginalName(name(file.getOriginalFilename()));
   row.setStorageKey(object.key());row.setContentType(type);row.setKind(RASTER.contains(type)?"IMAGE":type.startsWith("video/")?"VIDEO":"DOCUMENT");
   row.setSizeBytes(object.sizeBytes());row.setChecksum(object.checksum());row.setUploader(user.username());mapper.insert(row);return view(row);
  }
