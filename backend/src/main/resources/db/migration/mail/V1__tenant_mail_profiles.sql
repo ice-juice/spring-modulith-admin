@@ -1,0 +1,42 @@
+CREATE TABLE mail_profile (
+    id BIGINT NOT NULL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    code VARCHAR(64) NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    enabled TINYINT(1) NOT NULL,
+    version BIGINT NOT NULL,
+    configuration_version BIGINT NOT NULL,
+    credential_version BIGINT NOT NULL,
+    created_at DATETIME(3) NOT NULL,
+    created_by BIGINT NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    updated_by BIGINT NOT NULL,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    active_code VARCHAR(64) GENERATED ALWAYS AS (CASE WHEN deleted = 0 THEN code ELSE NULL END) STORED,
+    UNIQUE KEY uk_mail_profile_tenant_code (tenant_id, active_code),
+    KEY ix_mail_profile_tenant_enabled (tenant_id, enabled, deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE mail_profile_revision (
+    id BIGINT NOT NULL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    profile_id BIGINT NOT NULL,
+    configuration_version BIGINT NOT NULL,
+    credential_version BIGINT NOT NULL,
+    host VARCHAR(253) NOT NULL,
+    port INT NOT NULL,
+    tls_mode VARCHAR(16) NOT NULL,
+    username VARCHAR(256) NOT NULL,
+    secret_envelope TEXT COLLATE utf8mb4_bin NOT NULL,
+    from_address VARCHAR(254) NOT NULL,
+    from_name VARCHAR(128) NOT NULL,
+    applications_json JSON NOT NULL,
+    daily_quota INT NOT NULL,
+    per_minute_limit INT NOT NULL,
+    created_at DATETIME(3) NOT NULL,
+    created_by BIGINT NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    updated_by BIGINT NOT NULL,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    UNIQUE KEY uk_mail_revision_tenant_profile_version (tenant_id, profile_id, configuration_version)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
