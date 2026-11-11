@@ -17,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@PreAuthorize("hasAuthority('{value}')")
+@PreAuthorize("T(com.sma.admin.common.security.ActorContext).isAdminUser(authentication) && hasAuthority('{value}')")
 public @interface RequiresPermission {
 
 	/**

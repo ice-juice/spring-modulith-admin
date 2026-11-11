@@ -5,5 +5,5 @@
   <groupId>com.sma</groupId><artifactId>sma-backend-reactor</artifactId><version>0.0.1-SNAPSHOT</version><packaging>pom</packaging>
   <name>SMA backend and extension services</name>
   <properties><java.version>21</java.version></properties>
-  <modules><module>extension-sdk</module><module>extension-protocol</module><module>extension-security</module><module>backend</module></modules>
+  <modules><module>extension-sdk</module><module>extension-protocol</module><module>extension-runtime</module><module>extension-security</module><module>extension-worker</module><module>backend</module></modules>
 </project>

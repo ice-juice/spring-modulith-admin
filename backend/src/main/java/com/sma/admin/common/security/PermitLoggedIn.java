@@ -9,12 +9,13 @@ import java.lang.annotation.Target;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
- * 登录即可访问（对应 JBolt 的 {@code @UnCheck}），用于下拉选项、个人资料等公共接口。
+ * 后台人类登录即可访问（对应 JBolt 的 {@code @UnCheck}），不接受应用用户或机器身份。
+ * 应用用户接口使用 {@link PermitApplicationUser}，并保留对象/租户授权。
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("T(com.sma.admin.common.security.ActorContext).isAdminUser(authentication)")
 public @interface PermitLoggedIn {
 
 }

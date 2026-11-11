@@ -32,8 +32,21 @@
 		<mybatis-plus.version>3.5.18.1</mybatis-plus.version>
 	</properties>
 	<dependencies>
+		<dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-oauth2-jose</artifactId></dependency>
+		<dependency><groupId>org.eclipse.angus</groupId><artifactId>angus-mail</artifactId></dependency>
+		<dependency><groupId>jakarta.mail</groupId><artifactId>jakarta.mail-api</artifactId></dependency>
+		<dependency><groupId>com.github.ben-manes.caffeine</groupId><artifactId>caffeine</artifactId></dependency>
+		<!-- Explicit infrastructure configuration keeps Local/None independent of Redis auto-configuration. -->
+		<dependency><groupId>org.springframework.data</groupId><artifactId>spring-data-redis</artifactId></dependency>
+		<dependency><groupId>io.lettuce</groupId><artifactId>lettuce-core</artifactId></dependency>
+		<dependency><groupId>com.eatthepath</groupId><artifactId>java-otp</artifactId><version>0.4.0</version></dependency>
+		<dependency><groupId>org.bouncycastle</groupId><artifactId>bcprov-jdk18on</artifactId><version>1.83</version></dependency>
+		<dependency><groupId>commons-codec</groupId><artifactId>commons-codec</artifactId></dependency>
+		<dependency><groupId>com.alibaba</groupId><artifactId>qlexpress4</artifactId><version>4.1.4</version></dependency>
+		<dependency><groupId>com.yomahub</groupId><artifactId>liteflow-core</artifactId><version>2.16.3</version></dependency>
 		<dependency><groupId>com.sma</groupId><artifactId>extension-sdk</artifactId><version>0.0.1-SNAPSHOT</version></dependency>
 		<dependency><groupId>com.sma</groupId><artifactId>extension-protocol</artifactId><version>0.0.1-SNAPSHOT</version></dependency>
+		<dependency><groupId>com.sma</groupId><artifactId>extension-runtime</artifactId><version>0.0.1-SNAPSHOT</version></dependency>
 		<dependency><groupId>org.springframework.modulith</groupId><artifactId>spring-modulith-events-core</artifactId></dependency>
 		<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-websocket</artifactId></dependency>
 		<dependency>
@@ -244,5 +257,12 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>isolated-verification</id>
+			<activation><property><name>sma.verify.directory</name></property></activation>
+			<build><directory>${sma.verify.directory}</directory></build>
+		</profile>
+	</profiles>
 
 </project>

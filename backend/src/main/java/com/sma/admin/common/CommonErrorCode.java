@@ -13,8 +13,11 @@ public enum CommonErrorCode implements ErrorCode {
 	FORBIDDEN("common.error.forbidden", 403),
 	NOT_FOUND("common.error.not-found", 404),
 	METHOD_NOT_ALLOWED("common.error.method-not-allowed", 405),
+    CACHE_CONTROL_CONFLICT("common.error.cache-control-conflict",409),
     INTERNAL_ERROR("common.error.internal", 500),
-    PAYLOAD_TOO_LARGE("common.error.payload-too-large",413);
+    PAYLOAD_TOO_LARGE("common.error.payload-too-large",413),
+    UNSUPPORTED_MEDIA_TYPE("common.error.unsupported-media-type",415),
+    SERVICE_UNAVAILABLE("common.error.unavailable",503);
 
 	private final String key;
 

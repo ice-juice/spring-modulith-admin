@@ -30,6 +30,24 @@ import com.sma.admin.common.ErrorCode;
  */
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    @ExceptionHandler(com.sma.admin.common.cache.CacheTaskRejected.class)
+    ResponseEntity<ApiResponse<Void>> handleCacheTaskRejection(com.sma.admin.common.cache.CacheTaskRejected ex){return status(ex.reason());}
+    @ExceptionHandler(com.sma.admin.common.cache.CacheControlConflictException.class)
+    ResponseEntity<ApiResponse<Void>> handleCacheControlConflict(Exception ex){return status(CommonErrorCode.CACHE_CONTROL_CONFLICT);}
+    @ExceptionHandler(com.sma.admin.common.request.RequestStateException.class)
+    ResponseEntity<ApiResponse<com.sma.admin.common.request.RequestReceipt>> handleRequestState(com.sma.admin.common.request.RequestStateException ex) {
+        var response = ResponseEntity.status(ex.reason().status());
+        if (ex.reason().status() == 202) response.header("Retry-After", "2");
+        return response.body(errors.body(ex.reason(), new Object[0], locale(), ex.receipt()));
+    }
+    @ExceptionHandler(com.sma.admin.common.request.RequestRejected.class)
+    ResponseEntity<ApiResponse<Void>> handleRequestRejection(com.sma.admin.common.request.RequestRejected ex) {
+        var response = ResponseEntity.status(ex.reason().status());
+        if (ex.retryAfterSeconds() > 0) response.header("Retry-After", Long.toString(ex.retryAfterSeconds()));
+        return response.body(errors.body(ex.reason(), new Object[0], locale(), null));
+    }
+    @ExceptionHandler(com.sma.admin.common.cache.CacheUnavailableException.class)
+    ResponseEntity<ApiResponse<Void>> handleCacheBackpressure(Exception ex){return status(CommonErrorCode.SERVICE_UNAVAILABLE);}
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     ResponseEntity<ApiResponse<Void>> handleUploadLimit(Exception ex){return status(CommonErrorCode.PAYLOAD_TOO_LARGE);}
     @ExceptionHandler(java.nio.file.NoSuchFileException.class)
@@ -74,6 +92,11 @@ class GlobalExceptionHandler {
 	@ExceptionHandler({ HttpMessageNotReadableException.class, MissingServletRequestParameterException.class,
 			MethodArgumentTypeMismatchException.class })
 	ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception ex) {
+        // Jackson may wrap a bounded-stream rejection during argument conversion.
+        Throwable cause=ex;
+        for(int depth=0;cause!=null&&depth<16;depth++,cause=cause.getCause())
+            if(cause instanceof com.sma.admin.common.internal.security.BrowserRequestFilter.BodyRejected rejected)
+                return handleRequestRejection(rejected);
 		return status(CommonErrorCode.BAD_REQUEST);
 	}
 

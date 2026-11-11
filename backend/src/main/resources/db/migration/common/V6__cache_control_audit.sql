@@ -1,0 +1,20 @@
+CREATE TABLE common_cache_control_audit (
+    id BIGINT NOT NULL,
+    tenant_id BIGINT NOT NULL,
+    region VARCHAR(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    control_version BIGINT NOT NULL,
+    action VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    reason VARCHAR(256) NOT NULL,
+    portal VARCHAR(32) NOT NULL,
+    before_state JSON NOT NULL,
+    after_state JSON NOT NULL,
+    created_at DATETIME(3) NOT NULL,
+    created_by BIGINT NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    updated_by BIGINT NOT NULL,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_common_cache_control_audit_version (tenant_id,region,control_version),
+    CONSTRAINT ck_common_cache_control_audit_immutable CHECK (control_version > 0 AND deleted = 0),
+    CONSTRAINT ck_common_cache_control_audit_action CHECK (action IN ('SET_POLICY','RESET_POLICY','PAUSE','RESUME','RESET_STATS'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
