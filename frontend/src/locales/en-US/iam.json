@@ -9,7 +9,7 @@
   "navigation": "Top navigation",
   "grant": "Assign permissions",
   "resetPassword": "Reset password",
-  "passwordRule": "At least 12 characters, at most 72 UTF-8 bytes",
+  "passwordRule": "Use 8–12 letters and digits; avoid weak passwords and your security password",
   "required": "This field is required",
   "translations": "Name translations",
   "nameZhCN": "Chinese name",

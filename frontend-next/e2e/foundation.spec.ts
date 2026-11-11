@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { tenantEntry } from './tenant-entry'
 test('design system: table, form validation, focus, theme, locale and responsive samples', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
@@ -26,10 +27,10 @@ test('design system: table, form validation, focus, theme, locale and responsive
   await page.screenshot({ path: '../docs/frontend-next/images/roles-desktop.png', fullPage: true })
   await page.getByRole('button', { name: '工作台样板', exact: true }).click()
   await page.screenshot({ path: '../docs/frontend-next/images/workspace-desktop.png', fullPage: true })
-  await page.getByRole('button', { name: '显示设置', exact: true }).click()
+  await page.getByRole('button', { name: '主题', exact: true }).click()
   await page.getByRole('menuitem', { name: '深色', exact: true }).click()
   await expect(page.locator('html')).toHaveClass(/dark/)
-  await page.getByRole('button', { name: '显示设置', exact: true }).click()
+  await page.getByRole('button', { name: '语言与时区', exact: true }).click()
   await page.getByRole('menuitem', { name: 'English', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Workspace sample' })).toBeVisible()
   await page.screenshot({ path: '../docs/frontend-next/images/workspace-dark-english.png', fullPage: true })
@@ -42,7 +43,7 @@ test('design system: table, form validation, focus, theme, locale and responsive
 })
 test('login handles public settings and empty submission without contacting the login endpoint', async ({ page }) => {
   let loginRequests = 0
-  await page.route('**/api/config/parameters/public', route => route.fulfill({ json: { code: 0, data: { 'login.captchaEnabled': 'false', 'system.name': 'SMA' } } }))
+  await page.route('**/api/tenant/entry', route => route.fulfill({ json: { code: 0, data: tenantEntry('SMA') } }))
   await page.route('**/api/auth/login', route => { loginRequests++; return route.fulfill({ status: 500 }) })
   await page.goto('/login')
   await expect(page.getByLabel('用户名', { exact: true })).toBeVisible()
@@ -63,4 +64,24 @@ test('dirty editor cancellation opens a separate confirmation and keeps the draf
   await page.getByRole('dialog').getByRole('button', { name: '取消', exact: true }).last().click()
   await confirmation.getByRole('button', { name: '确认', exact: true }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
+})
+
+test('captcha refresh and failed login retain username and require a new captcha without automatic resubmission', async ({ page }) => {
+  let captchaRequests = 0, loginRequests = 0
+  await page.route('http://127.0.0.1:5174/api/tenant/entry', route => route.fulfill({ json: { code: 0, data: tenantEntry('SMA', true) } }))
+  await page.route('http://127.0.0.1:5174/api/auth/captcha', route => { captchaRequests++; return route.fulfill({ json: { code: 0, data: { id: 'captcha-' + captchaRequests, image: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30"><text x="5" y="20">1234</text></svg>' } } }) })
+  await page.route('http://127.0.0.1:5174/api/auth/login', route => { loginRequests++; return route.fulfill({ status: 400, json: { message: '验证码不正确' } }) })
+  await page.goto('/login?redirect=%2Fiam%2Fusers')
+  await page.getByLabel('用户名', { exact: true }).fill('test.captcha')
+  await page.getByLabel('密码', { exact: true }).fill('IsolatedTestPassword!2026')
+  await page.getByRole('button', { name: '登录', exact: true }).click()
+  expect(loginRequests).toBe(0)
+  await expect.poll(() => captchaRequests).toBe(1)
+  await page.getByLabel('验证码', { exact: true }).fill('wrong')
+  await page.getByRole('button', { name: '登录', exact: true }).click()
+  await expect.poll(() => captchaRequests).toBe(2)
+  await expect(page.getByLabel('验证码', { exact: true })).toHaveValue('')
+  await expect(page.getByLabel('用户名', { exact: true })).toHaveValue('test.captcha')
+  await expect(page.getByRole('alert')).toContainText('验证码不正确')
+  expect(loginRequests).toBe(1)
 })

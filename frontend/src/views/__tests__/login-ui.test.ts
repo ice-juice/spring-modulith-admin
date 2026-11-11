@@ -16,8 +16,9 @@ it('uses public branding and hides verification controls when the server disable
   await loadLocaleModule('auth')
   setLocale('en-US')
   vi.mocked(get).mockResolvedValue({
-    'system.name': 'Testing Console',
-    'login.captchaEnabled': 'false',
+    entry: { tenantId: '1', domainId: '1', portal: 'admin' },
+    branding: { revisionId: null, revision: '0', identity: { systemName: 'Testing Console' }, login: { templateId: 'login1', backgroundBlur: false }, legal: {}, assets: {} },
+    login: { passwordEnabled: true, captchaEnabled: false },
   })
   const wrapper = mount(LoginView, { global: { plugins: [pinia, ElementPlus, i18n] } })
   await flushPromises()

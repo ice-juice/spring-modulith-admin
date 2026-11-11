@@ -12,10 +12,14 @@ import enMessage from './en-US/message.json'
 import type zhMonitor from './zh-CN/monitor.json'
 import type zhOpenapi from './zh-CN/openapi.json'
 import type zhWorkspace from './zh-CN/workspace.json'
+import type zhExtension from './zh-CN/extension.json'
+import type zhRule from './zh-CN/rule.json'
+import type zhTenant from './zh-CN/tenant.json'
 
 export const supportedLocales = ['zh-CN', 'en-US'] as const
 export type AppLocale = (typeof supportedLocales)[number]
 export interface MessageSchema {
+  extension: typeof zhExtension
   common: typeof zhCommon
   auth: typeof zhAuth
   iam: typeof zhIam
@@ -26,9 +30,12 @@ export interface MessageSchema {
   monitor: typeof zhMonitor
   openapi: typeof zhOpenapi
   workspace: typeof zhWorkspace
+  tenant: typeof zhTenant
+  rule: typeof zhRule
 }
 declare module 'vue-i18n' {
   export interface DefineLocaleMessage {
+    extension: MessageSchema['extension']
     common: MessageSchema['common']
     auth: MessageSchema['auth']
     iam: MessageSchema['iam']
@@ -39,6 +46,8 @@ declare module 'vue-i18n' {
     monitor: MessageSchema['monitor']
     openapi: MessageSchema['openapi']
     workspace: MessageSchema['workspace']
+    tenant: MessageSchema['tenant']
+    rule: MessageSchema['rule']
   }
 }
 
@@ -73,8 +82,9 @@ export async function loadLocaleModule(module: string) {
   }
 }
 export function setLocale(locale: AppLocale) {
+  const changed = i18n.global.locale.value !== locale
   i18n.global.locale.value = locale
   localStorage.setItem('sma.locale', locale)
   document.documentElement.lang = locale
-  document.title = i18n.global.t('common.brand')
+  if (changed) document.title = i18n.global.t('common.brand')
 }

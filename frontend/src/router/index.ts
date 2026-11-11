@@ -8,6 +8,7 @@ import { resources } from '@/features/iam/resources'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/login/totp', component: () => import('@/views/auth/TotpView.vue'), meta: { public: true, module: 'auth', titleKey: 'auth.totpTitle' } },
     {
       path: '/login',
       name: 'login',
@@ -18,6 +19,7 @@ const router = createRouter({
       path: '/',
       component: () => import('@/layouts/AdminLayout.vue'),
       children: [
+        { path: 'auth/security', component: () => import('@/views/auth/SecurityView.vue'), meta: { module: 'auth', titleKey: 'auth.accountSecurity' } },
         {
           path: 'monitor/sql',
           component: () => import('@/views/monitor/SqlView.vue'),

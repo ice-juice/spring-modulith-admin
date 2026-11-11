@@ -122,3 +122,18 @@ it('does not accept a summary belonging to a previous account', async () => {
   resolveOld({ unreadNotices: '999', pendingTodos: '999', unreadMessages: '999' }); await old
   expect(store.summary.unreadNotices).toBe('0')
 })
+
+it('keeps polling authorized REST state while the socket is offline and ticket issuance fails', async () => {
+  const store = useMessages()
+  store.start(); await flushPromises()
+  const socket = Socket.instances[0]!
+  socket.onopen?.(); await flushPromises()
+  api.post.mockRejectedValue(new Error('test-only delivery outage'))
+  socket.close()
+  api.get.mockResolvedValue({ unreadNotices: '4', pendingTodos: '5', unreadMessages: '9' })
+  await vi.advanceTimersByTimeAsync(30000); await flushPromises()
+  expect(Socket.instances).toHaveLength(1)
+  expect(store.state).toBe('offline')
+  expect(store.summary.unreadMessages).toBe('9')
+  expect(useAuth().user?.id).toBe(actor.id)
+})

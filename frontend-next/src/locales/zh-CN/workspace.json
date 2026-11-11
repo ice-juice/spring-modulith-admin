@@ -2,5 +2,13 @@
   "hint": "查看待处理事项，进入您有权使用的管理功能。",
   "pending": "待处理事项",
   "noPending": "暂无待处理事项",
-  "shortcuts": "快捷入口"
+  "shortcuts": "快捷入口",
+  "heroTitle": "把注意力，留给重要的事。",
+  "heroHint": "在这里查看待办、连接团队，进入你有权使用的管理功能。",
+  "reviewPending": "查看我的待办",
+  "eyebrow": "工作空间，一切有序",
+  "context": "此刻的工作空间",
+  "contextHint": "运行状态、当地时间与当前身份，一目了然。",
+  "pendingHint": "先处理需要你关注的事。",
+  "shortcutsHint": "更少寻找，更多专注。"
 }

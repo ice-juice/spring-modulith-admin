@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import PermissionButton from '@/components/business/PermissionButton.vue'
+
+import TableWorkspace from '@/components/business/TableWorkspace.vue'
 import { useRequestGate } from '@/composables/useRequestGate'
 const loadGate = useRequestGate()
 
 import PageHeader from '@/components/business/PageHeader.vue'
 import ErrorNotice from '@/components/business/ErrorNotice.vue'
-import { Button } from '@/components/ui/button'
 
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -56,6 +58,9 @@ async function load() {
   }
 }
 async function reset() {
+  if (actionBusy.value) return
+  actionBusy.value = true
+  try {
   try {
     await confirmOrCancel(t('monitor.sqlResetConfirm'), t('common.confirm'), {
       type: 'warning',
@@ -65,6 +70,8 @@ async function reset() {
   } catch (e) {
     if (e instanceof Error) error.value = e.message
   }
+
+  } finally { actionBusy.value = false }
 }
 function search() {
   page.value = 1
@@ -82,5 +89,7 @@ import { Input } from '@/components/ui/input'
 import FilterBar from '@/components/business/FilterBar.vue'
 import DataTable from '@/components/business/DataTable.vue'
 const columns = computed(() => [{key:'id',title:t('monitor.statement'),width:380},{key:'command',title:t('monitor.command')},{key:'calls',title:t('monitor.calls'),sortable:true},{key:'errors',title:t('monitor.errors'),sortable:true},{key:'rows',title:t('monitor.resultRows')},{key:'slowCalls',title:t('monitor.slowCalls')},{key:'averageMillis',title:t('monitor.averageMillis'),sortable:true,width:160},{key:'maxMillis',title:t('monitor.maxMillis'),sortable:true,width:160},{key:'lastAt',title:t('monitor.lastAt'),width:190}])
+
+const actionBusy = ref(false)
 </script>
-<template><PageHeader :title="t('monitor.sql')"><Button v-permission="'monitor:sql:reset'" variant="outline" class="text-destructive" @click="reset">{{ t('common.reset') }}</Button></PageHeader><p class="mb-4 text-sm text-muted-foreground">{{ t('monitor.sqlHint') }}</p><FilterBar :busy="busy" @search="search"><Input v-model="keyword" :placeholder="t('monitor.statement')" :aria-label="t('monitor.statement')" /></FilterBar><ErrorNotice :message="error" /><DataTable :rows="rows" :columns="columns" :loading="busy" :page="page" :total="total" @update:page="page = $event; load()" @sort="(key, order) => changeSort({prop: key, order: order === 'asc' ? 'ascending' : 'descending'})"><template #averageMillis="{ row }">{{ row.averageMillis.toFixed(2) }}</template><template #maxMillis="{ row }">{{ row.maxMillis.toFixed(2) }}</template><template #lastAt="{ row }">{{ formatInstant(row.lastAt, preferences.timeZone, locale) }}</template></DataTable></template>
+<template><TableWorkspace><template #tools><PageHeader :title="t('monitor.sql')"><PermissionButton :disabled="actionBusy" :permission="'monitor:sql:reset'" variant="outline" class="text-destructive" @click="reset">{{ t('common.reset') }}</PermissionButton></PageHeader><p class="mb-4 text-sm text-muted-foreground">{{ t('monitor.sqlHint') }}</p><FilterBar :busy="busy" @search="search"><Input v-model="keyword" :placeholder="t('monitor.statement')" :aria-label="t('monitor.statement')" /></FilterBar><ErrorNotice :message="error" /></template><DataTable :rows="rows" :columns="columns" :loading="busy" :page="page" :total="total" @update:page="page = $event; load()" @sort="(key, order) => changeSort({prop: key, order: order === 'asc' ? 'ascending' : 'descending'})"><template #averageMillis="{ row }">{{ row.averageMillis.toFixed(2) }}</template><template #maxMillis="{ row }">{{ row.maxMillis.toFixed(2) }}</template><template #lastAt="{ row }">{{ formatInstant(row.lastAt, preferences.timeZone, locale) }}</template></DataTable></TableWorkspace></template>

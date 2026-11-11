@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": ["env.d.ts", "src/**/*", "e2e/**/*.ts", "e2e-real/**/*.ts", "e2e-security/**/*.ts", "e2e-tenant/**/*.ts", "playwright*.ts", "vitest.config.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "noEmit": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tests.tsbuildinfo",
+    "types": ["node", "vite/client"]
+  }
+}

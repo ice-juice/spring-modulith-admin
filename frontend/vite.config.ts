@@ -16,8 +16,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // backend: Spring Boot on 8080 (see ../backend)
-      '/api': { target: 'http://localhost:8080', changeOrigin: true, ws: true },
-      '/actuator': { target: 'http://localhost:8080', changeOrigin: true },
+      '/api': { target: process.env.SMA_NEXT_BACKEND_URL || 'http://localhost:8080', changeOrigin: false, ws: true, rewriteWsOrigin: false },
+      '/actuator': { target: process.env.SMA_NEXT_BACKEND_URL || 'http://localhost:8080', changeOrigin: true },
     },
   },
 })

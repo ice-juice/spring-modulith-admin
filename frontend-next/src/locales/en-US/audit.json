@@ -19,6 +19,9 @@
   "statuses": {
     "SUCCESS": "Signed in",
     "PASSWORD_FAILURE": "Credential check failed",
-    "CAPTCHA_FAILURE": "Verification code failed"
+    "CAPTCHA_FAILURE": "Verification code failed",
+    "MFA_FAILURE": "Authenticator verification failed",
+    "MFA_REJECTED": "Two-step request rejected",
+    "RATE_LIMITED": "Sign-in rate limit reached"
   }
 }

@@ -21,3 +21,17 @@ export function filterMenus(menus: MenuItem[], query: string): MenuItem[] {
 export function menuRoute(menu: MenuItem): string {
   return menu.openMode === 'IFRAME' ? '/frame/' + menu.id : menu.path || '/'
 }
+
+/** Keep ancestor containers when a navigation group points at a nested menu. */
+export function menusForNavigation(menus: MenuItem[], menuIds?: readonly string[]): MenuItem[] {
+  if (!menuIds) return menus
+  const ids = new Set(menuIds)
+  function select(items: MenuItem[]): MenuItem[] {
+    return items.flatMap(item => {
+      if (ids.has(item.id)) return [item]
+      const children = select(item.children || [])
+      return children.length ? [{ ...item, children }] : []
+    })
+  }
+  return select(menus)
+}

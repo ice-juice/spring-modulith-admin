@@ -73,8 +73,9 @@ export async function loadLocaleModule(module: string) {
   }
 }
 export function setLocale(locale: AppLocale) {
+  const changed = i18n.global.locale.value !== locale
   i18n.global.locale.value = locale
   localStorage.setItem('sma.locale', locale)
   document.documentElement.lang = locale
-  document.title = i18n.global.t('common.brand')
+  if (changed) document.title = i18n.global.t('common.brand')
 }

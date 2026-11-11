@@ -9,7 +9,7 @@
   "navigation": "顶部导航",
   "grant": "角色授权",
   "resetPassword": "重置密码",
-  "passwordRule": "密码至少 12 个字符，最多 72 个 UTF-8 字节",
+  "passwordRule": "登录密码为8～12位字母和数字组合，不能使用弱密码或与安全操作密码相同",
   "required": "此项不能为空",
   "translations": "名称翻译",
   "nameZhCN": "简体中文名称",

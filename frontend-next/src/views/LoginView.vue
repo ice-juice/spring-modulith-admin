@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowRight, Layers, ShieldCheck } from '@lucide/vue'
+import { ArrowRight, ShieldCheck } from '@lucide/vue'
 import { useAuth } from '@/stores/auth'
 import { useBranding } from '@/stores/branding'
 import { get } from '@/api/http'
@@ -13,13 +13,52 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import DisplaySettings from '@/components/DisplaySettings.vue'
 import BrandingFooter from '@/components/BrandingFooter.vue'
+import TenantLoginLayout from '@/components/tenant/TenantLoginLayout.vue'
 import PasswordInput from '@/components/business/PasswordInput.vue'
 import ErrorNotice from '@/components/business/ErrorNotice.vue'
 const { t } = useI18n(), route = useRoute(), router = useRouter(), auth = useAuth(), branding = useBranding()
-const form = reactive({ username: '', password: '', captcha: '', captchaId: '', remember: false, portal: String(route.query.portal || 'admin') })
+const form = reactive({ username: '', password: '', captcha: '', captchaId: '', remember: false, portal: '' })
 const busy = ref(false), error = ref(''), captchaImage = ref(''), captchaBusy = ref(false)
-async function refreshCaptcha() { if (!branding.captchaEnabled || captchaBusy.value) return; captchaBusy.value = true; try { const result = await get<{ id: string; image: string }>('/auth/captcha'); form.captchaId = result.id; captchaImage.value = result.image; form.captcha = '' } catch (cause) { error.value = (cause as Error).message } finally { captchaBusy.value = false } }
-async function submit() { if (busy.value) return; error.value = ''; if (!form.username.trim() || !form.password || (branding.captchaEnabled && !form.captcha)) { error.value = t('auth.required'); return } busy.value = true; try { await auth.login(form); form.password = ''; await router.replace(safeRedirect(route.query.redirect)) } catch (cause) { error.value = (cause as Error).message; await refreshCaptcha() } finally { busy.value = false } }
-onMounted(async () => { await branding.load(); await refreshCaptcha() })
+let captchaAttempt = 0
+watch(() => branding.generation, () => {
+  captchaAttempt++; captchaBusy.value = false; captchaImage.value = ''; form.captchaId = ''; form.captcha = ''
+  if (busy.value) { auth.reset(); form.password = '' }
+}, { flush: 'sync' })
+onUnmounted(() => { captchaAttempt++ })
+async function refreshCaptcha() {
+  if (!branding.ready || !branding.captchaEnabled || captchaBusy.value) return
+  const current = ++captchaAttempt, entryVersion = branding.generation
+  captchaBusy.value = true
+  try {
+    const result = await get<{ id: string; image: string }>('/auth/captcha')
+    if (current !== captchaAttempt || entryVersion !== branding.generation || !branding.ready) return
+    form.captchaId = result.id; captchaImage.value = result.image; form.captcha = ''
+  } catch (cause) { if (current === captchaAttempt) error.value = (cause as Error).message }
+  finally { if (current === captchaAttempt) captchaBusy.value = false }
+}
+async function submit() {
+  if (busy.value) return
+  if (!branding.passwordEnabled) { error.value = t('common.entryUnavailable'); return }
+  error.value = ''
+  if (!form.username.trim() || !form.password || (branding.captchaEnabled && !form.captcha)) { error.value = t('auth.required'); return }
+  busy.value = true
+  try {
+    const status = await auth.login({ ...form, portal: branding.portal })
+    form.password = ''
+    await router.replace(status === 'MFA_REQUIRED' ? { path: '/login/totp', query: { redirect: safeRedirect(route.query.redirect) } } : safeRedirect(route.query.redirect))
+  } catch (cause) { error.value = (cause as Error).message; await refreshCaptcha() }
+  finally { busy.value = false }
+}
+async function loadEntry() {
+  if (await branding.load()) { form.portal = branding.portal; await refreshCaptcha() }
+}
+onMounted(loadEntry)
 </script>
-<template><div class="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]"><section class="relative hidden flex-col justify-between overflow-hidden bg-[#103f36] p-12 text-white lg:flex"><div v-if="branding.background" class="absolute inset-0 bg-cover bg-center opacity-20" :style="{ backgroundImage: 'url(' + JSON.stringify(branding.background) + ')', filter: branding.values['login.backgroundBlur'] === 'true' ? 'blur(8px)' : undefined }" /><div class="relative flex items-center gap-3"><div class="rounded-xl bg-white/15 p-3"><Layers class="size-6" /></div><span class="text-sm font-semibold">{{ branding.name }}</span></div><div class="relative max-w-lg"><div class="mb-6 size-16 rounded-2xl border border-white/15 bg-white/5 p-4"><ShieldCheck class="size-8" /></div><h1 class="text-4xl leading-tight font-semibold tracking-tight">{{ t('common.workspace') }}</h1><p class="mt-5 max-w-md text-base leading-7 text-white/70">{{ t('common.securityHint') }}</p><div class="mt-10 h-px w-16 bg-white/30" /></div><p class="relative text-xs text-white/60">{{ branding.name }}</p></section><main class="relative flex min-w-0 flex-col items-center justify-center p-6 sm:p-12"><div class="absolute top-5 right-5"><DisplaySettings /></div><div class="w-full max-w-sm"><div class="mb-10 flex items-center gap-3 lg:hidden"><Layers class="size-6 text-primary" /><span class="font-semibold">{{ branding.name }}</span></div><p class="mb-2 text-xs font-medium tracking-wide text-primary">{{ t('common.workspace') }}</p><h2 class="text-3xl font-semibold tracking-tight">{{ t('auth.loginTitle') }}</h2><p class="mt-3 mb-8 text-muted-foreground">{{ t('auth.loginHint') }}</p><ErrorNotice :message="error" /><form class="space-y-5" @submit.prevent="submit"><div class="space-y-2"><Label for="username">{{ t('auth.username') }}</Label><Input id="username" v-model="form.username" name="username" autocomplete="username" maxlength="64" :disabled="busy" required /></div><div class="space-y-2"><Label for="password">{{ t('auth.password') }}</Label><PasswordInput id="password" v-model="form.password" name="password" autocomplete="current-password" maxlength="128" :disabled="busy" required /></div><div v-if="branding.captchaEnabled" class="space-y-2"><Label for="captcha">{{ t('auth.captcha') }}</Label><div class="flex gap-3"><Input id="captcha" v-model="form.captcha" name="captcha" autocomplete="off" maxlength="8" :disabled="busy" required /><Button type="button" variant="outline" class="h-9 w-28 shrink-0 overflow-hidden p-0" :disabled="captchaBusy" :aria-label="t('auth.refreshCaptcha')" @click="refreshCaptcha"><img v-if="captchaImage" :src="captchaImage" :alt="t('auth.captcha')" class="h-full w-full object-contain" /><span v-else>{{ t('common.refresh') }}</span></Button></div></div><div class="flex items-center gap-2"><Checkbox id="remember" v-model="form.remember" :disabled="busy" /><Label for="remember" class="font-normal">{{ t('auth.remember') }}</Label></div><Button type="submit" class="mt-2 w-full" :disabled="busy">{{ t(busy ? 'common.loading' : 'auth.signIn') }}<ArrowRight class="size-4" /></Button></form><BrandingFooter class="mt-12 justify-center" /></div></main></div></template>
+<template>
+  <TenantLoginLayout :template="branding.template" :name="branding.name" :title="branding.welcomeTitle" :description="branding.welcomeDescription" :logo="branding.logo" :background="branding.background" :blur="branding.entry?.branding.login.backgroundBlur" :accent="branding.accent">
+    <template #tools><DisplaySettings /></template>
+    <h2 class="text-3xl font-semibold tracking-tight">{{ t('auth.loginTitle') }}</h2><p class="mt-3 mb-8 text-sm text-muted-foreground">{{ t('auth.loginHint') }}</p>
+    <p v-if="route.query.securityUpdated" role="status" class="mb-4 text-sm text-muted-foreground">{{ t('auth.securityChanged') }}</p><ErrorNotice :message="branding.error || error" /><p v-if="branding.loading" role="status">{{ t('common.loading') }}</p><Button v-if="branding.error" type="button" variant="outline" :disabled="busy || branding.loading" @click="loadEntry">{{ t('common.refresh') }}</Button><form class="space-y-5" @submit.prevent="submit"><div class="space-y-2"><Label for="username">{{ t('auth.username') }}</Label><Input id="username" v-model="form.username" name="username" autocomplete="username" maxlength="64" :disabled="busy || !branding.passwordEnabled" required /></div><div class="space-y-2"><Label for="password">{{ t('auth.password') }}</Label><PasswordInput id="password" v-model="form.password" name="password" autocomplete="current-password" maxlength="128" :disabled="busy || !branding.passwordEnabled" required /></div><div v-if="branding.captchaEnabled" class="space-y-2"><Label for="captcha">{{ t('auth.captcha') }}</Label><div class="flex gap-3"><Input id="captcha" v-model="form.captcha" name="captcha" autocomplete="off" maxlength="8" :disabled="busy || !branding.passwordEnabled" required /><Button type="button" variant="outline" class="h-9 w-28 shrink-0 overflow-hidden p-0" :disabled="captchaBusy || !branding.ready" :aria-label="t('auth.refreshCaptcha')" @click="refreshCaptcha"><img v-if="captchaImage" :src="captchaImage" :alt="t('auth.captcha')" class="h-full w-full object-contain" /><span v-else>{{ t('common.refresh') }}</span></Button></div></div><div class="flex items-center gap-2"><Checkbox id="remember" v-model="form.remember" :disabled="busy || !branding.passwordEnabled" /><Label for="remember" class="font-normal">{{ t('auth.remember') }}</Label></div><Button type="submit" class="mt-2 w-full" :disabled="busy || !branding.passwordEnabled">{{ t(busy ? 'common.loading' : 'auth.signIn') }}<ArrowRight class="size-4" /></Button></form><p class="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground"><ShieldCheck class="size-4 shrink-0" />{{ t('common.securityHint') }}</p>
+    <template #footer><BrandingFooter class="justify-center" /></template>
+  </TenantLoginLayout>
+</template>

@@ -1,6 +1,6 @@
 {
   "name": "springboot-modulith-admin-next",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,21 +13,27 @@
     "test:e2e": "playwright test",
     "i18n:check": "node scripts/check-i18n.mjs",
     "baseline:check": "node scripts/check-baseline.mjs",
-    "verify": "npm run baseline:check && npm run type-check && npm run lint && npm run i18n:check && npm run test:unit && vite build",
-    "test:real": "node scripts/run-real-e2e.mjs"
+    "verify": "npm run baseline:check && node scripts/inventory.mjs --check && npm run type-check && npm run type-check:tests && npm run lint && npm run i18n:check && npm run test:unit && vite build && npm run release:check",
+    "test:real": "node scripts/run-real-e2e.mjs",
+    "type-check:tests": "vue-tsc --noEmit -p tsconfig.tests.json",
+    "release:check": "node scripts/check-release.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.71.0",
     "@tanstack/vue-table": "9.3.1",
     "@tiptap/starter-kit": "3.33.0",
     "@tiptap/vue-3": "3.33.0",
+    "@vue-flow/core": "1.48.2",
     "@vueuse/core": "^15.0.0",
     "axios": "1.21.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "1.11.23",
     "dompurify": "^3.4.17",
+    "lossless-json": "4.3.3",
+    "monaco-editor": "0.57.0",
     "pinia": "4.0.3",
+    "qrcode": "1.5.4",
     "reka-ui": "^2.11.0",
     "tailwind-merge": "^3.3.1",
     "vee-validate": "4.15.1",
@@ -37,11 +43,13 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@intlify/eslint-plugin-vue-i18n": "4.5.1",
     "@playwright/test": "^1.58.0",
     "@tailwindcss/vite": "4.3.5",
     "@tsconfig/node24": "24.0.5",
     "@types/node": "24.13.4",
+    "@types/qrcode": "1.5.6",
     "@vitejs/plugin-vue": "6.0.8",
     "@vue/eslint-config-typescript": "14.9.0",
     "@vue/test-utils": "2.5.1",
@@ -62,5 +70,10 @@
   },
   "engines": {
     "node": "^22.18.0 || >=24.12.0"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "3.4.17"
+    }
   }
 }

@@ -1,0 +1,120 @@
+import { expect, test, type Page } from '@playwright/test'
+import { createHmac } from 'node:crypto'
+
+function otp(secret: string, step: number) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+  const bits = [...secret.replace(/=+$/, '')].map(c => alphabet.indexOf(c).toString(2).padStart(5, '0')).join('')
+  const key = Buffer.from(bits.match(/.{8}/g)!.map(byte => parseInt(byte, 2)))
+  const counter = Buffer.alloc(8); counter.writeBigUInt64BE(BigInt(step))
+  const mac = createHmac('sha1', key).update(counter).digest(), offset = mac[mac.length - 1]! & 15
+  return ((mac.readUInt32BE(offset) & 0x7fffffff) % 1000000).toString().padStart(6, '0')
+}
+async function freshCode(secret: string, usedStep: number) {
+  while (Math.floor(Date.now() / 30000) <= usedStep || Date.now() % 30000 > 22000) await new Promise(resolve => setTimeout(resolve, 200))
+  const step = Math.floor(Date.now() / 30000)
+  return { code: otp(secret, step), step }
+}
+async function token(page: Page) { return page.evaluate(() => sessionStorage.getItem('sma.access-token') || localStorage.getItem('sma.access-token')) }
+async function login(page: Page, base: string, username: string, password: string) {
+  await page.goto(base + '/login')
+  await page.getByRole('textbox', { name: '用户名', exact: true }).fill(username)
+  await page.getByLabel('密码', { exact: true }).fill(password)
+  await page.getByRole('button', { name: '登录', exact: true }).click()
+  await page.waitForURL(url => url.pathname !== '/login')
+}
+
+test('P07 real browser: independent passwords, enrollment, mandatory TOTP, unlock and legacy compatibility', async ({ page, browser }, testInfo) => {
+  test.setTimeout(420000)
+  const base = String(testInfo.project.use.baseURL), adminPassword = process.env.SMA_E2E_ADMIN_PASSWORD
+  if (!adminPassword) throw new Error('Use the isolated real E2E runner')
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message))
+  await login(page, base, 'admin', adminPassword)
+  const username = 'security_' + Date.now(), password = 'M7n4R8p2V6'
+  const result = await page.evaluate(async ({ username, password }) => {
+    const authorization = 'Bearer ' + (sessionStorage.getItem('sma.access-token') || localStorage.getItem('sma.access-token'))
+    const request = (name: string, candidate: string) => fetch('/api/iam/users', { method: 'POST', headers: { Authorization: authorization, 'Content-Type': 'application/json' }, body: JSON.stringify({ user: { username: name, name: name, gender: 'UNSPECIFIED', enabled: true, roleIds: [], postIds: [], timeZone: 'UTC' }, password: candidate }) }).then(r => r.json())
+    const weak = await request(username + '_weak', 'password1'), created = await request(username, password)
+    return { weak: weak.code, created: created.code }
+  }, { username, password })
+  expect(result.weak).not.toBe(0); expect(result.created).toBe(0)
+  await login(page, base, username, password)
+  await page.goto(base + '/auth/security')
+  await page.getByRole('button', { name: '设置安全操作密码', exact: true }).click()
+  await page.getByLabel('当前登录密码', { exact: true }).fill(password)
+  await page.getByLabel('新安全操作密码', { exact: true }).fill('a1b2c3')
+  await page.getByLabel('确认安全操作密码', { exact: true }).fill('a1b2c3')
+  const beforeSet = await token(page)
+  await page.getByRole('button', { name: '确认保存', exact: true }).click()
+  await page.waitForURL(url => url.pathname === '/login'); expect(await token(page)).toBeNull()
+  expect((await page.request.get(base + '/api/auth/me', { headers: { Authorization: 'Bearer ' + beforeSet } })).status()).toBe(401)
+  await login(page, base, username, password); await page.goto(base + '/auth/security')
+  await page.getByRole('button', { name: '修改安全操作密码', exact: true }).click()
+  await page.getByLabel('当前登录密码', { exact: true }).fill(password)
+  await page.getByLabel('原安全操作密码', { exact: true }).fill('a1b2c3')
+  await page.getByLabel('新安全操作密码', { exact: true }).fill('n8L3w0S5')
+  await page.getByLabel('确认安全操作密码', { exact: true }).fill('n8L3w0S5')
+  await page.getByRole('button', { name: '确认保存', exact: true }).click(); await page.waitForURL(url => url.pathname === '/login')
+  await login(page, base, username, password); await page.goto(base + '/auth/security')
+  await page.getByRole('button', { name: '绑定验证器', exact: true }).click()
+  await page.getByLabel('当前登录密码', { exact: true }).fill(password)
+  await page.getByRole('button', { name: '确认保存', exact: true }).click()
+  await expect(page.getByAltText('验证器绑定二维码')).toBeVisible()
+  const secret = await page.getByLabel('手动录入密钥').inputValue()
+  expect(secret).toMatch(/^[A-Z2-7]+$/)
+  expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toContain(secret)
+  let fresh = await freshCode(secret, -1)
+  await page.getByLabel('新验证器动态码').fill(fresh.code)
+  await page.getByRole('button', { name: '确认绑定', exact: true }).click(); await page.waitForURL(url => url.pathname === '/login')
+  await login(page, base, username, password); await expect(page).toHaveURL(/\/login\/totp/)
+  expect(await token(page)).toBeNull(); expect((await page.request.get(base + '/api/auth/me')).status()).toBe(401)
+  fresh = await freshCode(secret, fresh.step)
+  await page.getByLabel('动态验证码', { exact: true }).fill(fresh.code === '000000' ? '111111' : '000000')
+  await page.getByRole('button', { name: '验证并登录', exact: true }).click()
+  await expect(page.getByRole('alert')).toBeVisible(); expect(await token(page)).toBeNull()
+  await page.getByLabel('动态验证码', { exact: true }).fill(fresh.code)
+  await page.getByRole('button', { name: '验证并登录', exact: true }).click(); await page.waitForURL(url => !url.pathname.startsWith('/login'))
+  expect(await page.evaluate(() => localStorage.getItem('sma.access-token'))).toBeNull()
+  await page.goto(base + '/auth/security'); await expect(page.getByRole('heading', { name: '已绑定验证器', exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('security-next-desktop.png'), fullPage: true })
+  const currentToken = await token(page)
+  await page.request.post(base + '/api/auth/lock', { headers: { Authorization: 'Bearer ' + currentToken } }); await page.reload()
+  const locked = page.getByRole('dialog'); await expect(locked).toBeVisible()
+  await locked.getByLabel('密码', { exact: true }).fill(password)
+  const unlockRequest = page.waitForRequest(r => r.url().endsWith('/api/auth/unlock'))
+  await locked.getByRole('button', { name: '解锁', exact: true }).click()
+  expect((await unlockRequest).postDataJSON()).toEqual({ password }); await expect(locked).toHaveCount(0)
+  expect(await token(page)).toBe(currentToken)
+  await expect(page.getByRole('heading', { name: '已绑定验证器', exact: true })).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: '主题', exact: true }).click()
+  await page.getByRole('menuitem', { name: '深色', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '已绑定验证器', exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('security-next-mobile-dark.png'), fullPage: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.getByRole('button', { name: '语言与时区', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'English', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Authenticator enabled', exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('security-next-mobile-dark-en.png'), fullPage: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.getByRole('button', { name: /Language/ }).click()
+  await page.getByRole('menuitem', { name: '简体中文', exact: true }).click()
+
+  if (process.env.SMA_E2E_LEGACY === '1') {
+    const legacyBase = `http://127.0.0.1:${process.env.SMA_E2E_LEGACY_PORT || 5188}`
+    const context = await browser.newContext({ locale: 'zh-CN', viewport: { width: 390, height: 844 } }), legacy = await context.newPage()
+    legacy.on('pageerror', e => errors.push(e.message))
+    await login(legacy, legacyBase, 'admin', adminPassword); await expect(legacy).not.toHaveURL(/\/login/)
+    await login(legacy, legacyBase, username, password); await expect(legacy).toHaveURL(/\/login\/totp/); expect(await token(legacy)).toBeNull()
+    fresh = await freshCode(secret, fresh.step); await legacy.getByLabel('动态验证码', { exact: true }).fill(fresh.code)
+    await legacy.getByRole('button', { name: '验证并登录', exact: true }).click(); await legacy.waitForURL(url => !url.pathname.startsWith('/login'))
+    await legacy.goto(legacyBase + '/auth/security'); await expect(legacy.getByRole('heading', { name: '已设置安全操作密码' })).toBeVisible()
+    await legacy.screenshot({ path: testInfo.outputPath('security-legacy-mobile.png'), fullPage: true })
+    await legacy.getByRole('button', { name: '解除绑定', exact: true }).click()
+    await legacy.getByLabel('当前登录密码', { exact: true }).fill(password)
+    fresh = await freshCode(secret, fresh.step); await legacy.getByLabel('动态验证码', { exact: true }).fill(fresh.code)
+    await legacy.getByRole('button', { name: '确认保存', exact: true }).click(); await legacy.waitForURL(url => url.pathname === '/login')
+    expect(await token(legacy)).toBeNull()
+    await context.close()
+  }
+  expect(errors).toEqual([])
+})

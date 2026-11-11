@@ -1,6 +1,6 @@
 import { configResources } from '@/features/config/resources'
 export type FieldKind =
-  'text' | 'textarea' | 'password' | 'number' | 'flag' | 'select' | 'tree' | 'multi' | 'multiTree'
+  'icon' | 'text' | 'textarea' | 'password' | 'number' | 'flag' | 'select' | 'tree' | 'multi' | 'multiTree'
 export interface Option {
   value: string
   label: string
@@ -112,7 +112,7 @@ export const resources: Record<string, Resource> = {
         initial: 'MENU',
       },
       { key: 'path', kind: 'text' },
-      { key: 'icon', kind: 'text' },
+      { key: 'icon', kind: 'icon' },
       {
         key: 'openMode',
         kind: 'select',
@@ -175,7 +175,7 @@ export const resources: Record<string, Resource> = {
     translations: true,
     fields: [
       name,
-      { key: 'icon', kind: 'text' },
+      { key: 'icon', kind: 'icon' },
       sort,
       enabled,
       { key: 'menuIds', kind: 'multi', source: 'rootMenus' },
@@ -207,7 +207,7 @@ export function editorFor(resource: Resource, row?: Row): EditorState {
       state.singles[field.key] = value == null ? null : String(value)
     else if (['multi', 'multiTree'].includes(field.kind))
       state.multiples[field.key] = Array.isArray(value) ? value.map(String) : []
-    else state.text[field.key] = value == null ? '' : String(value)
+    else state.text[field.key] = resource.id === 'parameters' && row?.secret && field.key === 'value' ? '' : value == null ? '' : String(value)
   }
   const translations = row?.translations as Record<string, string> | undefined
   state.text.nameZhCN = translations?.['zh-CN'] || ''

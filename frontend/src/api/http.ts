@@ -31,6 +31,9 @@ export function configureHttp(client: AxiosInstance) {
     if (token) config.headers.Authorization = `Bearer ${token}`
     config.headers['Accept-Language'] = i18n.global.locale.value
     config.headers['X-Time-Zone'] = usePreferences().timeZone
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '') && !config.headers.has('Idempotency-Key')) {
+      config.headers.set('Idempotency-Key', crypto.randomUUID())
+    }
     return config
   })
   client.interceptors.response.use(

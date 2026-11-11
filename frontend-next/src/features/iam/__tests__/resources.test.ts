@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { editorFor, payloadFor, resources, tableTree } from '../resources'
 describe('management forms', () => {
+  it('does not load a masked secret into the editable replacement field', () => {
+    const editor = editorFor(resources.parameters!, { id: 'secret', secret: true, value: '******' })
+    expect(editor.text.value).toBe('')
+  })
   it('preserves snowflake ids through user relationships and keeps password outside user fields', () => {
     const resource = resources.users!
     const editor = editorFor(resource)

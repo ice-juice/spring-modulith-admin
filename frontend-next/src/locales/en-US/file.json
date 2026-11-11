@@ -17,5 +17,6 @@
   "uploadHint": "Maximum 20 MiB per file",
   "preview": "Preview",
   "remove": "Remove attachment",
-  "tooLarge": "File size must not exceed 20 MiB"
+  "tooLarge": "File size must not exceed 20 MiB",
+  "selectExisting": "Select existing files"
 }

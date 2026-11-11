@@ -1,4 +1,5 @@
 {
+  "resultRecovered": "The original operation completed, but its one-time secret cannot be retrieved. Check the application and rotate manually only if a new secret is needed.",
   "apps": "Applications",
   "create": "Create application",
   "type": "Application type",

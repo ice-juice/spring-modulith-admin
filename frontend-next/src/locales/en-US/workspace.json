@@ -2,5 +2,13 @@
   "hint": "Review pending work and open the management tools available to you.",
   "pending": "Pending work",
   "noPending": "No pending work",
-  "shortcuts": "Quick links"
+  "shortcuts": "Quick links",
+  "heroTitle": "Make space for what matters.",
+  "heroHint": "Review pending work, connect your team and open the tools available to you.",
+  "reviewPending": "Review my tasks",
+  "eyebrow": "YOUR SPACE, IN SYNC",
+  "context": "Your workspace, right now",
+  "contextHint": "System status, local time and your current identity.",
+  "pendingHint": "Start with the things that need your attention.",
+  "shortcutsHint": "Less searching. More focus."
 }

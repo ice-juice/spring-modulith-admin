@@ -2,6 +2,8 @@ import axios, { type AxiosInstance, type AxiosResponse, type AxiosRequestConfig 
 import { i18n } from '@/locales'
 import { getToken, clearToken } from '@/lib/token'
 import { usePreferences } from '@/stores/preferences'
+import { responseMeta, type ResponseMeta } from './request-meta'
+export type { ResponseMeta } from './request-meta'
 
 export interface ApiResponse<T> {
   code: number
@@ -21,6 +23,7 @@ export class ApiError extends Error {
     public key: string | null,
     message: string,
     public details?: unknown,
+    public meta: ResponseMeta = { status: code },
   ) {
     super(message)
   }
@@ -31,6 +34,9 @@ export function configureHttp(client: AxiosInstance) {
     if (token) config.headers.Authorization = `Bearer ${token}`
     config.headers['Accept-Language'] = i18n.global.locale.value
     config.headers['X-Time-Zone'] = usePreferences().timeZone
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '') && !config.headers.has('Idempotency-Key')) {
+      config.headers.set('Idempotency-Key', crypto.randomUUID())
+    }
     return config
   })
   client.interceptors.response.use(
@@ -48,7 +54,7 @@ export function configureHttp(client: AxiosInstance) {
         }
       }
       if (body && typeof body.code === 'number' && body.code !== 0) {
-        throw new ApiError(body.code, body.error, body.message, body.data)
+        throw new ApiError(body.code, body.error, body.message, body.data, responseMeta(response))
       }
       return response
     },
@@ -76,6 +82,7 @@ export function configureHttp(client: AxiosInstance) {
             body?.error || null,
             body?.message || i18n.global.t('common.networkError'),
             body?.data,
+            responseMeta(error.response),
           ),
         )
       }
@@ -85,15 +92,28 @@ export function configureHttp(client: AxiosInstance) {
   return client
 }
 export const http = configureHttp(axios.create({ baseURL: '/api', timeout: 15000 }))
-export async function get<T>(url: string, params?: unknown, options?: Pick<AxiosRequestConfig, 'timeout' | 'signal'>): Promise<T> {
-  return (await http.get<ApiResponse<T>>(url, { params, ...options })).data.data
+export interface RequestOptions extends Pick<AxiosRequestConfig, 'timeout' | 'signal'> {
+  idempotencyKey?: string
+  params?: unknown
+  onResponse?: (meta: ResponseMeta) => void
 }
-export async function post<T>(url: string, data?: unknown): Promise<T> {
-  return (await http.post<ApiResponse<T>>(url, data)).data.data
+/** Explicit original keys are supplied by the operation owner; this adapter never retries. */
+export function createApi(client: AxiosInstance) {
+  function config(options?: RequestOptions): AxiosRequestConfig {
+    return { timeout: options?.timeout, signal: options?.signal, params: options?.params,
+      headers: options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : undefined }
+  }
+  async function unwrap<T>(request: Promise<AxiosResponse<ApiResponse<T>>>, options?: RequestOptions): Promise<T> {
+    const response = await request
+    options?.onResponse?.(responseMeta(response))
+    return response.data.data
+  }
+  return {
+    get: <T>(url: string, params?: unknown, options?: RequestOptions) => unwrap<T>(client.get(url, { ...config(options), params }), options),
+    post: <T>(url: string, data?: unknown, options?: RequestOptions) => unwrap<T>(client.post(url, data, config(options)), options),
+    put: <T>(url: string, data?: unknown, options?: RequestOptions) => unwrap<T>(client.put(url, data, config(options)), options),
+    patch: <T>(url: string, data?: unknown, options?: RequestOptions) => unwrap<T>(client.patch(url, data, config(options)), options),
+    remove: async (url: string, options?: RequestOptions): Promise<void> => { await unwrap(client.delete(url, config(options)), options) },
+  }
 }
-export async function put<T>(url: string, data?: unknown): Promise<T> {
-  return (await http.put<ApiResponse<T>>(url, data)).data.data
-}
-export async function remove(url: string): Promise<void> {
-  await http.delete(url)
-}
+export const { get, post, put, patch, remove } = createApi(http)

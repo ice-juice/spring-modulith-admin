@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.app.json",
+  "include": ["../env.d.ts", "./*.ts", "./*.vue"],
+  "compilerOptions": { "tsBuildInfoFile": "../node_modules/.tmp/design-preview.tsbuildinfo" }
+}

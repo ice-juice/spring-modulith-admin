@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuth } from '@/stores/auth'
 import { post, put } from '@/api/http'
+import { validPassword } from '@/lib/password'
 const { t } = useI18n()
 const auth = useAuth()
 const router = useRouter()
@@ -47,6 +48,7 @@ async function logout() {
 }
 async function changePassword() {
   error.value = ''
+  if (!validPassword(newPassword.value)) { error.value = t('iam.passwordRule'); return }
   if (newPassword.value !== confirmPassword.value) {
     error.value = t('auth.passwordMismatch')
     return

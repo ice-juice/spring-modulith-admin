@@ -1,4 +1,6 @@
 {
+  "entryUnavailable": "当前入口不可用，请检查访问地址或联系管理员。",
+  "entryUnavailableTitle": "入口不可用",
   "brand": "Springboot Modulith Admin",
   "shortBrand": "SMA",
   "workspace": "管理工作台",
@@ -59,5 +61,12 @@
   "yes": "是",
   "no": "否",
   "profile": "个人资料",
-  "createdAt": "创建时间"
+  "createdAt": "创建时间",
+  "brandLinks": {
+    "website": "官方网站",
+    "help": "帮助中心",
+    "support": "联系支持",
+    "privacy": "隐私政策",
+    "agreement": "用户协议"
+  }
 }

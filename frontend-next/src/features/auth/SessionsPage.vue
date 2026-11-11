@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import PermissionButton from '@/components/business/PermissionButton.vue'
+
+import TableWorkspace from '@/components/business/TableWorkspace.vue'
 import { useRequestGate } from '@/composables/useRequestGate'
 const loadGate = useRequestGate()
 
@@ -52,6 +55,9 @@ async function load() {
   }
 }
 async function revoke(row: Session) {
+  if (actionBusy.value) return
+  actionBusy.value = true
+  try {
   try {
     await confirmOrCancel(t('auth.forceLogoutConfirm'), t('common.confirm'), {
       type: 'warning',
@@ -65,6 +71,8 @@ async function revoke(row: Session) {
   } catch (e) {
     error.value = (e as Error).message
   }
+
+  } finally { actionBusy.value = false }
 }
 watch(locale, load, { immediate: true })
 function search() {
@@ -78,5 +86,7 @@ import FilterBar from '@/components/business/FilterBar.vue'
 import DataTable from '@/components/business/DataTable.vue'
 import StatusBadge from '@/components/business/StatusBadge.vue'
 const columns = computed(() => [{key:'username',title:t('auth.username')},{key:'name',title:t('common.name')},{key:'ip',title:t('auth.ip')},{key:'userAgent',title:t('auth.device'),width:240},{key:'lastSeenAt',title:t('auth.lastSeen'),width:190},{key:'locked',title:t('common.status')},{key:'actions',title:t('common.actions'),width:150}])
+
+const actionBusy = ref(false)
 </script>
-<template><PageHeader :title="t('auth.sessions')"><Button variant="outline" :disabled="busy" @click="load">{{ t('common.refresh') }}</Button></PageHeader><FilterBar :busy="busy" @search="search"><Input v-model="keyword" :placeholder="t('auth.username')" :aria-label="t('auth.username')" /></FilterBar><ErrorNotice :message="error" /><DataTable :rows="rows" :columns="columns" :loading="busy" :page="page" :total="total" @update:page="page = $event; load()"><template #lastSeenAt="{ row }">{{ formatInstant(row.lastSeenAt, preferences.timeZone, locale) }}</template><template #locked="{ row }"><StatusBadge :label="t(row.locked ? 'auth.locked' : 'auth.online')" :tone="row.locked ? 'warning' : 'success'" /></template><template #actions="{ row }"><StatusBadge v-if="row.current" :label="t('auth.currentSession')" /><Button v-else v-permission="'auth:session:revoke'" variant="ghost" size="sm" class="text-destructive" @click="revoke(row)">{{ t('auth.forceLogout') }}</Button></template></DataTable></template>
+<template><TableWorkspace><template #tools><PageHeader :title="t('auth.sessions')"><Button variant="outline" :disabled="busy" @click="load">{{ t('common.refresh') }}</Button></PageHeader><FilterBar :busy="busy" @search="search"><Input v-model="keyword" :placeholder="t('auth.username')" :aria-label="t('auth.username')" /></FilterBar><ErrorNotice :message="error" /></template><DataTable :rows="rows" :columns="columns" :loading="busy" :page="page" :total="total" @update:page="page = $event; load()"><template #lastSeenAt="{ row }">{{ formatInstant(row.lastSeenAt, preferences.timeZone, locale) }}</template><template #locked="{ row }"><StatusBadge :label="t(row.locked ? 'auth.locked' : 'auth.online')" :tone="row.locked ? 'warning' : 'success'" /></template><template #actions="{ row }"><StatusBadge v-if="row.current" :label="t('auth.currentSession')" /><PermissionButton :disabled="actionBusy" v-else :permission="'auth:session:revoke'" variant="ghost" size="sm" class="text-destructive" @click="revoke(row)">{{ t('auth.forceLogout') }}</PermissionButton></template></DataTable></TableWorkspace></template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { validPassword } from '@/lib/password'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -237,7 +238,7 @@ async function save() {
   if (
     resource.value.id === 'users' &&
     !current.value &&
-    (editor.value.text.password || '').length < 12
+    !validPassword(editor.value.text.password || '')
   ) {
     error.value = t('iam.passwordRule')
     return
@@ -314,7 +315,7 @@ async function saveGrant() {
   }
 }
 async function resetPassword() {
-  if (newPassword.value.length < 12) {
+  if (!validPassword(newPassword.value)) {
     error.value = t('iam.passwordRule')
     return
   }

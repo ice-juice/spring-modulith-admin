@@ -51,7 +51,7 @@ watch(locale, load, { immediate: true })
       ><el-table-column prop="name" :label="t('common.name')" /><el-table-column
         prop="id"
         :label="t('monitor.cacheId')"
-      /><el-table-column prop="size" :label="t('monitor.entries')" /><el-table-column
+      /><el-table-column prop="size" :label="t('monitor.entries')"><template #default="{ row }">{{ row.size === '-1' ? t('common.unavailable') : row.size }}</template></el-table-column><el-table-column
         prop="hits"
         :label="t('monitor.hits')"
       /><el-table-column prop="misses" :label="t('monitor.misses')" /><el-table-column

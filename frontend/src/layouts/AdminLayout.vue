@@ -136,8 +136,8 @@ void branding.load()
     />
     <aside class="sidebar">
       <RouterLink class="brand" to="/"
-        ><b>{{ t('common.shortBrand') }}</b
-        ><span>{{ t('common.workspace') }}</span></RouterLink
+        ><img v-if="branding.compactLogo" :src="branding.compactLogo" :alt="branding.name" style="width:36px;height:36px;object-fit:contain" /><b v-else>{{ branding.entry?.branding.identity.shortName || t('common.shortBrand') }}</b
+        ><span>{{ branding.name }}</span></RouterLink
       >
       <div v-if="!collapsed" class="menu-search">
         <el-input v-model="menuSearch" :placeholder="t('common.search')" clearable />
@@ -195,7 +195,7 @@ void branding.load()
           ><el-button text @click="router.push('/preferences')">{{
             t('common.preferences')
           }}</el-button
-          ><SecurityControls /><el-button @click="logout">{{ t('common.signOut') }}</el-button>
+          ><el-button text @click="router.push('/auth/security')">{{ t('auth.accountSecurity') }}</el-button><SecurityControls /><el-button @click="logout">{{ t('common.signOut') }}</el-button>
         </div>
       </header>
       <div v-if="auth.user?.navigation.length" class="portal-navigation">

@@ -1,10 +1,7 @@
+import { safeLocalPath } from '@/lib/web-addresses'
 export function safeRedirect(value: unknown): string {
-  return typeof value === 'string' &&
-    value.startsWith('/') &&
-    !value.startsWith('//') &&
-    !value.startsWith('/login')
-    ? value
-    : '/'
+  const path = safeLocalPath(value)
+  return path && !path.startsWith('/login') ? path : '/'
 }
 export function accessDecision(
   publicRoute: boolean,

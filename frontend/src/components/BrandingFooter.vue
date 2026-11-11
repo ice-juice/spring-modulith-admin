@@ -1,28 +1,23 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useBranding } from '@/stores/branding'
-const branding = useBranding()
-const company = computed(() => branding.values['system.copyrightCompany'])
-const record = computed(() => branding.values['system.recordInfo'])
-function link(value?: string) {
-  return value && /^https?:\/\//.test(value) ? value : undefined
-}
+import { copyrightCaption } from '@/lib/tenant-branding'
+import { legacyBrandImage } from '@/lib/tenant-branding'
+const link = (value?: string | null) => value && /^https?:\/\//i.test(value) ? legacyBrandImage(value) : undefined
+const branding = useBranding(), { t } = useI18n()
+const legal = computed(() => branding.entry?.branding.legal)
+const captions = computed(() => [
+  { id: 'copyright', text: copyrightCaption(legal.value?.copyrightOwner, legal.value?.copyrightStartYear), url: link(legal.value?.copyrightUrl) },
+  { id: 'icp', text: legal.value?.icpRecord, url: link(legal.value?.icpUrl) },
+  { id: 'police', text: legal.value?.policeRecord, url: link(legal.value?.policeUrl) },
+].filter(item => item.text))
+const destinations = computed(() => (['website', 'help', 'support', 'privacy', 'agreement'] as const)
+  .map(id => ({ id, url: link(branding.entry?.branding.links?.[id]) })).filter(item => item.url))
 </script>
 <template>
-  <div v-if="company || record" class="branding-footer">
-    <a
-      v-if="company && link(branding.values['system.copyrightUrl'])"
-      :href="link(branding.values['system.copyrightUrl'])"
-      target="_blank"
-      rel="noopener noreferrer"
-      >{{ company }}</a
-    ><span v-else-if="company">{{ company }}</span>
-    <a
-      v-if="record && link(branding.values['system.recordUrl'])"
-      :href="link(branding.values['system.recordUrl'])"
-      target="_blank"
-      rel="noopener noreferrer"
-      >{{ record }}</a
-    ><span v-else-if="record">{{ record }}</span>
+  <div class="branding-footer">
+    <template v-for="item in captions" :key="item.id"><a v-if="item.url" :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.text }}</a><span v-else>{{ item.text }}</span></template>
+    <a v-for="item in destinations" :key="item.id" :href="item.url" target="_blank" rel="noopener noreferrer">{{ t('common.brandLinks.' + item.id) }}</a>
   </div>
 </template>

@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark" />
     <title>Springboot Modulith Admin</title>
     <script>
-      try { const theme = localStorage.getItem('sma.theme'); document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)); } catch {}
+      try { const theme = localStorage.getItem('sma.theme'); document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)); const skin = localStorage.getItem('sma.next.skin.guest'); document.documentElement.dataset.skin = ['iris', 'celadon', 'amber'].includes(skin) ? skin : 'iris'; } catch {}
     </script>
   </head>
   <body><div id="app"></div><script type="module" src="/src/main.ts"></script></body>

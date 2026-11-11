@@ -7,4 +7,6 @@ playwright-report/
 .env.local
 .env.*.local
 .e2e-runtime/
-test-results-real/
+release/
+# Per-run Playwright output directories; every isolated verification run creates its own.
+test-results-*/

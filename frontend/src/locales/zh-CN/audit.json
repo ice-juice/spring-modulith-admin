@@ -19,6 +19,9 @@
   "statuses": {
     "SUCCESS": "登录成功",
     "PASSWORD_FAILURE": "账号或密码失败",
-    "CAPTCHA_FAILURE": "验证码失败"
+    "CAPTCHA_FAILURE": "验证码失败",
+    "MFA_FAILURE": "动态码验证失败",
+    "MFA_REJECTED": "二步验证请求被拒绝",
+    "RATE_LIMITED": "登录尝试过于频繁"
   }
 }

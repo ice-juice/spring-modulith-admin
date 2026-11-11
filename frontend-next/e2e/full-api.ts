@@ -1,6 +1,9 @@
-import type { Page } from '@playwright/test'
+import type { Page, WebSocketRoute } from '@playwright/test'
+import { tenantEntry } from './tenant-entry'
+import { createCacheFixture } from './cache-fixture'
 const stamp = '2026-11-10T08:00:00Z'
-export async function fullApi(page: Page) {
+export async function fullApi(page: Page, origin = process.env.SMA_E2E_MOCK_ORIGIN || 'http://127.0.0.1:5174') {
+  const cache = createCacheFixture()
   const writes: { method: string; path: string; body: Record<string, unknown> }[] = [], unmatched: string[] = []
   const permissionKeys = [
     ...['user', 'role', 'department', 'post', 'permission', 'navigation'].flatMap(resource => ['view', 'create', 'update', 'delete'].map(action => 'iam:' + resource + ':' + action)),
@@ -15,7 +18,7 @@ export async function fullApi(page: Page) {
     ['users', '用户管理', '/iam/users', 'iam:user:view'], ['roles', '角色管理', '/iam/roles', 'iam:role:view'], ['departments', '部门管理', '/iam/departments', 'iam:department:view'], ['posts', '岗位管理', '/iam/posts', 'iam:post:view'], ['permissions', '权限资源', '/iam/permissions', 'iam:permission:view'], ['navigation', '顶部导航', '/iam/navigation', 'iam:navigation:view'],
     ['dictionary', '数据字典', '/config/dictionaries', 'config:dictionary:view'], ['parameters', '系统参数', '/config/parameters', 'config:parameter:view'], ['files', '文件管理', '/file/files', 'file:file:view'], ['notices', '系统通知', '/message/notices', 'message:notice:view'], ['todos', '待办管理', '/message/todos', 'message:todo:view'], ['server', '服务器监控', '/monitor/server', 'monitor:server:view'], ['database', '数据库文档', '/monitor/database', 'monitor:database:view'], ['apps', '应用中心', '/openapi/apps', 'openapi:app:view'],
   ].map(([id, name, path, permission]) => ({ id, name, path, permission, parentId: 'org', type: 'MENU', icon: 'Grid', openMode: 'ROUTE', children: [] }))
-  const preferences = { locale: 'zh-CN', timeZone: 'Asia/Shanghai', theme: 'light', tabsEnabled: true, keepTabsAfterReload: false }
+  const preferences = { locale: 'zh-CN', timeZone: 'Asia/Shanghai', theme: 'light', skin: 'iris', tabsEnabled: true, keepTabsAfterReload: false }
   const me = { id: '101', username: 'e2e.admin', name: '测试管理员', portal: 'admin', superAdmin: true, permissions: permissionKeys, navigation: [], menus: [{ id: 'org', parentId: null, name: '管理功能', path: null, icon: 'Setting', type: 'DIRECTORY', openMode: 'ROUTE', children: menus }], features: { departmentEnabled: true, postEnabled: true, extendedProfileEnabled: true }, ...preferences }
   const profile = { id: '101', username: 'e2e.admin', name: '测试管理员', email: 'admin@example.test', mobile: '', gender: 'UNSPECIFIED', avatarFileId: null }
   const base = { id: '9007199254740993123', parentId: '0', name: '测试记录', code: 'TEST', sort: 0, enabled: true, builtin: false }
@@ -25,7 +28,7 @@ export async function fullApi(page: Page) {
   const dictionaryTypes = [{ ...base, id: 'type1', typeKey: 'custom_status', name: '自定义状态', tree: false, translations: {} }]
   const dictionaryItems = [{ ...base, id: 'item1', typeId: 'type1', value: 'active', name: '正常', translations: {} }]
   const parameterGroups = [{ ...base, id: 'group1', groupKey: 'ui', name: '界面设置', translations: {} }]
-  const parameters = [{ ...base, id: 'param1', paramKey: 'system.name', groupKey: 'ui', name: '系统名称', valueType: 'STRING', value: 'SMA', publicReadable: true, secret: false, translations: {} }]
+  const parameters = [{ ...base, id: 'param1', paramKey: 'custom.consoleTitle', groupKey: 'ui', name: '自定义标题', valueType: 'STRING', value: 'SMA', publicReadable: false, secret: false, translations: {} }]
   const asset = { id: 'file1', name: 'sample.png', contentType: 'image/png', kind: 'IMAGE', sizeBytes: '68', checksum: 'test-checksum', ownerId: '101', uploader: '测试管理员', createdAt: stamp, previewable: true, contentPath: '/file/files/file1/content' }
   const assets = [asset]
   const notice = { id: 'notice1', title: '系统维护通知', content: '<p>请在维护前保存工作。</p>', type: '1', priority: 1, audienceType: 'ALL', audienceIds: [], fileIds: [], recipientCount: '2', readCount: '0', createdBy: '101', createdAt: stamp, updatedAt: stamp, readAt: null as string | null }
@@ -33,24 +36,25 @@ export async function fullApi(page: Page) {
   const privateMessage = { id: 'private1', senderId: '102', recipientId: '101', senderName: '测试成员', recipientName: '测试管理员', content: '这是一条测试私信', createdAt: stamp, readAt: null as string | null }
   const app = { id: 'app1', name: '测试应用', type: 1, description: '用于接口测试', appId: 'app_test_9007199254740993123', enabled: false, signatureRequired: true, targetType: null, targetId: null, targetName: null, createdAt: stamp }
   let locked = false
-  const sockets: { send: (data: string) => void }[] = []
+  const sockets: WebSocketRoute[] = []
   await page.routeWebSocket('**/api/message/ws?*', socket => { sockets.push(socket) })
   await page.route('**/actuator/health', route => route.fulfill({ json: { status: 'UP' } }))
-  await page.route('http://127.0.0.1:5174/api/**', async route => {
+  await page.route(origin + '/api/**', async route => {
     const req = route.request(), url = new URL(req.url()), path = url.pathname.slice(4), method = req.method()
     let body: Record<string, unknown> = {}; try { body = req.postDataJSON() || {} } catch { /* Multipart requests are handled by upload endpoints. */ }
     const ok = (data: unknown) => route.fulfill({ json: { code: 0, error: null, message: 'ok', data } })
     const paged = (items: unknown[]) => ok({ items, page: url.searchParams.get('page') || '1', size: url.searchParams.get('size') || '20', total: String(items.length) })
     if (method !== 'GET') writes.push({ method, path, body })
-    if (path === '/config/parameters/public') return ok({ 'login.captchaEnabled': 'false', 'system.name': 'SMA 测试' })
+    if (path === '/tenant/entry') return ok(tenantEntry())
     if (path === '/auth/login') return ok({ token: 'isolated-full-e2e-token' })
+    if (path === '/workspace/shelf') return ok({ scope: '1.admin.101', mode: 'drawer', version: '0', bookmarks: [], targets: [] })
     if (path === '/auth/me') return ok({ ...me, ...preferences, locked })
     if (path === '/auth/logout') return ok(null)
     if (path === '/auth/lock') { locked = true; return ok(null) }
     if (path === '/auth/unlock') { locked = false; return ok(null) }
     if (path === '/auth/sessions') return paged([{ id: 'current', username: 'e2e.admin', name: '测试管理员', ip: '127.0.0.1', userAgent: 'Chrome testing', lastSeenAt: stamp, expiresAt: stamp, locked: false, current: true }, { id: 'other', username: 'test.member', name: '测试成员', ip: '127.0.0.2', userAgent: 'Browser testing', lastSeenAt: stamp, expiresAt: stamp, locked: false, current: false }])
     if (/^\/auth\/sessions\/[^/]+\/revoke$/.test(path)) return ok(null)
-    if (path === '/config/preferences') { if (method === 'PUT') Object.assign(preferences, body); if (method === 'DELETE') Object.assign(preferences, { locale: 'zh-CN', theme: 'light', timeZone: 'Asia/Shanghai', tabsEnabled: true, keepTabsAfterReload: false }); return ok(preferences) }
+    if (path === '/config/preferences') { if (method === 'PUT') Object.assign(preferences, body); if (method === 'DELETE') Object.assign(preferences, { locale: 'zh-CN', theme: 'light', skin: 'iris', timeZone: 'Asia/Shanghai', tabsEnabled: true, keepTabsAfterReload: false }); return ok(preferences) }
     if (path === '/iam/profile') { if (method === 'PUT') Object.assign(profile, body); return ok(profile) }
     if (path.endsWith('/password')) return ok(null)
     if (path === '/iam/users') return method === 'GET' ? paged([member]) : ok({ ...member, ...body, id: 'new-user' })
@@ -85,13 +89,14 @@ export async function fullApi(page: Page) {
     if (/\/readers$/.test(path)) return paged([{ userId: '101', name: '测试管理员', readAt: stamp }])
     if (path === '/message/notices' || path === '/message/notices/inbox') return method === 'GET' ? paged([notice]) : ok({ ...notice, ...body })
     if (path.startsWith('/message/notices/inbox/') && method === 'PUT') { notice.readAt = stamp; return ok(path.endsWith('/read') ? notice : null) }
+    if (path === '/message/notices/inbox/notice1' && method === 'GET') return ok(notice)
     if (/^\/message\/notices\/[^/]+$/.test(path)) { if (method === 'PUT') Object.assign(notice, body); return ok(notice) }
     if (/^\/message\/notices\/.*(restore|delete)/.test(path)) return ok(null)
     if (path === '/message/todos' || path === '/message/todos/managed') return method === 'GET' ? paged([task]) : ok({ ...task, ...body })
     if (path === '/message/todos/task1' || path === '/message/todos/managed/task1') return ok(task)
     if (path.startsWith('/message/todos/')) { if (path.endsWith('/state')) task.state = Number(body.state); return ok(path.endsWith('/read') ? task : null) }
     if (path === '/message/private') return method === 'GET' ? paged([privateMessage]) : ok(privateMessage)
-    if (path.startsWith('/message/private/')) { privateMessage.readAt = stamp; return ok(privateMessage) }
+    if (path.startsWith('/message/private/')) { if (method === 'PUT') privateMessage.readAt = stamp; return ok(privateMessage) }
     if (path === '/file/files' || path === '/file/files/images') {
       if (method === 'POST') { const next = { ...asset, id: 'upload' + assets.length, name: 'uploaded.png' }; assets.push(next); return ok(next) }
       return paged(assets)
@@ -100,7 +105,7 @@ export async function fullApi(page: Page) {
     if (/^\/file\/files\/[^/]+$/.test(path)) return ok(assets.find(item => path.endsWith('/' + item.id)) || asset)
     if (path === '/monitor/server') return ok({ sampledAt: stamp, os: 'Windows', arch: 'amd64', processors: 8, cpuLoad: .2, processCpuLoad: .1, physicalTotalBytes: '34359738368', physicalFreeBytes: '17179869184', javaVersion: '21', vm: 'OpenJDK', heapUsedBytes: '268435456', heapCommittedBytes: '536870912', heapMaxBytes: '1073741824', nonHeapUsedBytes: '134217728', threads: 32, uptimeMillis: '86400000', disks: [{ name: 'E:', type: 'NTFS', totalBytes: '1000000000', usableBytes: '500000000' }], pool: { active: 1, idle: 4, total: 5, waiting: 0 } })
     if (path === '/monitor/caches') return ok([{ id: 'parameters', name: '参数缓存', size: '20', hits: '80', misses: '2' }])
-    if (path.startsWith('/monitor/caches/')) return ok(null)
+    if (path.startsWith('/monitor/caches/')) return cache.handle(route, path, method, body)
     if (path === '/monitor/sql') return method === 'DELETE' ? ok(null) : paged([{ id: 'mapper.selectUsers', command: 'SELECT', calls: '12', errors: '0', rows: '12', slowCalls: '0', averageMillis: 1.2, maxMillis: 3.4, lastAt: stamp }])
     if (path === '/monitor/publications') return paged([{ id: 'event1', eventType: 'RoleChangedEvent', listener: 'AuditListener', status: 'FAILED', attempts: 1, publishedAt: stamp, lastResubmissionAt: null, completedAt: null }])
     if (path.endsWith('/retry')) return ok(null)

@@ -1,4 +1,6 @@
 {
+  "entryUnavailable": "This entry is unavailable. Check the address or contact your administrator.",
+  "entryUnavailableTitle": "Entry unavailable",
   "brand": "Springboot Modulith Admin",
   "shortBrand": "SMA",
   "workspace": "Administration",
@@ -59,5 +61,12 @@
   "yes": "Yes",
   "no": "No",
   "profile": "My profile",
-  "createdAt": "Created at"
+  "createdAt": "Created at",
+  "brandLinks": {
+    "website": "Website",
+    "help": "Help center",
+    "support": "Contact support",
+    "privacy": "Privacy policy",
+    "agreement": "User agreement"
+  }
 }

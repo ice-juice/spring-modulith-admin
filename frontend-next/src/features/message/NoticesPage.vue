@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import PermissionButton from '@/components/business/PermissionButton.vue'
+
+import TableWorkspace from '@/components/business/TableWorkspace.vue'
+import RowActions from '@/components/business/RowActions.vue'
 const loadAudienceGate = useRequestGate()
 const loadReadersGate = useRequestGate()
 
@@ -18,7 +22,10 @@ import StatusBadge from '@/components/business/StatusBadge.vue'
 
 import { reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { notify, confirmOrCancel } from '@/lib/feedback'
+import { notify, confirmAction } from '@/lib/feedback'
+import { useSubmission } from '@/composables/useSubmission'
+import { useSubmissionPool } from '@/composables/useSubmissionPool'
+import OperationStatus from '@/components/business/OperationStatus.vue'
 import { useRoute } from 'vue-router'
 import { get, post, put, remove, type PageResult } from '@/api/http'
 import { usePreferences } from '@/stores/preferences'
@@ -44,11 +51,12 @@ const rows = ref<Notice[]>([]),
   priority = ref<number>(),
   audienceType = ref(''),
   trash = ref(false)
+const formAction = useSubmission(), actions = useSubmissionPool(), rowAction = actions.last
 const page = ref(1),
   total = ref(0),
   busy = ref(false),
   error = ref(''),
-  saving = ref(false),
+  saving = formAction.busy,
   dialog = ref(false),
   editingId = ref(''),
   detail = ref<Notice>()
@@ -101,6 +109,8 @@ function changeAudience() {
   void loadAudience()
 }
 async function edit(row?: Notice) {
+  if (formAction.busy.value || formAction.querying.value) return
+  formAction.resetView(); formAction.bind('message.notices.manage.' + (row?.id || 'new'))
   Object.assign(form, noticeInput(row))
   editingId.value = row?.id || ''
   error.value = ''
@@ -108,63 +118,41 @@ async function edit(row?: Notice) {
   await loadAudience()
 }
 async function save() {
-  if (saving.value) return
-  if (
-    !form.title.trim() ||
-    !form.content ||
-    (form.audienceType !== 'ALL' && !form.audienceIds.length)
-  ) {
-    error.value = t('common.required')
-    return
-  }
-  saving.value = true
+  if (saving.value || formAction.querying.value) return
   error.value = ''
-  try {
-    if (editingId.value) await put('/message/notices/' + editingId.value, form)
-    else await post('/message/notices', form)
-    dialog.value = false
-    notify(t('common.saved'))
-    await load()
-  } catch (e) {
-    error.value = (e as Error).message
-  } finally {
-    saving.value = false
-  }
+  const id = editingId.value
+  const result = await formAction.run({ operation: 'notices.save', resource: 'message.notices.manage.' + (id || 'new'), protocol: 'LOCAL' }, () => {
+    if (!form.title.trim() || !form.content || (form.audienceType !== 'ALL' && !form.audienceIds.length)) { error.value = t('common.required'); return }
+    const input = JSON.parse(JSON.stringify(form)); return options => id ? put('/message/notices/' + id, input, options) : post('/message/notices', input, options)
+  })
+  if (result.kind === 'success' || result.kind === 'completed') { dialog.value = false; notify(t('common.saved')); await load() }
+  else if (formAction.error.value) error.value = formAction.error.value
 }
 async function erase(row: Notice) {
-  try {
-    await confirmOrCancel(t('message.recycleConfirm'), t('common.confirm'), {
-      type: 'warning',
-    })
-    await remove('/message/notices/' + row.id)
-    await load()
-  } catch (e) {
-    if (e instanceof Error) error.value = e.message
-  }
+  const id = row.id, resource = 'message.notices.manage.' + id, action = actions.get(resource)
+  const result = await action.run({ operation: 'notices.delete', resource, protocol: 'LOCAL' }, async () => {
+    if (!await confirmAction(t('message.recycleConfirm'), t('common.confirm'), true)) return
+    return options => remove('/message/notices/' + id, options)
+  })
+  if (result.kind === 'success' || result.kind === 'completed') await load(); else error.value = action.error.value
 }
 async function restore(row: Notice) {
-  try {
-    await put('/message/notices/' + row.id + '/restore')
-    await load()
-  } catch (e) {
-    error.value = (e as Error).message
-  }
+  const id = row.id, resource = 'message.notices.manage.' + id, action = actions.get(resource)
+  const result = await action.run({ operation: 'notices.restore', resource, protocol: 'LOCAL' }, () => options => put('/message/notices/' + id + '/restore', undefined, options))
+  if (result.kind === 'success' || result.kind === 'completed') await load(); else error.value = action.error.value
 }
 async function batch() {
-  try {
-    await confirmOrCancel(
-      t(trash.value ? 'message.restoreConfirm' : 'message.recycleConfirm'),
-      t('common.confirm'),
-      { type: 'warning' },
-    )
-    await post('/message/notices/' + (trash.value ? 'batch-restore' : 'batch-delete'), {
-      ids: selected.value.map((row) => row.id),
-    })
-    await load()
-  } catch (e) {
-    if (e instanceof Error) error.value = e.message
-  }
+  const ids = [...new Set(selected.value.map(row => row.id))].sort(), restore = trash.value
+  if (!ids.length) return
+  const resources = ids.map(id => 'message.notices.manage.' + id), resource = resources[0]!, action = actions.get(resource)
+  const result = await action.run({ operation: restore ? 'notices.batch-restore' : 'notices.batch-delete', resource, resources, protocol: 'LOCAL' }, async () => {
+    if (!await confirmAction(t(restore ? 'message.restoreConfirm' : 'message.recycleConfirm'), t('common.confirm'), true)) return
+    return options => post('/message/notices/' + (restore ? 'batch-restore' : 'batch-delete'), { ids }, options)
+  })
+  if (result.kind === 'success' || result.kind === 'completed') await load(); else error.value = action.error.value
 }
+async function checkForm() { if (await formAction.check() === 'SUCCEEDED') { dialog.value = false; await load() }; error.value = formAction.error.value }
+async function checkRow() { if (await rowAction.value?.check() === 'SUCCEEDED') await load(); error.value = rowAction.value?.error.value || '' }
 async function loadReaders() {
   const isCurrent = loadReadersGate()
   try {
@@ -214,12 +202,14 @@ const readersOpen = computed({get:()=>!!readerId.value,set:value=>{if(!value) re
 const columns = computed(() => [{key:'title',title:t('message.title'),width:240},{key:'type',title:t('message.type')},{key:'priority',title:t('message.priority')},{key:'audienceType',title:t('message.audience'),width:160},{key:'readStats',title:t('message.readStats'),width:160},{key:'createdAt',title:t('common.createdAt'),width:190},{key:'actions',title:t('common.actions'),width:180}])
 const readerColumns = computed(() => [{key:'name',title:t('common.name')},{key:'readAt',title:t('message.readAt'),width:200}])
 const audienceOptions = computed(() => audienceTypes.map(value=>({value,label:t('message.audiences.'+value)})))
+
+const actionBusy = computed(() => selected.value.some(row => actions.busy('message.notices.manage.' + row.id)))
 </script>
-<template>
-  <PageHeader :title="t('message.notices')"><div class="mr-3 flex items-center gap-2"><Switch id="notice-trash" v-model="trash" /><Label for="notice-trash">{{ t('message.recycleBin') }}</Label></div><Button v-if="!trash" v-permission="'message:notice:create'" @click="edit()">{{ t('message.publish') }}</Button><Button v-if="auth.hasPermission(trash ? 'message:notice:restore' : 'message:notice:delete')" variant="outline" :disabled="!selected.length" @click="batch">{{ t(trash ? 'message.restoreSelected' : 'message.recycleSelected') }}</Button></PageHeader>
-  <FilterBar :busy="busy" @search="search"><Input v-model="keyword" :placeholder="t('common.search')" :aria-label="t('common.search')" /><EntitySelect :model-value="type" :options="dictionaries.sys_notice_type || []" :placeholder="t('message.type')" class="w-full sm:w-40" @update:model-value="type = String($event || '')" /><EntitySelect :model-value="priority == null ? null : String(priority)" :options="dictionaries.sys_notice_priority_level || []" :placeholder="t('message.priority')" class="w-full sm:w-40" @update:model-value="priority = $event == null ? undefined : Number($event)" /><EntitySelect :model-value="audienceType" :options="audienceOptions" :placeholder="t('message.audience')" class="w-full sm:w-48" @update:model-value="audienceType = String($event || '')" /></FilterBar><ErrorNotice :message="error || dictionaryError" />
-  <DataTable :rows="rows" :columns="columns" :loading="busy" :page="page" :total="total" selectable @select="selected = $event" @update:page="page = $event; load()"><template #title="{ row }"><button v-if="!trash" class="max-w-full truncate text-left text-primary hover:underline" @click="detail = row">{{ row.title }}</button><span v-else>{{ row.title }}</span></template><template #type="{ row }">{{ label('sys_notice_type', row.type) }}</template><template #priority="{ row }"><StatusBadge :label="label('sys_notice_priority_level', row.priority)" :tone="row.priority === 3 ? 'danger' : 'neutral'" /></template><template #audienceType="{ row }">{{ t('message.audiences.' + row.audienceType) }}</template><template #readStats="{ row }"><Button v-if="!trash" variant="link" size="sm" class="p-0" @click="openReaders(row)">{{ t('message.readRatio', { read: row.readCount, total: row.recipientCount }) }}</Button><span v-else>{{ t('message.readRatio', { read: row.readCount, total: row.recipientCount }) }}</span></template><template #createdAt="{ row }">{{ formatInstant(row.createdAt, preferences.timeZone, locale) }}</template><template #actions="{ row }"><div class="flex gap-1"><template v-if="!trash"><Button v-permission="'message:notice:update'" variant="ghost" size="sm" @click="edit(row)">{{ t('common.edit') }}</Button><Button v-permission="'message:notice:delete'" variant="ghost" size="sm" class="text-destructive" @click="erase(row)">{{ t('message.recycle') }}</Button></template><Button v-else v-permission="'message:notice:restore'" variant="ghost" size="sm" @click="restore(row)">{{ t('message.restore') }}</Button></div></template></DataTable>
-  <EditorDialog v-model="dialog" :title="t(editingId ? 'message.editNotice' : 'message.publish')" :busy="saving" :dirty="dirty" wide @save="save"><ErrorNotice :message="error" /><form class="grid gap-4 sm:grid-cols-2" @submit.prevent="save"><div class="space-y-2 sm:col-span-2"><Label for="notice-title">{{ t('message.title') }}</Label><Input id="notice-title" v-model="form.title" maxlength="255" required /></div><div class="space-y-2"><Label for="notice-type">{{ t('message.type') }}</Label><EntitySelect id="notice-type" :model-value="form.type" :options="dictionaries.sys_notice_type || []" @update:model-value="form.type = String($event || '1')" /></div><div class="space-y-2"><Label for="notice-priority">{{ t('message.priority') }}</Label><EntitySelect id="notice-priority" :model-value="String(form.priority)" :options="dictionaries.sys_notice_priority_level || []" @update:model-value="form.priority = Number($event || 1)" /></div><div class="space-y-2 sm:col-span-2"><Label for="notice-audience">{{ t('message.audience') }}</Label><EntitySelect id="notice-audience" :model-value="form.audienceType" :options="audienceOptions" @update:model-value="form.audienceType = String($event || 'ALL'); changeAudience()" /></div><div v-if="form.audienceType !== 'ALL'" class="space-y-2 sm:col-span-2"><Label for="notice-recipients">{{ t('message.recipients') }}</Label><EntitySelect id="notice-recipients" :model-value="form.audienceIds" :options="audience" multiple remote @search="loadAudience" @update:model-value="form.audienceIds = Array.isArray($event) ? $event : []" /></div><div class="space-y-2 sm:col-span-2"><Label>{{ t('message.content') }}</Label><RichEditor v-model="form.content" /></div><div class="space-y-2 sm:col-span-2"><Label>{{ t('message.attachments') }}</Label><AttachmentList v-model="form.fileIds" editable /></div><button type="submit" hidden tabindex="-1" aria-hidden="true">{{ t('common.save') }}</button></form></EditorDialog>
+<template><TableWorkspace><template #tools>
+  <PageHeader :title="t('message.notices')"><div class="mr-3 flex items-center gap-2"><Switch id="notice-trash" v-model="trash" /><Label for="notice-trash">{{ t('message.recycleBin') }}</Label></div><PermissionButton v-if="!trash" :permission="'message:notice:create'" @click="edit()">{{ t('message.publish') }}</PermissionButton><Button v-if="auth.hasPermission(trash ? 'message:notice:restore' : 'message:notice:delete')" variant="outline" :disabled="actionBusy || !selected.length" @click="batch">{{ t(trash ? 'message.restoreSelected' : 'message.recycleSelected') }}</Button></PageHeader>
+  <FilterBar :busy="busy" @search="search"><Input v-model="keyword" :placeholder="t('common.search')" :aria-label="t('common.search')" /><EntitySelect :model-value="type" :options="dictionaries.sys_notice_type || []" :placeholder="t('message.type')" class="w-full sm:w-40" @update:model-value="type = String($event || '')" /><EntitySelect :model-value="priority == null ? null : String(priority)" :options="dictionaries.sys_notice_priority_level || []" :placeholder="t('message.priority')" class="w-full sm:w-40" @update:model-value="priority = $event == null ? undefined : Number($event)" /><EntitySelect :model-value="audienceType" :options="audienceOptions" :placeholder="t('message.audience')" class="w-full sm:w-48" @update:model-value="audienceType = String($event || '')" /></FilterBar><ErrorNotice :message="error || dictionaryError" /><OperationStatus v-if="rowAction" :slow="rowAction.slow.value" :unresolved="rowAction.unresolved.value" :querying="rowAction.querying.value" queryable @check="checkRow" />
+  </template><DataTable :rows="rows" :columns="columns" :loading="busy" :page="page" :total="total" selectable @select="selected = $event" @update:page="page = $event; load()"><template #title="{ row }"><button v-if="!trash" class="max-w-full truncate text-left text-primary hover:underline" @click="detail = row">{{ row.title }}</button><span v-else>{{ row.title }}</span></template><template #type="{ row }">{{ label('sys_notice_type', row.type) }}</template><template #priority="{ row }"><StatusBadge :label="label('sys_notice_priority_level', row.priority)" :tone="row.priority === 3 ? 'danger' : 'neutral'" /></template><template #audienceType="{ row }">{{ t('message.audiences.' + row.audienceType) }}</template><template #readStats="{ row }"><Button v-if="!trash" variant="link" size="sm" class="p-0" @click="openReaders(row)">{{ t('message.readRatio', { read: row.readCount, total: row.recipientCount }) }}</Button><span v-else>{{ t('message.readRatio', { read: row.readCount, total: row.recipientCount }) }}</span></template><template #createdAt="{ row }">{{ formatInstant(row.createdAt, preferences.timeZone, locale) }}</template><template #actions="{ row }"><RowActions><template v-if="!trash"><PermissionButton :permission="'message:notice:update'" variant="ghost" size="sm" @click="edit(row)">{{ t('common.edit') }}</PermissionButton><PermissionButton :disabled="actions.busy('message.notices.manage.' + row.id)" :permission="'message:notice:delete'" variant="ghost" size="sm" class="text-destructive" @click="erase(row)">{{ t('message.recycle') }}</PermissionButton></template><PermissionButton :disabled="actions.busy('message.notices.manage.' + row.id)" v-else :permission="'message:notice:restore'" variant="ghost" size="sm" @click="restore(row)">{{ t('message.restore') }}</PermissionButton></RowActions></template></DataTable></TableWorkspace>
+  <EditorDialog v-model="dialog" :title="t(editingId ? 'message.editNotice' : 'message.publish')" :busy="saving" :submit-disabled="formAction.unresolved.value" :dirty="dirty" wide @save="save"><ErrorNotice :message="error" /><OperationStatus :slow="formAction.slow.value" :unresolved="formAction.unresolved.value" :querying="formAction.querying.value" queryable @check="checkForm" /><form @submit.prevent="save"><fieldset :disabled="saving || formAction.unresolved.value" class="grid gap-4 sm:grid-cols-2"><div class="space-y-2 sm:col-span-2"><Label for="notice-title">{{ t('message.title') }}</Label><Input id="notice-title" v-model="form.title" maxlength="255" required /></div><div class="space-y-2"><Label for="notice-type">{{ t('message.type') }}</Label><EntitySelect :disabled="saving || formAction.unresolved.value" id="notice-type" :model-value="form.type" :options="dictionaries.sys_notice_type || []" @update:model-value="form.type = String($event || '1')" /></div><div class="space-y-2"><Label for="notice-priority">{{ t('message.priority') }}</Label><EntitySelect :disabled="saving || formAction.unresolved.value" id="notice-priority" :model-value="String(form.priority)" :options="dictionaries.sys_notice_priority_level || []" @update:model-value="form.priority = Number($event || 1)" /></div><div class="space-y-2 sm:col-span-2"><Label for="notice-audience">{{ t('message.audience') }}</Label><EntitySelect :disabled="saving || formAction.unresolved.value" id="notice-audience" :model-value="form.audienceType" :options="audienceOptions" @update:model-value="form.audienceType = String($event || 'ALL'); changeAudience()" /></div><div v-if="form.audienceType !== 'ALL'" class="space-y-2 sm:col-span-2"><Label for="notice-recipients">{{ t('message.recipients') }}</Label><EntitySelect :disabled="saving || formAction.unresolved.value" id="notice-recipients" :model-value="form.audienceIds" :options="audience" multiple remote @search="loadAudience" @update:model-value="form.audienceIds = Array.isArray($event) ? $event : []" /></div><div class="space-y-2 sm:col-span-2"><Label>{{ t('message.content') }}</Label><RichEditor :disabled="saving || formAction.unresolved.value" v-model="form.content" /></div><div class="space-y-2 sm:col-span-2"><Label>{{ t('message.attachments') }}</Label><AttachmentList :key="editingId" :disabled="saving || formAction.unresolved.value" v-model="form.fileIds" editable /></div><button type="submit" hidden tabindex="-1" aria-hidden="true">{{ t('common.save') }}</button></fieldset></form></EditorDialog>
   <EditorDialog v-model="detailOpen" :title="detail?.title || t('common.details')" wide><template v-if="detail"><SafeHtml :html="detail.content" /><AttachmentList class="mt-5" :model-value="detail.fileIds" /></template><template #footer><Button variant="outline" @click="detailOpen = false">{{ t('common.cancel') }}</Button></template></EditorDialog>
   <EditorDialog v-model="readersOpen" :title="t('message.readers')" wide><DataTable :rows="readers.map(reader => ({ ...reader, id: reader.userId }))" :columns="readerColumns" :page="readerPage" :total="readerTotal" @update:page="readerPage = $event; loadReaders()"><template #readAt="{ row }">{{ row.readAt ? formatInstant(row.readAt, preferences.timeZone, locale) : t('message.unread') }}</template></DataTable><template #footer><Button variant="outline" @click="readersOpen = false">{{ t('common.cancel') }}</Button></template></EditorDialog>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -8,6 +8,7 @@ import { safeRedirect } from '@/router/access'
 import DisplaySettings from '@/components/DisplaySettings.vue'
 import { useBranding } from '@/stores/branding'
 import BrandingFooter from '@/components/BrandingFooter.vue'
+import TenantLoginLayout from '@/components/TenantLoginLayout.vue'
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
@@ -19,23 +20,37 @@ const form = reactive({
   captcha: '',
   captchaId: '',
   remember: false,
-  portal: String(route.query.portal || 'admin'),
+  portal: '',
 })
 const captchaImage = ref('')
 const busy = ref(false)
 const error = ref('')
+const captchaBusy = ref(false)
+let captchaAttempt = 0
+watch(() => branding.generation, () => {
+  captchaAttempt++; captchaBusy.value = false; captchaImage.value = ''; form.captchaId = ''; form.captcha = ''
+  if (busy.value) { auth.reset(); form.password = '' }
+}, { flush: 'sync' })
+onUnmounted(() => { captchaAttempt++ })
 async function refreshCaptcha() {
-  if (!branding.captchaEnabled) return
+  if (!branding.ready || !branding.captchaEnabled || captchaBusy.value) return
+  const current = ++captchaAttempt, entryVersion = branding.generation
+  captchaBusy.value = true
   try {
     const result = await get<{ id: string; image: string }>('/auth/captcha')
+    if (current !== captchaAttempt || entryVersion !== branding.generation || !branding.ready) return
     form.captchaId = result.id
     captchaImage.value = result.image
     form.captcha = ''
   } catch (e) {
-    error.value = (e as Error).message
+    if (current === captchaAttempt) error.value = (e as Error).message
+  } finally {
+    if (current === captchaAttempt) captchaBusy.value = false
   }
 }
 async function submit() {
+  if (busy.value) return
+  if (!branding.passwordEnabled) { error.value = t('common.entryUnavailable'); return }
   if (!form.username || !form.password || (branding.captchaEnabled && !form.captcha)) {
     error.value = t('auth.required')
     return
@@ -43,8 +58,9 @@ async function submit() {
   busy.value = true
   error.value = ''
   try {
-    await auth.login(form)
-    await router.replace(safeRedirect(route.query.redirect))
+    const status = await auth.login({ ...form, portal: branding.portal })
+    form.password = ''
+    await router.replace(status === 'MFA_REQUIRED' ? { path: '/login/totp', query: { redirect: safeRedirect(route.query.redirect) } } : safeRedirect(route.query.redirect))
   } catch (e) {
     error.value = (e as Error).message
     await refreshCaptcha()
@@ -52,33 +68,22 @@ async function submit() {
     busy.value = false
   }
 }
-onMounted(async () => {
-  await branding.load()
-  await refreshCaptcha()
-})
+async function loadEntry() {
+  if (await branding.load()) { form.portal = branding.portal; await refreshCaptcha() }
+}
+onMounted(loadEntry)
 </script>
 <template>
-  <div class="login-page">
-    <div
-      v-if="branding.background"
-      class="login-background"
-      :style="{
-        backgroundImage:
-          'linear-gradient(#122237aa,#122237cc),url(' + JSON.stringify(branding.background) + ')',
-        filter: branding.values['login.backgroundBlur'] === 'true' ? 'blur(8px)' : 'none',
-      }"
-    />
-    <div class="login-tools"><DisplaySettings /></div>
-    <section class="login-brand">
-      <div class="brand-mark">{{ t('common.shortBrand') }}</div>
-      <h1>{{ branding.name }}</h1>
-      <p>{{ t('common.workspace') }}</p>
-    </section>
+  <TenantLoginLayout :template="branding.template" :name="branding.name" :title="branding.welcomeTitle" :description="branding.welcomeDescription" :logo="branding.logo" :background="branding.background" :blur="branding.entry?.branding.login.backgroundBlur" :accent="branding.accent">
+    <template #tools><DisplaySettings /></template>
     <el-card class="login-card" shadow="never">
       <h2>{{ t('auth.loginTitle') }}</h2>
       <p class="muted">{{ t('auth.loginHint') }}</p>
-      <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
-      <el-form label-position="top" @submit.prevent="submit">
+      <el-alert v-if="route.query.securityUpdated" :title="t('auth.securityChanged')" type="success" :closable="false" />
+      <el-alert v-if="branding.error || error" :title="branding.error || error" type="error" :closable="false" show-icon />
+      <p v-if="branding.loading" role="status">{{ t('common.loading') }}</p>
+      <el-button v-if="branding.error" :disabled="busy || branding.loading" @click="loadEntry">{{ t('common.refresh') }}</el-button>
+      <el-form label-position="top" :disabled="busy || !branding.passwordEnabled" @submit.prevent="submit">
         <el-form-item :label="t('auth.username')"
           ><el-input v-model="form.username" name="username" autocomplete="username" maxlength="64"
         /></el-form-item>
@@ -101,6 +106,7 @@ onMounted(async () => {
             /><button
               type="button"
               class="captcha-image"
+              :disabled="captchaBusy || !branding.ready"
               :aria-label="t('auth.refreshCaptcha')"
               @click="refreshCaptcha"
             >
@@ -108,11 +114,11 @@ onMounted(async () => {
             </button></div
         ></el-form-item>
         <el-checkbox v-model="form.remember">{{ t('auth.remember') }}</el-checkbox>
-        <el-button class="login-submit" type="primary" native-type="submit" :loading="busy">{{
+        <el-button class="login-submit" type="primary" native-type="submit" :loading="busy" :disabled="busy || !branding.passwordEnabled">{{
           t('auth.signIn')
         }}</el-button>
       </el-form>
     </el-card>
-    <BrandingFooter class="login-footer" />
-  </div>
+    <template #footer><BrandingFooter /></template>
+  </TenantLoginLayout>
 </template>

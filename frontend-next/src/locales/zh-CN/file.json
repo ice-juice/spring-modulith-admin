@@ -17,5 +17,6 @@
   "uploadHint": "单个文件不超过 20 MiB",
   "preview": "预览",
   "remove": "移除附件",
-  "tooLarge": "文件大小不能超过 20 MiB"
+  "tooLarge": "文件大小不能超过 20 MiB",
+  "selectExisting": "选择已有文件"
 }
