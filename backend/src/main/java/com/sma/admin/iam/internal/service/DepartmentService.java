@@ -18,20 +18,30 @@ public class DepartmentService {
     private final List<OrganizationReference> references;
     private final ApplicationEventPublisher events;
     private final StructureGuard guard;
-    public DepartmentService(DepartmentMapper mapper, List<OrganizationReference> references, ApplicationEventPublisher events, StructureGuard guard) {
+    private final IamDisplayCaches cache;
+    public DepartmentService(DepartmentMapper mapper, List<OrganizationReference> references, ApplicationEventPublisher events, StructureGuard guard, IamDisplayCaches cache) {
         this.mapper = mapper; this.references = references; this.events = events;
         this.guard = guard;
+        this.cache = cache;
     }
     public record Input(Long parentId, @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 128) String name,
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Pattern(regexp = "[A-Za-z][A-Za-z0-9_-]{0,63}") String code,
             @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Min(0) Integer sort,
             @jakarta.validation.constraints.NotNull Boolean enabled) {}
     public record View(Long id, Long parentId, String name, String code, String path, int sort, boolean enabled) {}
+    public record DisplaySnapshot(List<View> rows) { public DisplaySnapshot { rows=List.copyOf(rows); } }
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
     public List<View> list(String keyword) {
+        String term=keyword==null||keyword.isBlank()?"":keyword;
+        return cache.get(IamDisplayCaches.DEPARTMENTS,cache.departmentScope()+":"+term.length()+":"+term,
+                DisplaySnapshot.class,()->new DisplaySnapshot(loadList(keyword))).rows();
+    }
+    private List<View> loadList(String keyword) {
         var query = new LambdaQueryWrapper<DepartmentEntity>().orderByAsc(DepartmentEntity::getSort).orderByAsc(DepartmentEntity::getId);
         if (keyword != null && !keyword.isBlank()) query.and(q -> q.like(DepartmentEntity::getName, keyword).or().like(DepartmentEntity::getCode, keyword));
         return mapper.selectList(query).stream().map(this::view).toList();
     }
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
     public List<TreeNode> tree(boolean enabledOnly) {
         var rows = list(null).stream().filter(row -> !enabledOnly || row.enabled()).toList();
         return Trees.build(rows, View::id, View::parentId, View::name, row -> !row.enabled());
@@ -76,6 +86,7 @@ public class DepartmentService {
                 }
             }
         } catch (DuplicateKeyException ex) { throw new BizException(IamErrorCode.DUPLICATE_CODE); }
+        cache.invalidate(IamDisplayCaches.DEPARTMENTS);
         events.publishEvent(new DepartmentChangedEvent(CurrentUser.tenantId(), entity.getId(), id == null ? "create" : "update"));
         return view(entity);
     }
@@ -88,6 +99,7 @@ public class DepartmentService {
         if (mapper.selectCount(new LambdaQueryWrapper<DepartmentEntity>().eq(DepartmentEntity::getParentId, id)) > 0) throw new BizException(IamErrorCode.HAS_CHILDREN);
         if (references.stream().anyMatch(guard -> guard.departmentUsed(id))) throw new BizException(IamErrorCode.REFERENCED);
         mapper.deleteById(id);
+        cache.invalidate(IamDisplayCaches.DEPARTMENTS);
         events.publishEvent(new DepartmentChangedEvent(CurrentUser.tenantId(), id, "delete"));
     }
     private View view(DepartmentEntity entity) {

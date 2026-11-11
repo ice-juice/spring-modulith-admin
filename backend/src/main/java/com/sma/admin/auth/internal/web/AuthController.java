@@ -8,7 +8,9 @@ import com.sma.admin.common.security.*;
 import com.sma.admin.auth.internal.service.*;
 
 @RestController @RequestMapping("/api/auth")
-public class AuthController {
+@com.sma.admin.common.request.GovernedApi(group="auth.sessions",ownResource=true,mode=com.sma.admin.common.request.GovernedApi.Mode.NATIVE,reason="Native sessions and anonymous login throttle; no credential replay")
+public class AuthController implements com.sma.admin.common.request.RequestAuthorizer {
+    @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){com.sma.admin.common.security.CurrentUser.require();}
     private final SessionService sessions;
     private final CaptchaService captchas;
     private final LoginThrottle throttle;
@@ -20,7 +22,8 @@ public class AuthController {
             @NotBlank @Pattern(regexp="[a-z][a-z0-9-]{0,31}") String portal,@Size(max=64) String captchaId,
             @Size(max=8) String captcha,boolean remember) {}
     @PostMapping("/login") @PermitAnonymous
-    public ApiResponse<SessionService.LoginResult> login(@Valid @RequestBody Login input,HttpServletRequest request) {
+    public ApiResponse<SessionService.LoginResult> login(@Valid @RequestBody Login input,HttpServletRequest request,jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control","no-store");
         return ApiResponse.ok(sessions.login(input.username(),input.password(),input.portal(),input.captchaId(),input.captcha(),input.remember(),request.getRemoteAddr(),request.getHeader("User-Agent")));
     }
     @GetMapping("/me") @PermitLoggedIn

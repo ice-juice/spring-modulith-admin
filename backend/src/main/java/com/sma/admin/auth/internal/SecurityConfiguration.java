@@ -42,7 +42,8 @@ class SecurityConfiguration {
 						.accessDeniedHandler((request, response, e) -> errors.write(request, response, CommonErrorCode.FORBIDDEN)))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/actuator/health/**", "/actuator/info", "/error").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/captcha", "/api/config/parameters/public").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/login-challenges/verify", "/api/auth/captcha").permitAll()
+                        .requestMatchers(TokenAuthenticationFilter::publicTenantRead).permitAll()
                         // Handshake validates a one-use ticket bound to a live session before upgrade.
                         .requestMatchers("/api/message/ws").permitAll()
 						.anyRequest().authenticated())

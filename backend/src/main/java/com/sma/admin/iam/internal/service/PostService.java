@@ -17,8 +17,10 @@ public class PostService {
     private final PostMapper mapper;
     private final List<OrganizationReference> references;
     private final StructureGuard guard;
-    public PostService(PostMapper mapper, List<OrganizationReference> references, StructureGuard guard) {
+    private final IamDisplayCaches cache;
+    public PostService(PostMapper mapper, List<OrganizationReference> references, StructureGuard guard, IamDisplayCaches cache) {
         this.mapper = mapper; this.references = references; this.guard = guard;
+        this.cache=cache;
     }
     public record Input(@NotBlank @Size(max = 128) String name,
             @NotBlank @Pattern(regexp = "[A-Za-z][A-Za-z0-9_-]{0,63}") String code,
@@ -28,8 +30,11 @@ public class PostService {
         var query = query(keyword, enabled);
         return PageResult.of(mapper.selectPage(page.toPage(Map.of("name","name","code","code","sort","sort","createdAt","created_at")), query), this::view);
     }
+    public record OptionsSnapshot(List<OptionItem> rows) { public OptionsSnapshot { rows=List.copyOf(rows); } }
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
     public List<OptionItem> options() {
-        return mapper.selectList(query(null, true)).stream().map(row -> new OptionItem(row.getId(), row.getName(), false)).toList();
+        return cache.get(IamDisplayCaches.POSTS,"enabled",OptionsSnapshot.class,()->new OptionsSnapshot(
+                mapper.selectList(query(null, true)).stream().map(row -> new OptionItem(row.getId(), row.getName(), false)).toList())).rows();
     }
     public PostEntity require(long id) {
         var row = mapper.selectById(id);
@@ -44,6 +49,7 @@ public class PostService {
         row.setEnabled(input.enabled()); row.setDescription(input.description());
         try { if (id == null) mapper.insert(row); else mapper.updateById(row); }
         catch (DuplicateKeyException ex) { throw new BizException(IamErrorCode.DUPLICATE_CODE); }
+        cache.invalidate(IamDisplayCaches.POSTS);
         return view(row);
     }
     @Transactional
@@ -51,6 +57,7 @@ public class PostService {
         guard.lock(); require(id);
         if (references.stream().anyMatch(ref -> ref.postUsed(id))) throw new BizException(IamErrorCode.REFERENCED);
         mapper.deleteById(id);
+        cache.invalidate(IamDisplayCaches.POSTS);
     }
     private LambdaQueryWrapper<PostEntity> query(String keyword, Boolean enabled) {
         var query = new LambdaQueryWrapper<PostEntity>().orderByAsc(PostEntity::getSort).orderByAsc(PostEntity::getId);

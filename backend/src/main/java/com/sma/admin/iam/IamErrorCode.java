@@ -10,7 +10,9 @@ public enum IamErrorCode implements ErrorCode {
     DISABLED_PARENT("iam.error.disabled-parent"),
     PROTECTED_USER("iam.error.protected-user"),
     INVALID_PASSWORD("iam.error.invalid-password"),
-    WEAK_PASSWORD("iam.error.weak-password");
+    WEAK_PASSWORD("iam.error.weak-password"),
+    PASSWORD_FORMAT("iam.error.password-format"),
+    PASSWORD_CONFLICT("iam.error.password-conflict");
     private final String key;
     IamErrorCode(String key) { this.key = key; }
     @Override public String key() { return key; }

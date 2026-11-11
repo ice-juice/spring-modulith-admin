@@ -9,7 +9,13 @@ import com.sma.admin.common.security.RequiresPermission;
 import com.sma.admin.iam.internal.service.RolePermissionService;
 
 @RestController @RequestMapping("/api/iam/roles")
-public class RolePermissionController {
+@com.sma.admin.common.request.GovernedApi(group="iam.roles")
+public class RolePermissionController implements com.sma.admin.common.request.RequestAuthorizer {
+    @Override public void authorizeRequest(String method,java.util.Map<String,String> variables) {
+        // The receipt is actor-owned metadata; domain reads and writes retain their
+        // current tenant, portal, data-scope and object authorization in the service.
+        com.sma.admin.common.security.CurrentUser.require();
+    }
     private final RolePermissionService service;
     public RolePermissionController(RolePermissionService service) { this.service=service; }
     public record Grant(@NotNull @Size(max=2000) Set<@NotNull Long> permissionIds) {}

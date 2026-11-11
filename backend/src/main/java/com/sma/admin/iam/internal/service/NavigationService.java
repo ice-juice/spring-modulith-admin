@@ -17,13 +17,23 @@ public class NavigationService implements NavigationQuery {
     private final PermissionService permissions;
     private final I18nTextMapper texts;
     private final StructureGuard guard;
-    public NavigationService(NavigationMapper mapper,NavigationMenuMapper menus,PermissionService permissions,I18nTextMapper texts,StructureGuard guard) {
+    private final IamDisplayCaches cache;
+    public NavigationService(NavigationMapper mapper,NavigationMenuMapper menus,PermissionService permissions,I18nTextMapper texts,StructureGuard guard,IamDisplayCaches cache) {
         this.mapper=mapper; this.menus=menus; this.permissions=permissions; this.texts=texts; this.guard=guard;
+        this.cache=cache;
     }
     public record Input(@NotBlank @Size(max=128) String name,@Size(max=64) String icon,@NotNull @Min(0) Integer sort,@NotNull Boolean enabled,
             @NotNull @Size(max=200) Set<@NotNull Long> menuIds,Map<String,String> translations) {}
-    public record View(Long id,String name,String defaultName,String icon,int sort,boolean enabled,Set<Long> menuIds,Map<String,String> translations) {}
+    public record View(Long id,String name,String defaultName,String icon,int sort,boolean enabled,Set<Long> menuIds,Map<String,String> translations) {
+        public View { menuIds=Set.copyOf(menuIds); translations=Map.copyOf(translations); }
+    }
+    public record DisplaySnapshot(List<View> rows) { public DisplaySnapshot { rows=List.copyOf(rows); } }
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
     public List<View> list() {
+        return cache.get(IamDisplayCaches.NAVIGATION,LocaleContextHolder.getLocale().toLanguageTag(),DisplaySnapshot.class,
+                ()->new DisplaySnapshot(loadList())).rows();
+    }
+    private List<View> loadList() {
         var rows=mapper.selectList(new LambdaQueryWrapper<NavigationEntity>().eq(NavigationEntity::getPortal,CurrentUser.portal())
                 .orderByAsc(NavigationEntity::getSort).orderByAsc(NavigationEntity::getId));
         return rows.stream().map(this::view).toList();
@@ -50,13 +60,16 @@ public class NavigationService implements NavigationQuery {
             var translation=new I18nTextEntity(); translation.setEntityType("navigation"); translation.setEntityId(row.getId());
             translation.setField("name"); translation.setLocale(locale); translation.setText(text); texts.insert(translation);
         });
+        cache.invalidate(IamDisplayCaches.NAVIGATION);
         return view(row);
     }
     @Transactional public void delete(long id) {
         guard.lock(); require(id); mapper.deleteById(id);
         menus.delete(new LambdaQueryWrapper<NavigationMenuEntity>().eq(NavigationMenuEntity::getNavigationId,id)); texts.delete(textQuery(id));
+        cache.invalidate(IamDisplayCaches.NAVIGATION);
     }
-    @Override public List<NavigationView> visible(Set<Long> menuIds) {
+    @Override @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
+    public List<NavigationView> visible(Set<Long> menuIds) {
         return list().stream().filter(View::enabled).map(row -> new NavigationView(row.id(),row.name(),row.icon(),
                 row.menuIds().stream().filter(menuIds::contains).collect(java.util.stream.Collectors.toSet()))).filter(row -> !row.menuIds().isEmpty()).toList();
     }

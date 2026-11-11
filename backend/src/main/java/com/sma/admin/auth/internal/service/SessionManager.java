@@ -18,8 +18,11 @@ public class SessionManager {
     private final AccountQuery accounts;
     private final ApplicationEventPublisher events;
     private final LoginThrottle throttle;
-    public SessionManager(SessionMapper mapper,AccountQuery accounts,ApplicationEventPublisher events,LoginThrottle throttle) {
-        this.mapper=mapper; this.accounts=accounts; this.events=events; this.throttle=throttle;
+    private final SessionValidity validity;
+    private final SecurityRateLimit limits;
+    private final AccountSecurityStore security;
+    public SessionManager(SessionMapper mapper,AccountQuery accounts,ApplicationEventPublisher events,LoginThrottle throttle,SessionValidity validity,SecurityRateLimit limits,AccountSecurityStore security) {
+        this.mapper=mapper; this.accounts=accounts; this.events=events; this.throttle=throttle;this.validity=validity;this.limits=limits;this.security=security;
     }
     public record View(Long id,Long userId,String username,String name,String portal,String ip,String userAgent,
             Instant createdAt,Instant lastSeenAt,Instant expiresAt,boolean locked,boolean current) {}
@@ -45,22 +48,36 @@ public class SessionManager {
     }
     @Transactional public void logout(long sessionId) { end(owned(sessionId),"LOGOUT"); }
     @Transactional public void lock(long sessionId) {
-        var row=owned(sessionId); row.setLocked(true); mapper.updateById(row);
+        var row=owned(sessionId);
+        if(mapper.lockSession(row.getId(),row.getUserId(),row.getPortal())!=1)throw new BizException(CommonErrorCode.UNAUTHORIZED);
     }
     @Transactional public void unlock(long sessionId,String password,String ip) {
-        var row=owned(sessionId);
+        security.lock(CurrentUser.userId(),CurrentUser.portal());
+        var row=owned(sessionId,true);
+        if(!validity.valid(row,true))throw new BizException(CommonErrorCode.UNAUTHORIZED);
+        if(!row.getLocked())return;
+        limits.claim("UNLOCK_ACCOUNT",row.getPortal()+":"+row.getUserId(),5,Duration.ofMinutes(5));
         String key=throttle.key(ip,"unlock:"+row.getUserId());
         throttle.check(key);
         if(!accounts.matchesPassword(row.getUserId(),password)) { throttle.fail(key); throw new BizException(AuthErrorCode.INVALID_CREDENTIALS); }
-        throttle.success(key); row.setLocked(false); row.setLastSeenAt(Instant.now()); mapper.updateById(row);
+        throttle.success(key);
+        if(mapper.unlockSession(row.getId(),row.getUserId(),row.getPortal())!=1)throw new BizException(CommonErrorCode.UNAUTHORIZED);
     }
     private SessionEntity owned(long id) {
-        var row=require(id);
+        return owned(id,false);
+    }
+    private SessionEntity owned(long id,boolean locking) {
+        var row=require(id,locking);
         if(row.getUserId()!=CurrentUser.require().userId()) throw new AccessDeniedException("Not your session");
         return row;
     }
     private SessionEntity require(long id) {
-        var row=mapper.selectOne(new LambdaQueryWrapper<SessionEntity>().eq(SessionEntity::getId,id).eq(SessionEntity::getPortal,CurrentUser.portal()));
+        return require(id,false);
+    }
+    private SessionEntity require(long id,boolean locking) {
+        var query=new LambdaQueryWrapper<SessionEntity>().eq(SessionEntity::getId,id).eq(SessionEntity::getPortal,CurrentUser.portal());
+        if(locking)query.last("FOR UPDATE");
+        var row=mapper.selectOne(query);
         if(row==null) throw new BizException(CommonErrorCode.DATA_NOT_FOUND); return row;
     }
     private void end(SessionEntity row,String reason) {

@@ -9,7 +9,13 @@ import com.sma.admin.iam.internal.service.DepartmentService;
 
 @RestController
 @RequestMapping("/api/iam/departments")
-public class DepartmentController {
+@com.sma.admin.common.request.GovernedApi(group="iam.departments")
+public class DepartmentController implements com.sma.admin.common.request.RequestAuthorizer {
+    @Override public void authorizeRequest(String method,java.util.Map<String,String> variables) {
+        // The receipt is actor-owned metadata; domain reads and writes retain their
+        // current tenant, portal, data-scope and object authorization in the service.
+        com.sma.admin.common.security.CurrentUser.require();
+    }
     private final DepartmentService service;
     public DepartmentController(DepartmentService service) { this.service = service; }
     @GetMapping @RequiresPermission("iam:department:view")

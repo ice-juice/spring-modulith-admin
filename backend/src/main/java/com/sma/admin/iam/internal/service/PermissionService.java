@@ -23,9 +23,15 @@ public class PermissionService {
     private final MessageSource messages;
     private final ApplicationEventPublisher events;
     private final List<OrganizationReference> references;
-    public PermissionService(PermissionMapper mapper,I18nTextMapper translations,StructureGuard guard,MessageSource messages,ApplicationEventPublisher events,List<OrganizationReference> references) {
+    private final RolePermissionMapper rolePermissions;
+    private final NavigationMenuMapper navigationMenus;
+    private final IamDisplayCaches cache;
+    public PermissionService(PermissionMapper mapper,I18nTextMapper translations,StructureGuard guard,MessageSource messages,ApplicationEventPublisher events,List<OrganizationReference> references,
+            RolePermissionMapper rolePermissions,NavigationMenuMapper navigationMenus,IamDisplayCaches cache) {
         this.mapper=mapper; this.translations=translations; this.guard=guard; this.messages=messages; this.events=events;
         this.references=references;
+        this.rolePermissions=rolePermissions; this.navigationMenus=navigationMenus;
+        this.cache=cache;
     }
     public record Input(Long parentId, @NotBlank @Pattern(regexp="[a-z]+(:[a-z][a-z0-9-]*){1,3}") String permissionKey,
             @NotBlank @Size(max=128) String name, @Size(max=256) String nameKey,
@@ -36,16 +42,25 @@ public class PermissionService {
             @NotNull Boolean superAdminDefault, Map<String,String> translations) {}
     public record View(Long id,Long parentId,String portal,String permissionKey,String name,String defaultName,String nameKey,
             String type,String path,String icon,String openMode,int sort,boolean enabled,boolean hidden,boolean builtin,
-            boolean superAdminDefault,Map<String,String> translations,List<View> children) {}
+            boolean superAdminDefault,Map<String,String> translations,List<View> children) {
+        public View { translations=Map.copyOf(translations); children=List.copyOf(children); }
+    }
 
     public List<PermissionEntity> entities() {
         return mapper.selectList(inPortal().orderByAsc(PermissionEntity::getSort).orderByAsc(PermissionEntity::getId));
     }
+    public record DisplaySnapshot(List<View> rows) { public DisplaySnapshot { rows=List.copyOf(rows); } }
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
     public List<View> list() {
+        return cache.get(IamDisplayCaches.PERMISSIONS,LocaleContextHolder.getLocale().toLanguageTag(),DisplaySnapshot.class,
+                ()->new DisplaySnapshot(loadList())).rows();
+    }
+    private List<View> loadList() {
         String locale = LocaleContextHolder.getLocale().toLanguageTag();
         var localized = translationMap();
         return entities().stream().map(row -> view(row,localized.getOrDefault(row.getId(),Map.of()),locale,List.of())).toList();
     }
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.SUPPORTS,readOnly=true)
     public List<View> tree() {
         var rows=list();
         Map<Long,List<View>> children=new HashMap<>();
@@ -93,6 +108,7 @@ public class PermissionService {
             var translation=new I18nTextEntity(); translation.setEntityType("permission"); translation.setEntityId(row.getId());
             translation.setField("name"); translation.setLocale(locale); translation.setText(text); translations.insert(translation);
         });
+        cache.invalidate(IamDisplayCaches.PERMISSIONS);
         events.publishEvent(new PermissionChangedEvent(CurrentUser.tenantId(),CurrentUser.portal(),null,"resource"));
         return view(row,texts,LocaleContextHolder.getLocale().toLanguageTag(),List.of());
     }
@@ -103,6 +119,7 @@ public class PermissionService {
         if (references.stream().anyMatch(ref -> ref.permissionUsed(id))) throw new BizException(IamErrorCode.REFERENCED);
         if (mapper.selectCount(inPortal().eq(PermissionEntity::getParentId,id))>0) throw new BizException(IamErrorCode.HAS_CHILDREN);
         mapper.deleteById(id); translations.delete(translationQuery(id));
+        cache.invalidate(IamDisplayCaches.PERMISSIONS);
         events.publishEvent(new PermissionChangedEvent(CurrentUser.tenantId(),CurrentUser.portal(),null,"resource"));
     }
     /** Adds declarations and upgrades untouched auto-discovered logic labels, preserving administrator overrides. */
@@ -115,6 +132,39 @@ public class PermissionService {
             if (!CurrentUser.portal().equals(spec.portal())) continue;
             var existing=known.get(spec.key());
             if (existing!=null) {
+                // Root catalog resources can move into a directory, including old pathless buttons
+                // whose page has become available. Preserve custom parents and every leaf grant.
+                boolean menuPromotion = "BUTTON".equals(existing.getType()) && "MENU".equals(spec.type())
+                        && (existing.getPath()==null || existing.getPath().isBlank()) && spec.path()!=null
+                        && spec.path().startsWith("/") && !spec.path().startsWith("//");
+                boolean unchangedResource = Objects.equals(existing.getType(),spec.type())
+                        && Set.of("MENU","BUTTON").contains(existing.getType()) && Objects.equals(existing.getPath(),spec.path());
+                if (Boolean.TRUE.equals(existing.getBuiltin()) && (menuPromotion || unchangedResource)
+                        && Objects.equals(existing.getParentId(),0L)
+                        && spec.parentKey()!=null && spec.nameKey()!=null
+                        && Objects.equals(existing.getNameKey(),spec.nameKey())
+                        && "ROUTE".equals(existing.getOpenMode())) {
+                    var parent=known.get(spec.parentKey());
+                    if(parent==null) throw new IllegalStateException("Unknown permission parent: "+spec.parentKey());
+                    if ("DIRECTORY".equals(parent.getType()) && Objects.equals(parent.getParentId(),0L)) {
+                        if (menuPromotion) {
+                            existing.setType("MENU"); existing.setPath(spec.path());
+                            if (existing.getIcon()==null || existing.getIcon().isBlank()) existing.setIcon(spec.icon());
+                        }
+                        moveRootMenu(existing,parent);
+                    }
+                }
+                // Promote a previously cataloged pathless action to its now available root menu.
+                // Only the builtin's catalog-owned route/type change; customized display, flags and grants survive.
+                if (Boolean.TRUE.equals(existing.getBuiltin()) && "BUTTON".equals(existing.getType())
+                        && "MENU".equals(spec.type()) && spec.path()!=null && spec.path().startsWith("/") && !spec.path().startsWith("//")
+                        && spec.parentKey()==null && Objects.equals(existing.getParentId(),0L)
+                        && (existing.getPath()==null || existing.getPath().isBlank()) && "ROUTE".equals(existing.getOpenMode())
+                        && spec.nameKey()!=null && Objects.equals(existing.getNameKey(),spec.nameKey())) {
+                    existing.setType("MENU"); existing.setPath(spec.path());
+                    if (existing.getIcon()==null || existing.getIcon().isBlank()) existing.setIcon(spec.icon());
+                    mapper.updateById(existing);
+                }
                 // Older versions auto-discovered these actions at the root with the key as their name.
                 // Keep IDs/grants, translations, switches and sorting. Never overwrite a customized label or parent.
                 if (Boolean.TRUE.equals(existing.getBuiltin()) && "LOGIC".equals(existing.getType())
@@ -136,6 +186,32 @@ public class PermissionService {
             row.setName(spec.defaultName()); row.setNameKey(spec.nameKey()); row.setType(spec.type()); row.setPath(spec.path());
             row.setIcon(spec.icon()); row.setSort(spec.sort()); row.setOpenMode("ROUTE"); row.setEnabled(true); row.setHidden(false);
             row.setBuiltin(true); row.setSuperAdminDefault(spec.superAdminDefault()); mapper.insert(row); known.put(spec.key(),row);
+        }
+        cache.invalidate(IamDisplayCaches.PERMISSIONS);
+        cache.invalidate(IamDisplayCaches.NAVIGATION);
+    }
+    private void moveRootMenu(PermissionEntity menu,PermissionEntity parent) {
+        menu.setParentId(parent.getId()); mapper.updateById(menu);
+        // Existing role grants need the new navigation ancestor, never a new leaf privilege.
+        var grants=rolePermissions.selectList(new LambdaQueryWrapper<RolePermissionEntity>()
+                .eq(RolePermissionEntity::getPermissionId,menu.getId()));
+        for(var grant:grants) {
+            var query=new LambdaQueryWrapper<RolePermissionEntity>().eq(RolePermissionEntity::getRoleId,grant.getRoleId())
+                    .eq(RolePermissionEntity::getPermissionId,parent.getId());
+            if(rolePermissions.selectCount(query)==0) {
+                var ancestor=new RolePermissionEntity(); ancestor.setRoleId(grant.getRoleId());
+                ancestor.setPermissionId(parent.getId()); rolePermissions.insert(ancestor);
+            }
+        }
+        // Navigation groups only store root entries. Keep the group linked after the move.
+        var links=navigationMenus.selectList(new LambdaQueryWrapper<NavigationMenuEntity>()
+                .eq(NavigationMenuEntity::getPermissionId,menu.getId()));
+        for(var link:links) {
+            var query=new LambdaQueryWrapper<NavigationMenuEntity>().eq(NavigationMenuEntity::getNavigationId,link.getNavigationId())
+                    .eq(NavigationMenuEntity::getPermissionId,parent.getId());
+            if(navigationMenus.selectCount(query)==0) {
+                link.setPermissionId(parent.getId()); navigationMenus.updateById(link);
+            } else navigationMenus.deleteById(link.getId());
         }
     }
     private View branch(View row,Map<Long,List<View>> children) {

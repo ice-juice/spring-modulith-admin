@@ -65,7 +65,13 @@ public class RolePermissionService implements PermissionQuery {
         Map<Long,List<PermissionService.View>> children=new HashMap<>();
         permissions.list().stream().filter(row -> visible.contains(row.id())&&!row.hidden()&&Set.of("DIRECTORY","MENU").contains(row.type()))
                 .forEach(row -> children.computeIfAbsent(row.parentId(),key -> new ArrayList<>()).add(row));
-        return children.getOrDefault(0L,List.of()).stream().map(row -> menu(row,children)).toList();
+        return children.getOrDefault(0L,List.of()).stream().map(row -> menu(row,children)).filter(Objects::nonNull).toList();
+    }
+    @Override
+    public Map<String,String> icons(Set<Long> roleIds,boolean superAdmin) {
+        return granted(roleIds,superAdmin).stream()
+                .filter(row -> row.getIcon()!=null&&!row.getIcon().isBlank())
+                .collect(java.util.stream.Collectors.toUnmodifiableMap(PermissionEntity::getPermissionKey,PermissionEntity::getIcon));
     }
     private List<PermissionEntity> granted(Set<Long> roleIds,boolean superAdmin) {
         var catalog=permissions.entities();
@@ -88,7 +94,9 @@ public class RolePermissionService implements PermissionQuery {
         return false;
     }
     private MenuView menu(PermissionService.View row,Map<Long,List<PermissionService.View>> children) {
+        var nested=children.getOrDefault(row.id(),List.of()).stream().map(child -> menu(child,children)).filter(Objects::nonNull).toList();
+        if ("DIRECTORY".equals(row.type()) && nested.isEmpty()) return null;
         return new MenuView(row.id(),row.parentId(),row.name(),row.path(),row.icon(),row.permissionKey(),row.type(),row.openMode(),
-                children.getOrDefault(row.id(),List.of()).stream().map(child -> menu(child,children)).toList());
+                nested);
     }
 }

@@ -7,4 +7,5 @@ import lombok.Setter;
 @Getter @Setter @TableName("auth_captcha")
 public class CaptchaEntity extends TenantEntity {
     private String challengeId; private String answerHash; private Instant expiresAt;
+    private Long tenantSecurityGeneration; private String portal;
 }

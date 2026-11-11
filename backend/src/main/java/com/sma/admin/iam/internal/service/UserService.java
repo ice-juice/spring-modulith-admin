@@ -29,12 +29,18 @@ public class UserService implements AccountQuery {
     private final StructureGuard guard;
     private final PasswordEncoder passwords;
     private final ApplicationEventPublisher events;
+    private final LoginPasswordPolicy passwordPolicy;
+    private final List<AccountPasswordPolicy> credentialPolicies;
+    private final IamDisplayCaches displayCaches;
     public UserService(UserMapper mapper,AccountMapper accounts,UserRoleMapper userRoles,UserPostMapper userPosts,
             DepartmentService departments,RoleService roles,PostService posts,RolePermissionService grants,
-            StructureGuard guard,PasswordEncoder passwords,ApplicationEventPublisher events) {
+            StructureGuard guard,PasswordEncoder passwords,ApplicationEventPublisher events,LoginPasswordPolicy passwordPolicy,List<AccountPasswordPolicy> credentialPolicies,IamDisplayCaches displayCaches) {
         this.mapper=mapper; this.accounts=accounts; this.userRoles=userRoles; this.userPosts=userPosts;
         this.departments=departments; this.roles=roles; this.posts=posts; this.grants=grants; this.guard=guard;
         this.passwords=passwords; this.events=events;
+        this.passwordPolicy=passwordPolicy;this.credentialPolicies=List.copyOf(credentialPolicies);
+        this.displayCaches=displayCaches;
+        if(credentialPolicies.isEmpty())throw new IllegalStateException("Account password policy extension is required");
     }
     public record Input(@NotBlank @Pattern(regexp="[A-Za-z0-9][A-Za-z0-9_.@-]{1,63}") String username,
             @NotBlank @Size(max=128) String name,Long departmentId,@Email @Size(max=254) String email,
@@ -50,7 +56,7 @@ public class UserService implements AccountQuery {
     }
     public PageResult<View> page(PageQuery page,String keyword,Long departmentId,Boolean enabled,Long roleId,Long postId) {
         var paging=page.<UserEntity>toPage(Map.of("username","username","name","name","createdAt","created_at"));
-        var query=new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getPortal,CurrentUser.portal()).orderByDesc(UserEntity::getId);
+        var query=new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getPortal,CurrentUser.portal()).orderByDesc(UserEntity::getCreatedAt).orderByDesc(UserEntity::getId);
         if(keyword!=null&&!keyword.isBlank()) query.and(q -> q.like(UserEntity::getUsername,keyword).or().like(UserEntity::getName,keyword));
         if(departmentId!=null) query.eq(UserEntity::getDeptId,departmentId);
         if(enabled!=null) query.eq(UserEntity::getEnabled,enabled);
@@ -77,7 +83,8 @@ public class UserService implements AccountQuery {
         row.setEmail(input.email()); row.setMobile(input.mobile()); row.setGender(input.gender()); row.setEnabled(input.enabled());
         row.setLocale(input.locale()); row.setTimeZone(input.timeZone());
         if(id==null) {
-            row.setSuperAdmin(false); row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(0L);
+            row.setId(com.baomidou.mybatisplus.core.toolkit.IdWorker.getId());
+            row.setSuperAdmin(false); row.setPasswordHash(hash(row,password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(0L);
         }
         else row.setCredentialVersion(row.getCredentialVersion()+1);
         try { if(id==null) mapper.insert(row); else mapper.updateById(row); }
@@ -86,6 +93,7 @@ public class UserService implements AccountQuery {
         for(long roleId:input.roleIds()) { var relation=new UserRoleEntity(); relation.setUserId(row.getId()); relation.setRoleId(roleId); userRoles.insert(relation); }
         userPosts.delete(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getUserId,row.getId()));
         for(long postId:input.postIds()) { var relation=new UserPostEntity(); relation.setUserId(row.getId()); relation.setPostId(postId); userPosts.insert(relation); }
+        displayCaches.invalidate(IamDisplayCaches.USERS);
         events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),row.getId(),id==null?"create":"update",row.getCredentialVersion()));
         return view(row);
     }
@@ -110,27 +118,29 @@ public class UserService implements AccountQuery {
         mapper.deleteById(id);
         userRoles.delete(new LambdaQueryWrapper<UserRoleEntity>().eq(UserRoleEntity::getUserId,id));
         userPosts.delete(new LambdaQueryWrapper<UserPostEntity>().eq(UserPostEntity::getUserId,id));
+        displayCaches.invalidate(IamDisplayCaches.USERS);
         events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"delete",row.getCredentialVersion()));
     }
     @Transactional
     public void resetPassword(long id,String password) {
         guard.lock(); var row=require(id); protect(row);
-        row.setPasswordHash(hash(password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); mapper.updateById(row);
+        row.setPasswordHash(hash(row,password)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); mapper.updateById(row);
         events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password",row.getCredentialVersion()));
     }
     @Transactional
     public void changeOwnPassword(String oldPassword,String newPassword) {
         long id=CurrentUser.require().userId();
-        guard.lock(); var row=accounts.selectById(id);
+        guard.lock(); var row=accounts.selectOne(new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getId,id).last("FOR UPDATE"));
         if(row==null||!passwords.matches(oldPassword,row.getPasswordHash())) throw new BizException(IamErrorCode.INVALID_PASSWORD);
-        row.setPasswordHash(hash(newPassword)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); accounts.updateById(row);
+        row.setPasswordHash(hash(row,newPassword)); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(row.getCredentialVersion()+1); accounts.updateById(row);
         events.publishEvent(new UserChangedEvent(CurrentUser.tenantId(),id,"password",row.getCredentialVersion()));
     }
     private void protect(UserEntity row) {
         if(row.getSuperAdmin()||row.getId()==CurrentUser.userId()) throw new BizException(IamErrorCode.PROTECTED_USER);
     }
-    private String hash(String password) {
-        if(password==null||password.length()<12||password.getBytes(StandardCharsets.UTF_8).length>72) throw new BizException(IamErrorCode.WEAK_PASSWORD);
+    private String hash(UserEntity user,String password) {
+        passwordPolicy.validate(user.getUsername(),password);
+        credentialPolicies.forEach(policy->policy.validate(user.getId(),user.getPortal(),password));
         return passwords.encode(password);
     }
     @Override public Optional<AccountView> authenticate(String username,String password,String portal) {
@@ -164,6 +174,8 @@ public class UserService implements AccountQuery {
         if(accounts.selectCount(new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getPortal,"admin").eq(UserEntity::getSuperAdmin,true))>0) return;
         if(password==null||password.isBlank()) return;
         var row=new UserEntity(); row.setUsername("admin"); row.setName("Administrator"); row.setPortal("admin");
-        row.setPasswordHash(hash(password)); row.setEnabled(true); row.setSuperAdmin(true); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(0L); accounts.insert(row);
+        row.setId(com.baomidou.mybatisplus.core.toolkit.IdWorker.getId());
+        row.setPasswordHash(hash(row,password)); row.setEnabled(true); row.setSuperAdmin(true); row.setPasswordChangedAt(Instant.now()); row.setCredentialVersion(0L); accounts.insert(row);
+        displayCaches.invalidate(IamDisplayCaches.USERS);
     }
 }

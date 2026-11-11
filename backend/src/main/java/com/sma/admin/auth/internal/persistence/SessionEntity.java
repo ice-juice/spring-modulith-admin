@@ -9,4 +9,9 @@ public class SessionEntity extends TenantEntity {
     private Long userId; private String portal; private String tokenHash;
     private Instant expiresAt; private Instant lastSeenAt; private String ip; private String userAgent; private Boolean locked;
     private Long credentialVersion;
+    private Long securityVersion;
+    private Long tenantSecurityGeneration;
+    private String authenticationMethod;
+    private Instant passwordVerifiedAt;
+    private Instant mfaVerifiedAt;
 }

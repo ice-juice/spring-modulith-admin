@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 @Service @Transactional(readOnly=true)
 public class ProfileService {
- private final AccountMapper accounts;private final FileQuery files;
- public ProfileService(AccountMapper accounts,FileQuery files){this.accounts=accounts;this.files=files;}
+ private final AccountMapper accounts;private final FileQuery files;private final IamDisplayCaches displayCaches;
+ public ProfileService(AccountMapper accounts,FileQuery files,IamDisplayCaches displayCaches){this.accounts=accounts;this.files=files;this.displayCaches=displayCaches;}
  public record Input(@NotBlank @Size(max=128) String name,@Email @Size(max=254) String email,
   @Size(max=32) String mobile,@Pattern(regexp="MALE|FEMALE|UNSPECIFIED") String gender,Long avatarFileId){}
  public record View(Long id,String username,String name,String email,String mobile,String gender,Long avatarFileId){}
@@ -24,7 +24,8 @@ public class ProfileService {
   accounts.update(null,new LambdaUpdateWrapper<UserEntity>().eq(UserEntity::getId,row.getId()).eq(UserEntity::getPortal,CurrentUser.portal())
    .set(UserEntity::getName,row.getName()).set(UserEntity::getEmail,row.getEmail()).set(UserEntity::getMobile,row.getMobile())
    .set(UserEntity::getGender,row.getGender()).set(UserEntity::getAvatarFileId,row.getAvatarFileId())
-   .set(UserEntity::getUpdatedAt,java.time.Instant.now()).set(UserEntity::getUpdatedBy,CurrentUser.userId()));return view(row);
+   .set(UserEntity::getUpdatedAt,java.time.Instant.now()).set(UserEntity::getUpdatedBy,CurrentUser.userId()));
+  displayCaches.invalidate(IamDisplayCaches.USERS);return view(row);
  }
  private View view(UserEntity row){return new View(row.getId(),row.getUsername(),row.getName(),row.getEmail(),row.getMobile(),row.getGender(),row.getAvatarFileId());}
 }
