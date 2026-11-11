@@ -1,0 +1,9 @@
+[Unit]
+Description=Periodically refresh vulnerability data
+[Timer]
+OnBootSec=10s
+OnUnitInactiveSec=3h
+RandomizedDelaySec=1m
+Unit=sma-extension-scan-update.service
+[Install]
+WantedBy=timers.target

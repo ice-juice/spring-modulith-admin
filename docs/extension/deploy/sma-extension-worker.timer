@@ -1,0 +1,9 @@
+[Unit]
+Description=Poll the release service for validation work
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=15s
+RandomizedDelaySec=3s
+Unit=sma-extension-worker.service
+[Install]
+WantedBy=timers.target

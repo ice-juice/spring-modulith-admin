@@ -1,0 +1,42 @@
+{
+  "scope": "P05 backend continuation",
+  "date": "2026-11-11",
+  "completeBackendObjective": false,
+  "productionReady": false,
+  "finalReactor": {
+    "result": "BUILD SUCCESS",
+    "log": "backend/target/extension-final-verify.log",
+    "commandArguments": ["verify", "-Dtest=*Tests,!RuleFlowTests", "-Dsurefire.failIfNoSpecifiedTests=false"],
+    "excludedTestClasses": ["com.sma.admin.rule.internal.service.RuleFlowTests"],
+    "passedTests": {"extension-protocol": 7, "extension-runtime": 8, "extension-worker": 5, "extension-security": 19, "backend": 140},
+    "totalTests": 179,
+    "failures": 0,
+    "errors": 0,
+    "allBackendArtifactsPackaged": true
+  },
+  "priorUnfilteredReactor": {
+    "result": "BUILD FAILURE",
+    "log": "backend/target/verify.log",
+    "backendTests": 147,
+    "backendErrors": 1,
+    "failedTest": "com.sma.admin.rule.internal.service.RuleFlowTests.olderFlowJsonWithoutNewOptionalFieldsRemainsExecutable",
+    "error": "RuleJson.read:23 INVALID_JSON",
+    "parallelRuleModuleModifiedByThisTask": false
+  },
+  "sdkExample": {
+    "path": "examples/extension-echo/target/example-extension-echo-1.0.0.jar",
+    "bytes": 2684,
+    "sha256": "69226fd1094944492e186cb2dbb2c0585aa8cc9d493278ac571564be5ba3982a",
+    "mavenPackageSucceeded": true,
+    "shadedContractProbeSucceeded": true,
+    "probeKind": "fixed trusted example executed locally for SDK verification",
+    "productionScanSucceeded": false
+  },
+  "realDockerExecutionVerified": false,
+  "realGrypeScanVerified": false,
+  "realHttpsMultiNodeDeploymentVerified": false,
+  "businessApplicationRestarted": false,
+  "testDatabase": "springboot_modulith_admin_test",
+  "securityWorkflowTestDatabase": "isolated H2 instances",
+  "remainingScopeDocument": "docs/extension/backend-status-2026-11-11.md"
+}

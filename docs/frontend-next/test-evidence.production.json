@@ -1,0 +1,67 @@
+{
+  "recordedAt": "2026-11-10T23:57:48.419Z",
+  "kind": "production",
+  "runner": "Playwright / installed Google Chrome / Windows",
+  "startedAt": "2026-11-10T23:56:21.804Z",
+  "durationMillis": 39150.371,
+  "passed": 9,
+  "failed": 0,
+  "lockSha256": "ef632ac1f0c702db3c811bc9d2868fff9e24716ad34be707ca9f5636273ebb52",
+  "measurements": [],
+  "tests": [
+    {
+      "file": "display-polish.spec.ts",
+      "title": "theme has its own entry; language and time zone share a separate entry and persist independently",
+      "status": "passed",
+      "durationMillis": 3902
+    },
+    {
+      "file": "display-polish.spec.ts",
+      "title": "sidebar, business navigation, workspace tabs and database tables use overlay scrollbars without losing scrolling",
+      "status": "passed",
+      "durationMillis": 3257
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "all existing business routes render at desktop and mobile without page errors, missing translations or document overflow",
+      "status": "passed",
+      "durationMillis": 14909
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "dictionary editing is independent of selecting its type and database filtering has an explicit empty state",
+      "status": "passed",
+      "durationMillis": 1608
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "SQL sorting sends the requested server ordering and document export produces a downloadable file",
+      "status": "passed",
+      "durationMillis": 1071
+    },
+    {
+      "file": "softlight-pages.spec.ts",
+      "title": "role workspace guards unsaved changes, retains failed writes and ignores late role responses",
+      "status": "passed",
+      "durationMillis": 1651
+    },
+    {
+      "file": "softlight-pages.spec.ts",
+      "title": "production login design keeps captcha, accessible forms, branding and both themes across widths",
+      "status": "passed",
+      "durationMillis": 4626
+    },
+    {
+      "file": "softlight-shell.spec.ts",
+      "title": "navigation groups replace the top row, keep nested authorized menus, restore and fall back safely",
+      "status": "passed",
+      "durationMillis": 3134
+    },
+    {
+      "file": "softlight-shell.spec.ts",
+      "title": "mobile navigation groups are reachable and selecting menus keeps navigation and work tabs independent",
+      "status": "passed",
+      "durationMillis": 2601
+    }
+  ]
+}

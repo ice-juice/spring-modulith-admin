@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-11T00:21:41.655Z",
+  "scope": "Actual admin layout with isolated mock data",
+  "before": {
+    "footerHeight": 67.65625,
+    "mainHeight": 720.34375
+  },
+  "after": {
+    "footerCount": 0,
+    "mainHeight": 788,
+    "brandPosition": "absolute",
+    "brandPointerEvents": "none",
+    "brandLayer": "0",
+    "mainLayer": "1",
+    "centerOffset": 0
+  },
+  "reclaimedHeight": 67.65625,
+  "longTable": {
+    "coveredByDataTable": true,
+    "brandBottom": 884,
+    "viewportHeight": 900
+  },
+  "mobileDarkNoOverflow": true
+}

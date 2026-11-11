@@ -1,0 +1,70 @@
+{
+  "version": "0.1.1",
+  "recordedAt": "2026-11-10T19:18:52.419Z",
+  "startedAt": "2026-11-10T19:15:10.020Z",
+  "passed": 10,
+  "failed": 0,
+  "scope": "Display entry separation, overlay scrolling, preference persistence, WCAG AA, representative layouts, all-route desktop/mobile regression",
+  "tests": [
+    {
+      "file": "accessibility.spec.ts",
+      "title": "representative pages satisfy automated WCAG AA checks in both themes and languages",
+      "status": "passed",
+      "durationMillis": 24210
+    },
+    {
+      "file": "accessibility.spec.ts",
+      "title": "viewport widths, 200 percent layout and keyboard modal focus remain usable",
+      "status": "passed",
+      "durationMillis": 5732
+    },
+    {
+      "file": "display-polish.spec.ts",
+      "title": "theme has its own entry; language and time zone share a separate entry and persist independently",
+      "status": "passed",
+      "durationMillis": 4852
+    },
+    {
+      "file": "display-polish.spec.ts",
+      "title": "sidebar, business navigation, workspace tabs and database tables use overlay scrollbars without losing scrolling",
+      "status": "passed",
+      "durationMillis": 4323
+    },
+    {
+      "file": "foundation.spec.ts",
+      "title": "design system: table, form validation, focus, theme, locale and responsive samples",
+      "status": "passed",
+      "durationMillis": 5506
+    },
+    {
+      "file": "operations.spec.ts",
+      "title": "profile drafts survive header preference changes; saved theme, language and tabs survive reload",
+      "status": "passed",
+      "durationMillis": 4110
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "all existing business routes render at desktop and mobile without page errors, missing translations or document overflow",
+      "status": "passed",
+      "durationMillis": 44270
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "dictionary editing is independent of selecting its type and database filtering has an explicit empty state",
+      "status": "passed",
+      "durationMillis": 2696
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "SQL sorting sends the requested server ordering and document export produces a downloadable file",
+      "status": "passed",
+      "durationMillis": 2116
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "423 opens the lock overlay and failed preference writes restore local appearance",
+      "status": "passed",
+      "durationMillis": 2235
+    }
+  ]
+}

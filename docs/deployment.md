@@ -21,13 +21,16 @@ node --test tools/openapi/client.test.mjs
 |---|---|
 | `DB_HOST` / `DB_PORT` / `DB_NAME` | MySQL 连接目标 |
 | `DB_USERNAME` / `DB_PASSWORD` | 业务库账号与口令；生产自行设置 |
-| `SMA_ADMIN_PASSWORD` | 首次初始化 `admin` 的至少 12 字符密码；已有管理员不覆盖，初始化后移除该环境变量 |
+| `SMA_ADMIN_PASSWORD` | P07 后首次初始化 `admin` 使用 8～12 位字母数字组合，拒绝弱密码；已有管理员不覆盖，初始化后移除该环境变量 |
+| `SMA_AUTH_SECURITY_KEY_FILE` | P07 TOTP 加密与安全密码 pepper 的独立密钥环文件；格式、轮换与测试边界见[认证安全运维](auth-security-operations.md) |
 | `SMA_APP_MASTER_KEY` | Base64 编码的 32 字节 AES 主密钥，应用密钥加密使用；需持久保存 |
 | `SMA_FILE_DIRECTORY` | 持久上传目录，对应 `sma.file.directory` |
 | `SMA_MESSAGE_SOCKET_ALLOWED_ORIGINS` | 若前后端不同源，设置明确的前端来源；默认本地 5173 |
 | `JAVA_TOOL_OPTIONS` | UTF-8 编码；本机已设置文件/标准输出/标准错误为 UTF-8 |
 
 生产环境需提供主密钥；本地未配置时自动生成 `data/keys/openapi.key`。应用重启不能丢失/更换主密钥，否则已存 AppSecret 无法解密。上传目录、密钥目录均在 `.gitignore`；备份与恢复时分别处理数据库、上传文件和主密钥。
+
+本机开发启动脚本 `run-backend.ps1` / `start-with-admin.ps1` 在未显式设置 `SMA_AUTH_SECURITY_KEY_FILE` 时，会使用已存在的 `data/keys/auth-security.keys`，不自动生成或覆盖。显式环境变量优先；密钥文件需独立保管并限制读取权限。2026-11-11 本机8080已部署P07及账号安全菜单，前端地址为 `http://127.0.0.1:5174/`，详见[实际部署记录](auth-security-progress.md)。
 
 Flyway 启动时逐模块迁移，不能手动修改已提交迁移脚本。数据库 JDBC 会话固定 UTC；系统、反向代理和用户显示时区可不同。
 
@@ -53,4 +56,4 @@ location /actuator/health { proxy_pass http://127.0.0.1:8080; }
 
 正式网络入口使用 HTTPS。上传代理上限至少 21 MiB（单文件上限为 20 MiB）；开放 API 正文上限 64 KiB。不要把后端 `data` 上传目录当作公开静态目录。应用管理密钥、Bearer、验证码和参数敏感值不进入访问日志/链路正文采集。
 
-当前验证码与认证限流、WebSocket 票据和连接不跨实例共享。首版运行单实例；扩展多实例前应增加共享限流、票据/消息分发以及迁移锁部署规范。应用 nonce 与令牌已使用数据库持久化和唯一约束。
+P07 将认证限流、TOTP 挑战及其消费状态持久化到数据库；WebSocket 票据和连接仍不跨实例共享。首版仍运行单实例，扩展多实例前应完善票据/消息分发及迁移锁部署规范。应用 nonce 与令牌已使用数据库持久化和唯一约束。P07 当前开发与验收状态见[实施进度](auth-security-progress.md)，不能据文档假定现有运行进程已升级。

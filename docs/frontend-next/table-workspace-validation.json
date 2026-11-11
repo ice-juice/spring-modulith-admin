@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-11",
+  "scope": "TableWorkspace and default internal DataTable scrolling",
+  "environment": "Local Chrome with isolated mock APIs; no production or real-backend acceptance",
+  "focused": {
+    "passed": 5,
+    "failed": 0,
+    "log": "frontend-next/.e2e-runtime/table-layout-final-focused2.log"
+  },
+  "core": {
+    "startTime": "2026-11-11T01:01:00.606Z",
+    "duration": 381370.957,
+    "expected": 41,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  "rules": {
+    "startTime": "2026-11-11T00:59:45.168Z",
+    "duration": 44386.501,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "coreCommand": "npx playwright test --grep-invert 'flow nodes|simulation trace|scene fields|condition groups|revision conflicts|rule editors|operators choose|business binding|publication uses|instance publication|unknown publication' --reporter=list,json --output=.e2e-runtime/table-layout-final-core/artifacts",
+  "ruleCommand": "npx playwright test --config playwright.rule.config.ts --reporter=list,json --output=.e2e-runtime/table-layout-final-rule/artifacts",
+  "accountRecheck": { "passed": 0, "failed": 2, "reason": "Existing password workflow fixtures do not match the new 8-12 character password policy", "log": "frontend-next/.e2e-runtime/table-layout-final-account-recheck.log" },
+  "checks": {
+    "build": "passed",
+    "lint": "passed",
+    "testTypes": "passed",
+    "i18n": "passed",
+    "release": "passed",
+    "verify": "blocked at legacy baseline",
+    "inventory": "failed: legacy route inventory changed",
+    "unit": {
+      "passed": 44,
+      "failed": 1,
+      "failure": "password.test.ts legacy policy assertion"
+    }
+  },
+  "screenshots": [
+    "images/table-internal-200-desktop.png",
+    "images/table-database-indexes-1440.png",
+    "images/table-database-indexes-390.png"
+  ],
+  "historicalReleaseZipChanged": false
+}

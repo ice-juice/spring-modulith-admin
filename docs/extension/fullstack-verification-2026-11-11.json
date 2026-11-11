@@ -1,0 +1,77 @@
+{
+  "scope": "P05 backend continuation and frontend-next release console",
+  "date": "2026-11-11",
+  "entry": "/extension/manage",
+  "hostNavigationPermission": "extension:console:view",
+  "productionReady": false,
+  "completeOriginalObjective": false,
+  "backend": {
+    "command": "tools/dev/verify-backend.ps1 -Standard -LogPath \"E:/juiceProgram/spring Modulith/backend/target/extension-final-utc-verify.log\" -MavenArgs -Dsma.verify.directory=target/extension-final-utc/target",
+    "result": "BUILD SUCCESS",
+    "excludedTests": [],
+    "passed": {
+      "protocol": 7,
+      "runtime": 8,
+      "security": 26,
+      "worker": 6,
+      "host": 197
+    },
+    "total": 244,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "hostTestDatabase": "sma_test_extension_acceptance",
+    "releaseTestDatabase": "sma_test_release_https",
+    "jdbcTimeZone": "UTC with forceConnectionTimeZoneToSession=true",
+    "hostArtifact": "backend/target/extension-final-utc/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar",
+    "earlierFailedAttempt": "backend/target/extension-final-fullstack-verify.log omitted JDBC UTC options; corrected final run passed"
+  },
+  "frontend": {
+    "aggregateVerify": "blocked by independently modified legacy frontend files differing from baseline",
+    "baselineRewritten": false,
+    "checksRunSeparately": [
+      "type-check",
+      "type-check:tests",
+      "lint",
+      "i18n:check",
+      "test:unit",
+      "build",
+      "release:check"
+    ],
+    "separateChecksResult": "passed",
+    "unitTests": 52,
+    "initialGzipKiB": 149,
+    "log": "backend/target/extension-frontend-final-checks.log",
+    "browserCommand": "npx playwright test --config playwright.extension.config.ts",
+    "browserPassed": 5,
+    "browserBackend": "isolated mocked HTTP; real local Chrome",
+    "latestExtensionFlowRerun": "backend/target/extension-ui-final-flow.log passed after final UI adjustments",
+    "verified": [
+      "independent session",
+      "host-token isolation",
+      "step-up group command",
+      "file digest and authorization before upload",
+      "secret not persisted",
+      "bounded mobile table",
+      "pagination visibility",
+      "Chinese and English",
+      "light and dark",
+      "automated WCAG AA"
+    ],
+    "artifacts": [
+      "docs/extension/console-desktop.png",
+      "docs/extension/console-mobile-dark.png",
+      "docs/extension/console-mobile-english.png"
+    ]
+  },
+  "realMysqlAndHttpsVerified": true,
+  "tlsVerificationDisabled": false,
+  "realDockerExecutionVerified": false,
+  "realGrypeScanVerified": false,
+  "realMultiHostPartitionVerified": false,
+  "productionDeploymentPerformed": false,
+  "businessApplicationRestarted": false,
+  "scheduledServicesInstalled": false,
+  "prerequisiteReport": "backend/target/extension-prerequisites.json",
+  "remainingWork": "docs/extension/fullstack-progress.md"
+}

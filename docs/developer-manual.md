@@ -73,7 +73,7 @@ Invoke-RestMethod http://127.0.0.1:5173/actuator/health
 
 ## 3. 模块结构与边界
 
-这是模块化单体：一个后端进程、一个业务库。`com.sma.admin` 的直接子包是模块，公共模块为 `common`。
+这是模块化单体：一个后端进程、一个业务库。`com.sma.admin`（基座）和 `com.sma.business`（二开）的直接子包都是模块，公共模块为 `common`。模块 ID 在两边全局唯一；目录与接入方式见[二次开发与包管理](agent-rules/secondary-development.md)。
 
 | 模块 | 主要职责 |
 |---|---|
@@ -98,7 +98,7 @@ Invoke-RestMethod http://127.0.0.1:5173/actuator/health
 - 业务实体继承 `TenantEntity`。租户、操作者由可信认证上下文填充，不能由外部请求任意指定。
 - MyBatis 插件顺序：防全表更新 → 租户 → 数据范围 → 分页。数据范围收窄已有查询条件，超级管理员仍受租户隔离。
 - 事务边界在 service；结构调整先获取结构锁，避免部门/角色并发移动形成环。
-- 主键为 Long 雪花 ID，JSON 使用字符串。前端不能把业务 ID 转为 JavaScript Number。
+- 主键为不可解释的正Long，实体assign_id、现有IdWorker和`common :: persistence`公开`IdentifierAllocation.nextId()`统一使用共享MySQL号段。不要从ID推导时间或全局提交顺序，不自建/替换生成器，不退还回滚或进程退出的ID。JSON使用字符串，前端不能转为JavaScript Number；首次升级/回退及实现状态见[P08主键方案](proposals/P08-id-allocation.md)。
 - 时间使用 `Instant`、数据库 `DATETIME(3)`，存 UTC；JDBC 会话强制 UTC。前端根据用户时区展示，范围筛选使用半开区间 `[from,to)`。
 - 逻辑删除后保留历史；生成列唯一索引允许删除后重新使用业务编码。
 
@@ -112,13 +112,17 @@ Invoke-RestMethod http://127.0.0.1:5173/actuator/health
 
 后台接口为 `/api/<module>/...`。每个请求处理方法显式声明以下策略之一：
 
-- `@RequiresPermission("module:resource:action")`
-- `@PermitLoggedIn`
+- `@RequiresPermission("module:resource:action")`：后台人类身份与指定权限。
+- `@PermitLoggedIn`：后台人类身份，不接受应用用户或机器。
+- `@PermitApplicationUser("shop")`：精确应用 audience，仍须业务对象授权及已注册的应用安全链。
+- `@PermitMachine`：机器身份及所属接口的能力/对象校验。
 - `@PermitAnonymous`，同时需要在安全过滤链中放行路径。
+
+Google、事务邮件、多存储与安全上传按 P09 分阶段实施，实际调用方式见[二开服务手册](integration-services-developer-manual.md)，已验收范围见[专项进度](integration-services-progress.md)。新增应用身份基础不代表 Google/应用登录端点已经交付。
 
 响应为 `ApiResponse { code, error, message, data }`；成功 `code=0`。业务异常可能是 HTTP 200 加非零 code，认证失败、无权限、校验失败等还使用相应 HTTP 状态。前端 `api/http.ts` 统一处理，不得只判断 HTTP 200。
 
-请求通过 Bearer 令牌认证。令牌原文不入数据库，数据库存 SHA-256 哈希；密码使用 BCrypt。每次请求重算有效权限/数据范围，账号凭据版本变化使旧会话立即失效。
+请求通过 Bearer 令牌认证。令牌原文不入数据库，数据库存 SHA-256 哈希；登录密码使用 BCrypt。P07 登录新密码为 8～12 位字母数字组合，写入前拒绝弱密码；旧密码验证保持兼容。安全操作密码为 6～8 位字母数字组合，采用独立 Argon2id＋pepper，两种密码不能相同。每次请求重算有效权限/数据范围，并检查账号凭据版本、安全版本及所需认证方式。绑定 TOTP 后第二步成功前没有正式 Token；锁屏只验证登录密码且不续期。公开接入和事务约定见[认证安全 API](auth-security-api.md)，实际交付状态见[实施进度](auth-security-progress.md)。
 
 公共事件使用 record，位于模块根包。消费者用 `@ApplicationModuleListener`，通过事件中的可信租户恢复 `TenantScope`，处理要幂等。事件发布登记、失败状态和重投由 Modulith 管理，重启默认不自动重发所有未完成事件。
 
@@ -210,7 +214,7 @@ pwsh -NoProfile -File tools/dev/verify-backend.ps1 -MavenArgs '-Dtest=Permission
 | 消息不同步 | 检查会话、一次性 WebSocket 票据、代理 Upgrade、连接状态与补查机制。 |
 | 模块/架构测试失败 | 根据规则定位依赖或分层，调整公开 API/事件，不随意放宽白名单。 |
 
-首版按单实例设计。认证限流、WebSocket 票据/分发、SQL 统计等在内存中；集群化需要单独设计共享状态和消息分发，不能仅复制进程。
+首版按单实例设计。P07 认证限流与挑战已使用数据库共享状态，但 WebSocket 票据/分发、SQL 统计等仍在内存中；集群化需要继续设计共享分发，不能仅复制进程。安全验证会使用独立提交的限流预算及最新已提交的会话状态；业务集成不要缓存全局“已验证”标记。
 
 ## 10. 文档维护
 

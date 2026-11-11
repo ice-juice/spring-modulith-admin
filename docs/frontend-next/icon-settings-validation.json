@@ -1,0 +1,184 @@
+{
+  "scope": "Source, mock and isolated real-backend validation; current runtime classes independently verified",
+  "catalog": {
+    "line": 209,
+    "three": 122,
+    "bytes": 477164,
+    "license": "3dicons V1 CC0-1.0; Lucide ISC",
+    "transforms": {
+      "transparent PNG resized": 121,
+      "border-connected white matte removed from official thumbnail (PNG endpoint unavailable)": 1
+    }
+  },
+  "permissionButtons": {
+    "total": 62,
+    "files": [
+      {
+        "file": "src/features/auth/SessionsPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/config/DictionaryPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/config/ParametersPage.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/extension/RuntimePanel.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/file/FilesPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/iam/ResourcePage.vue",
+        "count": 4
+      },
+      {
+        "file": "src/features/iam/RolePermissionPanel.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/iam/RolesPage.vue",
+        "count": 4
+      },
+      {
+        "file": "src/features/iam/UsersPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/message/NoticesPage.vue",
+        "count": 4
+      },
+      {
+        "file": "src/features/message/TasksPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/monitor/CachesPage.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/monitor/PublicationsPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/monitor/SqlPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/openapi/ApplicationsPage.vue",
+        "count": 6
+      },
+      {
+        "file": "src/features/rule/CatalogPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/rule/components/BatchPanel.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/rule/components/InstanceDetails.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/rule/components/ReleasePanel.vue",
+        "count": 4
+      },
+      {
+        "file": "src/features/rule/components/TemplateGovernance.vue",
+        "count": 3
+      },
+      {
+        "file": "src/features/rule/components/TestPanel.vue",
+        "count": 3
+      },
+      {
+        "file": "src/features/rule/components/UpgradePanel.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/rule/InstancesPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/features/rule/OperationsPage.vue",
+        "count": 6
+      },
+      {
+        "file": "src/features/rule/ScenesPage.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/rule/TemplatePage.vue",
+        "count": 2
+      },
+      {
+        "file": "src/features/rule/TemplatesPage.vue",
+        "count": 1
+      },
+      {
+        "file": "src/components/AttachmentList.vue",
+        "count": 1
+      }
+    ],
+    "uploadComponent": true
+  },
+  "backend": {
+    "passed": 11,
+    "log": "backend/target/icons-verify-final.log"
+  },
+  "real": {
+    "passed": 1,
+    "log": "frontend-next/.e2e-runtime/icons/real-final.log"
+  },
+  "rule": {
+    "passed": 26,
+    "log": "frontend-next/.e2e-runtime/icons/rule-final.log"
+  },
+  "icons": {
+    "passed": 4,
+    "log": "frontend-next/.e2e-runtime/icons/final-ui.log"
+  },
+  "coreInitial": {
+    "startTime": "2026-11-11T06:38:59.797Z",
+    "duration": 458792.678,
+    "expected": 54,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  "finalVerify": {
+    "passed": true,
+    "unitTests": 71,
+    "log": "frontend-next/.e2e-runtime/icons/complete-verify.log"
+  },
+  "screenshots": [
+    "images/icons-picker-iris-light-1440.png",
+    "images/icons-picker-amber-dark-390.png"
+  ],
+  "historicalReleaseChanged": false,
+  "correctiveRegression": {
+    "passed": 20,
+    "failed": 0,
+    "log": "frontend-next/.e2e-runtime/icons/completion-final.log",
+    "initialFailuresPreserved": true
+  },
+  "currentRuntime": {
+    "pid": 40488,
+    "startedAt": "2026-11-11T14:49:13+08:00",
+    "health": "UP",
+    "iconClassesMatchVerifiedCandidate": [
+      "SessionService",
+      "SessionService$Me",
+      "PermissionQuery",
+      "RolePermissionService"
+    ],
+    "restartedByThisTask": false,
+    "liveUserAuthenticationTested": false
+  }
+}

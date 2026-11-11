@@ -1,0 +1,32 @@
+{
+  "recordedAt": "2026-11-10T23:52:40.188Z",
+  "kind": "real",
+  "runner": "Playwright / installed Google Chrome / Windows",
+  "startedAt": "2026-11-10T23:50:20.352Z",
+  "durationMillis": 69437.55099999999,
+  "passed": 2,
+  "failed": 0,
+  "lockSha256": "a00c53aac8fbb4e66d31f565215b92977d73411278c25bb61c586614aa72ba20",
+  "measurements": [],
+  "tests": [
+    {
+      "file": "backend.spec.ts",
+      "title": "real isolated backend: accounts, authorization, messages, realtime push, files and application credentials",
+      "status": "passed",
+      "durationMillis": 43714
+    },
+    {
+      "file": "backend.spec.ts",
+      "title": "real isolated backend: parameter and dictionary contracts, all management reads and lock recovery",
+      "status": "passed",
+      "durationMillis": 23401
+    }
+  ],
+  "runtime": {
+    "schema": "sma_next_e2e_1794354474180",
+    "passed": true,
+    "finishedAt": "2026-11-10T23:51:51.898Z",
+    "credentialsPersisted": false,
+    "backendJarSha256": "7b2f1d2f24b2c83ea29d37bd184c3a81107a19ba589e5a81e02de28272339661"
+  }
+}

@@ -1,0 +1,734 @@
+{
+  "verifiedAt": "2026-11-11T04:52:37+08:00",
+  "scope": "backend and reactor dependencies; excludes standalone extension-security and extension-worker services",
+  "command": "backend/mvnw.cmd -B -ntp -f pom.xml -pl backend -am -Dsma.verify.directory=<repo>/backend/target/rule-verification/target verify",
+  "database": "sma_test_rule",
+  "build": "SUCCESS",
+  "tests": 175.0,
+  "backendTests": 160,
+  "dependencyTests": 15,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 0.0,
+  "suites": [
+    {
+      "suite": "com.sma.extension.protocol.BytecodePolicyTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.extension.protocol.TrustProtocolTests",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.extension.runtime.PluginRuntimeTests",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.ApplicationSmokeTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.architecture.ArchitectureRulesTests",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.architecture.I18nBundlesTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.audit.LoginLogTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.audit.OperationLogTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.auth.AuthFlowTests",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.auth.internal.service.CaptchaTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.auth.SessionMaintenanceTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.auth.SessionManagementTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.internal.DataPermissionTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.internal.HeaderLocaleContextResolverTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.internal.I18nWebTests",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.internal.JacksonConfigurationTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.internal.PersistenceTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.internal.UtcStorageTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.security.AccessAnnotationsTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.security.MachineIdentityTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.common.TimeRangeTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.config.DictionaryTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.config.ParameterTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.config.PreferenceTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.extension.ExtensionWorkJournalTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.extension.internal.service.ExtensionTelemetryTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.extension.internal.service.NodeCredentialTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.extension.internal.service.WorkCallerTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.file.FileTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.DepartmentTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.NavigationTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.PermissionTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.PostTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.ProfileTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.RolePermissionTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.RoleTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.iam.UserTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.message.internal.service.SocketTicketTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.message.NoticeTests",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.message.PrivateMessageTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.message.SocketTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.message.TodoTests",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.ModularityTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.monitor.DatabaseDocTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.monitor.MonitorTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.monitor.PublicationTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.monitor.SqlTelemetryTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.openapi.ApplicationTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.openapi.OpenAuthenticationTests",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.openapi.SignatureProtocolTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.internal.service.DecisionTableTests",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.internal.service.LiteFlowCompatibilityTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.internal.service.RuleCapacityTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.internal.service.RuleEngineTests",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.internal.service.RuleFlowTests",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.internal.service.RuleParameterTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.rule.RulePlatformTests",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.support.TestDatabaseSafetyTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.sma.admin.workspace.DashboardTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "log": {
+    "path": "backend/target/rule-backend-verify.log",
+    "sha256": "72b5e49a49cc810b30f591f375c5ae7e5aa01b1d3db074e330dd83083d77e26b"
+  },
+  "artifact": {
+    "path": "backend/target/rule-verification/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar",
+    "sha256": "5e1999aef168d0cc1a6a67ec46d46a5702041e080567b177b69173b168fb0a21"
+  },
+  "sourcesUnchangedDuringVerification": true,
+  "sources": [
+    {
+      "path": "backend/pom.xml",
+      "sha256": "d64a0c23a20356d7e5ad10dfe21466f304bf575d4ac25048acb16f03ef616ba6"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/common/security/RuleBindingPolicy.java",
+      "sha256": "b2dec1ac109739221ba60abd1262be39c6dfe0342dadb9365fc024a489a34552"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/AssetEntity.java",
+      "sha256": "a8f2ecef3e3c8dea548fb4f9fb349808060f93f4c4c6fe45787c7142d81c3a6e"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/AssetMapper.java",
+      "sha256": "205790df3651598328195ceb6bf4a51a8c9dcb1b6c10159d8bf1d635e62abdd7"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/ExecutionEntity.java",
+      "sha256": "921ac6d4c39ba46034bf0f56d6bc782636aeda5296770bd75d5ec9003220e8b4"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/ExecutionMapper.java",
+      "sha256": "07b7a69ee5fd5234362c0fa679fa714c35b4a94a8d51cce9cda4d84b999c41db"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/MigrationBatchEntity.java",
+      "sha256": "6fc5674ed38c99a804eb6ec870fa6eaf1fd867317401367c97716894c234a44a"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/MigrationBatchMapper.java",
+      "sha256": "8f6e2565faf19fcc6194da4337d528cbf350ee135b42882508500aed0793ba87"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/ReleaseEntity.java",
+      "sha256": "46644dde804cc76a45f6c3440db92cc1a6e8769366c0da7f82694e8b7ccd2b14"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/ReleaseMapper.java",
+      "sha256": "620ab47e4141a67fe96b6145e219390f4de00aaa36cecb8663ac0f023d795b88"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/TestCaseEntity.java",
+      "sha256": "cd21f9d18664c074679da64bf542cb26c759095ddafcddfd2b0a4b725139c127"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/TestCaseMapper.java",
+      "sha256": "2fd86393271522306002bb6fe1f65b84954328462d543b8c9791226de2f91d87"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/TestRunEntity.java",
+      "sha256": "444b832ffb223458309994cb4b0b420ddb8382a8ef273a9133c8ed61d248f1b2"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/TestRunMapper.java",
+      "sha256": "035854f9f60a79ebe9c247fe4d65306d64718d07c850b3672f648db069b8412b"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/VersionEntity.java",
+      "sha256": "3e6d5b67ccc3d3c38c992d7ffa9191a9085f2482b189a259b1ae1607d2ce1d9a"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/VersionMapper.java",
+      "sha256": "2cb86bec4714f27f54dd4ba239b3fe6f33444cf1c5a0ec22c09614b9ff249669"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/WriteLockEntity.java",
+      "sha256": "9653aabe21c829dbadd0165bd54eeaf011da8d6514d102756928aa4f774c08c3"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/persistence/WriteLockMapper.java",
+      "sha256": "822534ef8945a67d0b440efb43917f0a4e79449bfbd356fb79bec80294503d6a"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/ConditionEngine.java",
+      "sha256": "7ee9bbddbdf92063a6001704c2c35c41e8e185f0c5b2cd7a0240ec4cd994ee2b"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/DecisionTableEngine.java",
+      "sha256": "8da062687770377513ba11d63629446851613ef043120c04da8fe22aa82faf37"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/ExpressionEngine.java",
+      "sha256": "b80d0ac84a9b8e91dd17c9d57434a015f55e0fa3ca53d83273fb279e6c051ae1"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleBatchService.java",
+      "sha256": "4fee9ae7958603632ad6d2cac3fc819297bbde398ad3da5df1502e98924ea175"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleEvaluator.java",
+      "sha256": "be66f9d2840d72e0805fbf478242a7ab86210c9aac3dab807a5179328d864c3b"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleFailure.java",
+      "sha256": "d65e4eb5aade63c5ec41ecb7b2be2047d76180a0cc346d106d6160f72f5728cd"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleFlowPlan.java",
+      "sha256": "345274e5370439f5520b19101cd94ad28450ef9987b4c6a9965ec967df1d2202"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleFlowRuntime.java",
+      "sha256": "22343fbd14aff560a9ea1e91a7249bf9939486c32e5b7d2d56fd0f0ca9a7de36"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleImpactService.java",
+      "sha256": "3f884d80ce5da99b169a216e2d0b2f37c05eafb34a2fb365a21339bada7542b9"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleIntervals.java",
+      "sha256": "190b471d6a93087dbd5e92979823636c74a22d2d7a1171961003a1a56f68e5a7"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleJson.java",
+      "sha256": "fa4d0a63bc49955b03dda982fc5978c0a26787fa28a4780e398323aad2b49c0e"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleOperationsService.java",
+      "sha256": "905dc008f760cf0947827bd40ecdee722fc55b2b26d71383879d99c6fe5f52c3"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleParameters.java",
+      "sha256": "1a114a90ca80ef9bb6292a0bd80f97c551ccb9c82e4e838ceb6b5b6cf72d6bba"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RulePermissionCatalog.java",
+      "sha256": "2e0ae22254b4e0166f002525dcf521f0ad84ad51246060dac66c0528c68497d1"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleService.java",
+      "sha256": "66c416d62c4c4851ed0f890a2bb4b4933f009c53b6cbf807094c48ca2ccae8aa"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleTestService.java",
+      "sha256": "f23daee7d92e31bb3f619a7396d8845229366018d39fa679d61a29ca30239b58"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/service/RuleValues.java",
+      "sha256": "721e43ca9925e8b8e28bcaef229082ecbf7ce543aba6f5741236a18044de4322"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/web/RuleBatchController.java",
+      "sha256": "86833b3b1a74a1f633da3587c9b95d87607d0d1881d096d396bb3306e1255996"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/web/RuleController.java",
+      "sha256": "31fe5fd0938f196bd65c5a176ca81fbe11ca8d0162aa9eef769468fb40cfe326"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/web/RuleImpactController.java",
+      "sha256": "dab8f340edd63ee9b8abf8389316249efc5ccdc01427a2ef73cfd74d6eeecec5"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/web/RuleOperationsController.java",
+      "sha256": "b82d24165f0565691317f8edbd7a96eeefbc13a45876b28df0b039e621d06fc2"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/internal/web/RuleTestController.java",
+      "sha256": "94a54a2bb6a978c210a317b1a3c9fea96d0cf265ce0566cf6802aae4e3b33ac1"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/package-info.java",
+      "sha256": "148e49a97050aac36a848664440dee66924d2c947f3f2929c2089a47f676faf6"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleCommands.java",
+      "sha256": "1ed5c78ff45ba9e2ee3fda5909410a09ddd921e7a5cd0f8f28f4e3ab527fe692"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleDefinition.java",
+      "sha256": "063a38c831b4251f270a5dd49c7cfec57b1fa2230495f96032151591703a4f44"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleErrorCode.java",
+      "sha256": "6e21bfef82dfb5ae0d5530a7f646c37a129b8979e6edce2281d9c8fbdeaa2611"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleExecutionApi.java",
+      "sha256": "f71d4354adb27b032652a46ea3b317e9e4be578242757fe7b9950e01bdb76175"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleProblem.java",
+      "sha256": "dec2fd0c7267650e95d1618f5382551a603560bb7ebc82dfc20208203bcf0d51"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleSchema.java",
+      "sha256": "03a44e8196914ce50860142352936ebfbaa72b64115a6300d4d745f85933a264"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleTemplateDocument.java",
+      "sha256": "c7d8e554a6e92890d496d29584e53d650bca35b627cf34308d3aa89481a9f049"
+    },
+    {
+      "path": "backend/src/main/java/com/sma/admin/rule/RuleTrace.java",
+      "sha256": "aba8a91cbd864661e3b38b95736e2f2bbaf4e0d0bdd5a313929316274721966b"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/rule/V1__rule_platform.sql",
+      "sha256": "f064a9803d3a0fd34e2342a2044dfead9d421b734779dba6ab3aadded7a1707e"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/rule/V2__rule_test_suites.sql",
+      "sha256": "ca3ab9a21a5d154bef739bbb58393e39f6cc744f9ffba3d47911af209fe793cb"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/rule/V3__migration_receipts.sql",
+      "sha256": "2eb7a237eaa1516b43748cb6ae349393426911b1ffe8e63f591500134c97e960"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/rule/V4__validation_evidence.sql",
+      "sha256": "0e5c4b5794e15e59dadb992c1c5b47a65680780d4e94c3c768c4cbc3c18b81d2"
+    },
+    {
+      "path": "backend/src/main/resources/i18n/rule/messages_en.properties",
+      "sha256": "94eb3d7f8ba506d49582035c4ae2ae4f87e95529e27c60d5325e81ee0334165c"
+    },
+    {
+      "path": "backend/src/main/resources/i18n/rule/messages.properties",
+      "sha256": "d44f2a8f9cdf7a536cc26afe27b899362824d2ccc37fc2416bbb37a7904ea2f7"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/ApplicationSmokeTests.java",
+      "sha256": "091764a862a7eeab72872d8729cce48dd7294fcea2f14d0d64cfbe146739d1a5"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/monitor/DatabaseDocTests.java",
+      "sha256": "39e0ccec05fee3709c25f2ca85de5903329878b22a7fb6e02a413977d7203ff3"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/internal/service/DecisionTableTests.java",
+      "sha256": "383781de7903f6e3a16686e3db5624204ba9b01e6e26d334b338d064f78dd0c8"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/internal/service/LiteFlowCompatibilityTests.java",
+      "sha256": "58096acd99593119c2a9700d12175b1715ff2fb666f143e482df8c6464f11740"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/internal/service/RuleCapacityTests.java",
+      "sha256": "1238e46a0062e138ab4dc4e43eadda1df7f38b3ea093711d971e6ac66e3bcf65"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/internal/service/RuleEngineTests.java",
+      "sha256": "9898eeac47e55eff90285bc624a731719735a8f58572dd739e3600f9e385353d"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/internal/service/RuleFlowTests.java",
+      "sha256": "55442577a37626e45f34d36e0e6f16ace5ea85ef9c9ed3da3588577fca1063a9"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/internal/service/RuleParameterTests.java",
+      "sha256": "4c1bef6fa853967d67a44e251bdbc4077c67ce94cac067ad2f0236697b5870be"
+    },
+    {
+      "path": "backend/src/test/java/com/sma/admin/rule/RulePlatformTests.java",
+      "sha256": "b5852806a293c7a30252609f6a210015673301c7041492468131bde2c29b9661"
+    }
+  ],
+  "localPerformance": {
+    "coldCompile": {
+      "maxMicros": 686,
+      "p50Micros": 247,
+      "p95Micros": 473,
+      "samples": 100
+    },
+    "expression": {
+      "maxMicros": 197,
+      "p50Micros": 83,
+      "p95Micros": 133,
+      "samples": 100
+    },
+    "flow": {
+      "maxMicros": 7376,
+      "p50Micros": 485,
+      "p95Micros": 852,
+      "samples": 100
+    },
+    "scope": "single JVM sequential, warm, validation included, no HTTP/database, not a capacity SLA",
+    "table200Rows": {
+      "maxMicros": 16492,
+      "p50Micros": 2458,
+      "p95Micros": 3063,
+      "samples": 100
+    },
+    "warmCompileLookup": {
+      "maxMicros": 132,
+      "p50Micros": 22,
+      "p95Micros": 53,
+      "samples": 100
+    }
+  },
+  "httpSample": {
+    "samples": 1,
+    "durationMicros": 377655,
+    "scope": "real authenticated HTTP plus MySQL; functional sample, not a load SLA"
+  },
+  "frontend": "deferred until frontend-next final acceptance"
+}

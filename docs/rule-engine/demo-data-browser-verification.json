@@ -1,0 +1,205 @@
+{
+  "recordedAt": "2026-11-11T18:37:01.284005+08:00",
+  "scope": "Observed current signed-in IAB user session; real local backend; synthetic tenant 1 objects",
+  "cases": [
+    {
+      "mode": "trial",
+      "key": "Tiers",
+      "input": {
+        "amount": 250
+      },
+      "expected": {
+        "payable": 200,
+        "rate": 0.8
+      },
+      "actual": {
+        "payable": 200,
+        "rate": 0.8
+      },
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "trial",
+      "key": "Reduction",
+      "input": {
+        "amount": 150
+      },
+      "expected": 140,
+      "actual": 140,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "trial",
+      "key": "Eligibility",
+      "input": {
+        "amount": 150,
+        "member": true
+      },
+      "expected": true,
+      "actual": true,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "trial",
+      "key": "RatioB",
+      "input": {
+        "amount": 300.15
+      },
+      "expected": 240.12,
+      "actual": 240.12,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "trial",
+      "key": "RatioA",
+      "input": {
+        "amount": 300.15
+      },
+      "expected": 270.14,
+      "actual": 270.14,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "TiersHigh",
+      "input": {
+        "amount": 250
+      },
+      "expected": {
+        "payable": 200,
+        "rate": 0.8
+      },
+      "actual": {
+        "payable": 200,
+        "rate": 0.8
+      },
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "TiersLow",
+      "input": {
+        "amount": 150
+      },
+      "expected": {
+        "payable": 135,
+        "rate": 0.9
+      },
+      "actual": {
+        "payable": 135,
+        "rate": 0.9
+      },
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "TiersOriginal",
+      "input": {
+        "amount": 50
+      },
+      "expected": {
+        "payable": 50,
+        "rate": 1
+      },
+      "actual": {
+        "payable": 50,
+        "rate": 1
+      },
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "Reduction",
+      "input": {
+        "amount": 150
+      },
+      "expected": 140,
+      "actual": 140,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "ReductionBelow",
+      "input": {
+        "amount": 99
+      },
+      "expected": 99,
+      "actual": 99,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "Eligibility",
+      "input": {
+        "amount": 150,
+        "member": true
+      },
+      "expected": true,
+      "actual": true,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "EligibilityNoMember",
+      "input": {
+        "amount": 150,
+        "member": false
+      },
+      "expected": false,
+      "actual": false,
+      "status": "NOT_MATCHED",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "RatioB",
+      "input": {
+        "amount": 300.15
+      },
+      "expected": 240.12,
+      "actual": 240.12,
+      "status": "SUCCESS",
+      "passed": true
+    },
+    {
+      "mode": "execution",
+      "key": "RatioA",
+      "input": {
+        "amount": 300.15
+      },
+      "expected": 270.14,
+      "actual": 270.14,
+      "status": "SUCCESS",
+      "passed": true
+    }
+  ],
+  "catalogSnapshots": [
+    {
+      "key": "Ratio",
+      "text": "工作空间\n主导航\n模板目录\nSpringboot Modulith Admin\n全部功能\n业务导航\n收起导航\n管理工作台\nAdministrator\n模板目录\n重新读取\n所属场景\n加载下一页\n表达式\n版本 · 1\n【演示】比例折扣模板\n模板目录\n【演示】比例折扣模板\n2120459046954762241\n选用此版本\n操作台\n折后比例\n0到1之间；0.9表示九折，最多四位小数。\n组织与权限\n安全管理\n系统配置\n审计日志\n文件中心\n消息协同\n系统监控\n开放平台\n规则中心\n业务扩展\n部门管理\n岗位管理\n角色管理\n权限资源\n用户管理\n顶部导航\n在线会话\n账号安全\n数据字典\n全局参数\n登录日志\n关键操作日志\n文件管理\n系统通知\n待办管理\n服务器监控\n缓存管理\n事件发布管理\n数据库文档\nSQL 执行统计\n应用中心\n规则场景\n规则模板\n模板目录\n使用实例\n运行与治理\n扩展管理"
+    },
+    {
+      "key": "Eligibility",
+      "text": "工作空间\n主导航\n模板目录\nSpringboot Modulith Admin\n全部功能\n业务导航\n收起导航\n管理工作台\nAdministrator\n模板目录\n重新读取\n所属场景\n加载下一页\n条件组\n版本 · 1\n【演示】会员资格模板\n模板目录\n【演示】会员资格模板\n2120459984926965761\n选用此版本\n操作台\n金额门槛\n达到此金额才命中，包含边界金额。\n组织与权限\n安全管理\n系统配置\n审计日志\n文件中心\n消息协同\n系统监控\n开放平台\n规则中心\n业务扩展\n部门管理\n岗位管理\n角色管理\n权限资源\n用户管理\n顶部导航\n在线会话\n账号安全\n数据字典\n全局参数\n登录日志\n关键操作日志\n文件管理\n系统通知\n待办管理\n服务器监控\n缓存管理\n事件发布管理\n数据库文档\nSQL 执行统计\n应用中心\n规则场景\n规则模板\n模板目录\n使用实例\n运行与治理\n扩展管理"
+    },
+    {
+      "key": "Reduction",
+      "text": "工作空间\n主导航\n模板目录\nSpringboot Modulith Admin\n全部功能\n业务导航\n收起导航\n管理工作台\nAdministrator\n模板目录\n重新读取\n所属场景\n加载下一页\n流程编排\n版本 · 1\n【演示】满额减免流程模板\n模板目录\n【演示】满额减免流程模板\n2120460438423502849\n选用此版本\n操作台\n减免金额\n命中后扣减的金额，应付金额最低为零。\n金额门槛\n达到此金额才命中，包含边界金额。\n组织与权限\n安全管理\n系统配置\n审计日志\n文件中心\n消息协同\n系统监控\n开放平台\n规则中心\n业务扩展\n部门管理\n岗位管理\n角色管理\n权限资源\n用户管理\n顶部导航\n在线会话\n账号安全\n数据字典\n全局参数\n登录日志\n关键操作日志\n文件管理\n系统通知\n待办管理\n服务器监控\n缓存管理\n事件发布管理\n数据库文档\nSQL 执行统计\n应用中心\n规则场景\n规则模板\n模板目录\n使用实例\n运行与治理\n扩展管理"
+    },
+    {
+      "key": "Tiers",
+      "text": "工作空间\n主导航\n模板目录\nSpringboot Modulith Admin\n全部功能\n业务导航\n收起导航\n管理工作台\nAdministrator\n模板目录\n重新读取\n所属场景\n加载下一页\n决策表\n版本 · 1\n【演示】阶梯优惠决策表模板\n模板目录\n【演示】阶梯优惠决策表模板\n2120461142601007106\n选用此版本\n操作台\n高档折后比例\n高档优惠比例，0.8表示八折。\n高档门槛\n优先匹配的高档门槛，应大于低档门槛。\n低档折后比例\n低档优惠比例，0.9表示九折。\n低档门槛\n高档未命中时匹配此门槛。\n组织与权限\n安全管理\n系统配置\n审计日志\n文件中心\n消息协同\n系统监控\n开放平台\n规则中心\n业务扩展\n部门管理\n岗位管理\n角色管理\n权限资源\n用户管理\n顶部导航\n在线会话\n账号安全\n数据字典\n全局参数\n登录日志\n关键操作日志\n文件管理\n系统通知\n待办管理\n服务器监控\n缓存管理\n事件发布管理\n数据库文档\nSQL 执行统计\n应用中心\n规则场景\n规则模板\n模板目录\n使用实例\n运行与治理\n扩展管理"
+    }
+  ]
+}

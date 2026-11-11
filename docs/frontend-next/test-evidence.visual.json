@@ -1,0 +1,19 @@
+{
+  "recordedAt": "2026-11-10T18:49:50.739Z",
+  "kind": "visual",
+  "runner": "Playwright / installed Google Chrome / Windows",
+  "startedAt": "2026-11-10T18:48:40.097Z",
+  "durationMillis": 17921.318000000003,
+  "passed": 1,
+  "failed": 0,
+  "lockSha256": "c243157567797bf478cb57f2f6f2a85637ea9af45dd9a98e039688682bb7ac22",
+  "measurements": [],
+  "tests": [
+    {
+      "file": "visuals.spec.ts",
+      "title": "actual workspace, users and roles: both languages, themes and six widths with reviewable screenshots",
+      "status": "passed",
+      "durationMillis": 15686
+    }
+  ]
+}

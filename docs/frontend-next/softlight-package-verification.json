@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "checkedAt": "2026-11-10T23:57:49.451939+00:00",
+  "zip": {
+    "file": "frontend-next/release/frontend-next-0.2.0.zip",
+    "bytes": 484676,
+    "sha256": "756049f7ecba4aeee836ce525727ecb9d6a5c4fa667fba1fcb3bf2242bcadf61"
+  },
+  "verifiedEntries": 101,
+  "initialGzipBytes": 143601,
+  "oldArchivesUnchanged": true,
+  "dependencyGraphUnchanged": true,
+  "deployed": false
+}

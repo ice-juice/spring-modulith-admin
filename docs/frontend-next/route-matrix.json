@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-10T13:46:02.868Z",
+  "generatedAt": "2026-11-11T01:06:30.275Z",
   "note": "Requests include literal URL prefixes extracted from existing call sites and explicit resource endpoints. Dynamic suffixes require the named source and API contract. Status requires recorded test evidence.",
-  "total": 28,
+  "total": 30,
   "routes": [
     {
       "route": "/",
@@ -12,8 +12,13 @@
         "GET /workspace/dashboard",
         "GET /actuator/health"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json",
+        "test-evidence.visual.json",
+        "images/actual-*.png"
+      ]
     },
     {
       "route": "/:pathMatch(.*)*",
@@ -21,8 +26,10 @@
       "module": null,
       "permission": null,
       "requests": [],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json"
+      ]
     },
     {
       "route": "/403",
@@ -30,8 +37,11 @@
       "module": null,
       "permission": null,
       "requests": [],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/audit/logins",
@@ -41,8 +51,11 @@
       "requests": [
         "GET /audit/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/audit/operations",
@@ -52,6 +65,18 @@
       "requests": [
         "GET /audit/"
       ],
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
+    },
+    {
+      "route": "/auth/security",
+      "legacyView": "views/auth/SecurityView.vue",
+      "module": "auth",
+      "permission": null,
+      "requests": [],
       "status": "pending",
       "evidence": []
     },
@@ -64,8 +89,11 @@
         "GET /auth/sessions",
         "POST /auth/sessions/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/config/dictionaries",
@@ -76,8 +104,11 @@
         "GET /config/dictionaries/types",
         "POST /config/dictionaries/initialize"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/config/parameters",
@@ -88,8 +119,11 @@
         "POST /config/parameters/refresh",
         "POST /config/parameters/reset-builtins"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/file/files",
@@ -100,8 +134,11 @@
         "GET /file/files",
         "DELETE /file/files/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/frame/:id",
@@ -109,8 +146,11 @@
       "module": null,
       "permission": null,
       "requests": [],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "workflows.spec.ts: authorized, unsafe and unknown iframe targets"
+      ]
     },
     {
       "route": "/iam/departments",
@@ -127,8 +167,11 @@
         "PUT /iam/roles/",
         "PUT /iam/users/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/iam/navigation",
@@ -145,8 +188,11 @@
         "PUT /iam/roles/",
         "PUT /iam/users/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/iam/permissions",
@@ -163,8 +209,11 @@
         "PUT /iam/roles/",
         "PUT /iam/users/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/iam/posts",
@@ -181,8 +230,11 @@
         "PUT /iam/roles/",
         "PUT /iam/users/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/iam/roles",
@@ -203,8 +255,13 @@
         "GET /iam/permissions/tree",
         "查看用户：/iam/users?roleId={id}"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json",
+        "test-evidence.visual.json",
+        "images/actual-*.png"
+      ]
     },
     {
       "route": "/iam/users",
@@ -223,12 +280,29 @@
         "PUT /iam/users/{id}/password",
         "GET /iam/users/{id}"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json",
+        "test-evidence.visual.json",
+        "images/actual-*.png"
+      ]
     },
     {
       "route": "/login",
       "legacyView": "views/LoginView.vue",
+      "module": "auth",
+      "permission": null,
+      "requests": [],
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
+    },
+    {
+      "route": "/login/totp",
+      "legacyView": "views/auth/TotpView.vue",
       "module": "auth",
       "permission": null,
       "requests": [],
@@ -246,8 +320,11 @@
         "PUT /message/notices/inbox/read-all",
         "PUT /message/notices/inbox/read-many"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/message/notices",
@@ -263,8 +340,11 @@
         "POST /message/notices/",
         "GET /message/notices/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/message/todos",
@@ -281,8 +361,11 @@
         "POST /message/todos/batch-delete",
         "GET /message/todos/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/monitor/caches",
@@ -293,8 +376,11 @@
         "GET /monitor/caches",
         "DELETE /monitor/caches"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/monitor/database",
@@ -305,8 +391,11 @@
         "GET /monitor/database",
         "GET /monitor/database/markdown"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/monitor/events",
@@ -317,8 +406,11 @@
         "GET /monitor/publications",
         "POST /monitor/publications/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/monitor/server",
@@ -328,8 +420,11 @@
       "requests": [
         "GET /monitor/server"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/monitor/sql",
@@ -340,8 +435,11 @@
         "GET /monitor/sql",
         "DELETE /monitor/sql"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/openapi/apps",
@@ -357,8 +455,11 @@
         "GET /openapi/apps/types",
         "GET /openapi/apps/"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/preferences",
@@ -370,8 +471,11 @@
         "PUT /config/preferences",
         "DELETE /config/preferences"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     },
     {
       "route": "/profile",
@@ -382,8 +486,11 @@
         "GET /iam/profile",
         "PUT /iam/profile"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "implemented-verified",
+      "evidence": [
+        "test-evidence.mock.json",
+        "test-evidence.real.json"
+      ]
     }
   ]
 }

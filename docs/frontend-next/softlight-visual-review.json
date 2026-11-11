@@ -1,0 +1,140 @@
+{
+  "capturedAt": "2026-11-10T23:53:24.875Z",
+  "scope": "Actual application routes with isolated mock API; no live business data",
+  "files": [
+    {
+      "route": "/iam/navigation",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-iam-navigation-light-1440.png"
+    },
+    {
+      "route": "/config/dictionaries",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-config-dictionaries-light-1440.png"
+    },
+    {
+      "route": "/config/parameters",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-config-parameters-light-1440.png"
+    },
+    {
+      "route": "/profile",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-profile-light-1440.png"
+    },
+    {
+      "route": "/preferences",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-preferences-light-1440.png"
+    },
+    {
+      "route": "/file/files",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-file-files-light-1440.png"
+    },
+    {
+      "route": "/message/inbox",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-message-inbox-light-1440.png"
+    },
+    {
+      "route": "/message/notices",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-message-notices-light-1440.png"
+    },
+    {
+      "route": "/monitor/server",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-monitor-server-light-1440.png"
+    },
+    {
+      "route": "/monitor/database",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-monitor-database-light-1440.png"
+    },
+    {
+      "route": "/openapi/apps",
+      "theme": "light",
+      "width": 1440,
+      "file": "softlight-review-openapi-apps-light-1440.png"
+    },
+    {
+      "route": "/iam/navigation",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-iam-navigation-dark-390.png"
+    },
+    {
+      "route": "/config/dictionaries",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-config-dictionaries-dark-390.png"
+    },
+    {
+      "route": "/config/parameters",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-config-parameters-dark-390.png"
+    },
+    {
+      "route": "/profile",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-profile-dark-390.png"
+    },
+    {
+      "route": "/preferences",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-preferences-dark-390.png"
+    },
+    {
+      "route": "/file/files",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-file-files-dark-390.png"
+    },
+    {
+      "route": "/message/inbox",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-message-inbox-dark-390.png"
+    },
+    {
+      "route": "/message/notices",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-message-notices-dark-390.png"
+    },
+    {
+      "route": "/monitor/server",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-monitor-server-dark-390.png"
+    },
+    {
+      "route": "/monitor/database",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-monitor-database-dark-390.png"
+    },
+    {
+      "route": "/openapi/apps",
+      "theme": "dark",
+      "width": 390,
+      "file": "softlight-review-openapi-apps-dark-390.png"
+    }
+  ],
+  "pageErrors": [],
+  "unmatchedApi": []
+}

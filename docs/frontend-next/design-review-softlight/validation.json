@@ -1,0 +1,30 @@
+{
+  "scope": "Standalone design prototype only; no backend integration",
+  "capturedAt": "2026-11-10T23:03:43.876Z",
+  "screenshots": [
+    "workspace-light-zh-1440.png",
+    "users-light-zh-1440.png",
+    "roles-light-zh-1440.png",
+    "login-light-zh-1440.png",
+    "workspace-dark-zh-1440.png",
+    "users-dark-en-1440.png",
+    "roles-dark-en-1440.png",
+    "login-dark-zh-1440.png",
+    "workspace-light-zh-390.png",
+    "users-light-zh-390.png",
+    "roles-dark-en-390.png",
+    "login-light-zh-390.png"
+  ],
+  "interactions": [
+    "member search and empty state",
+    "select visible members",
+    "native dialog open / Escape close",
+    "permission edit and demo save",
+    "light / dark",
+    "jade / copper palettes",
+    "mobile navigation"
+  ],
+  "horizontalOverflow": false,
+  "pageErrors": [],
+  "apiRequests": []
+}

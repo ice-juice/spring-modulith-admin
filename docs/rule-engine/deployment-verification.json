@@ -1,0 +1,80 @@
+{
+  "checkedAt": "2026-11-11T13:50:40.125773+08:00",
+  "runtime": {
+    "deployedAt": "2026-11-11T13:42:21+08:00",
+    "verifiedAt": "2026-11-11T13:50:18.9176753+08:00",
+    "previousPid": 38620,
+    "pid": 32792,
+    "sha256": "2E4A60EAEF62BCC471F2AE266240EE6B5AE5BD7613CBBDD90B5CED7C3E7E0B9B",
+    "health": "UP",
+    "backend": "http://127.0.0.1:8080",
+    "frontend": "http://127.0.0.1:5174",
+    "frontendMode": "existing Vite source service",
+    "backupDirectory": "E:\\juiceProgram\\spring Modulith\\backend\\target\\rule-deployment\\20261111-133634",
+    "deploymentMethod": "Adopted concurrent deployment after matching all 901 JAR entry hashes to verified candidate; no duplicate restart"
+  },
+  "database": "springboot_modulith_admin",
+  "directories": 1,
+  "menus": 5,
+  "actions": 17,
+  "previousPermissionsPreserved": 22,
+  "permissionMetadataPreserved": true,
+  "previousLeafGrantsPreserved": true,
+  "unexpectedLeafGrants": 0,
+  "keyFilesPreserved": true,
+  "runtimeArtifactContentMatchesVerifiedBuild": true,
+  "matchingJarEntries": 901,
+  "candidateSha256": "C5898D1C71633E4419A5FF7105AB8BE5E68DC1816865E07B7D215DD1C6C8333B",
+  "jarBinaryHashesEqual": false,
+  "backendHealth": "UP",
+  "frontendProxyHealth": "UP",
+  "frontendRoutes": [
+    "/rule/scenes",
+    "/rule/templates",
+    "/rule/catalog",
+    "/rule/instances",
+    "/rule/operations"
+  ],
+  "frontendRouteHttpStatus": 200,
+  "anonymousApiLocales": [
+    "zh-CN",
+    "en-US"
+  ],
+  "anonymousApiHttpStatus": 401,
+  "boundaries": [
+    "Frontend remains existing Vite service; production static hosting not switched.",
+    "No authenticated user-browser acceptance performed in this deployment.",
+    "Backend reactor includes backend and its dependencies; independent extension-security/extension-worker tests excluded."
+  ],
+  "verification": {
+    "backend": {
+      "result": "BUILD SUCCESS",
+      "totalTests": 220,
+      "testDatabase": "sma_test_rule",
+      "errors": 0,
+      "skipped": 0,
+      "failures": 0,
+      "backendTests": 205,
+      "dependencyTests": 15,
+      "log": "backend/target/rule-menu-deploy-verify.log",
+      "command": "tools/dev/verify-backend.ps1 -Standard -MavenArgs @('-pl','backend','-am','-Dsma.verify.directory=<workspace>/backend/target/rule-menu-deploy/target') -LogPath <workspace>/backend/target/rule-menu-deploy-verify.log"
+    },
+    "focused": {
+      "tests": 28,
+      "log": "backend/target/rule-menu-deploy-tests.log",
+      "failures": 0
+    },
+    "frontend": {
+      "releaseChecks": "passed",
+      "lazyModules": 34,
+      "log": "frontend-next/.e2e-runtime/rule-menu-deploy-verify.log",
+      "hashedFiles": 141,
+      "command": "npm run verify",
+      "workingDirectory": "frontend-next",
+      "initialGzipKiB": 149,
+      "unitTests": 53
+    },
+    "currentDatabaseExplicitRuleGrantsBefore": 0,
+    "postDeploymentScript": "backend/target/rule-menu-postverify.ps1"
+  }
+}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Independently retain the release audit chain
+After=network-online.target
+[Service]
+Type=oneshot
+User=sma-auditor
+Group=sma-auditor
+EnvironmentFile=/etc/sma-auditor/auditor.env
+ExecStart=/usr/bin/java -Xmx256m -XX:+DisableAttachMechanism -jar /opt/sma-auditor/extension-worker.jar audit-mirror
+WorkingDirectory=/var/lib/sma-auditor
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/sma-auditor
+TimeoutStartSec=120

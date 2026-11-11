@@ -1,0 +1,1786 @@
+{
+  "recordedAt": "2026-11-11T18:36:05.3375515+08:00",
+  "scope": "current local signed-in admin; tenant 1; synthetic objects only",
+  "frontend": "http://127.0.0.1:5174",
+  "backendHealth": "UP",
+  "proxyHealth": "UP",
+  "testDatabase": "sma_test_rule",
+  "testBuildSuccess": true,
+  "tests": [
+    {
+      "name": "com.sma.admin.architecture.ArchitectureRulesTests",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportUpdatedAt": "2026-11-11T18:15:51.7132199+08:00"
+    },
+    {
+      "name": "com.sma.admin.architecture.I18nBundlesTests",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportUpdatedAt": "2026-11-11T18:15:51.8081821+08:00"
+    },
+    {
+      "name": "com.sma.admin.ModularityTests",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportUpdatedAt": "2026-11-11T18:15:53.5137644+08:00"
+    },
+    {
+      "name": "com.sma.admin.rule.RuleDemoBindingPolicyTests",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportUpdatedAt": "2026-11-11T18:15:54.0464454+08:00"
+    },
+    {
+      "name": "com.sma.admin.rule.RuleDemoDataTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportUpdatedAt": "2026-11-11T18:26:00.5208046+08:00"
+    },
+    {
+      "name": "com.sma.admin.rule.RulePlatformTests",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportUpdatedAt": "2026-11-11T18:28:24.6442264+08:00"
+    }
+  ],
+  "assets": [
+    {
+      "id": "2120457429417230337",
+      "code": "demo_rule_ratio",
+      "kind": "SCENE",
+      "name": "【演示】商品比例折扣",
+      "draft": {
+        "code": "demo_rule_ratio",
+        "name": "【演示】商品比例折扣",
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "allowedKinds": [
+          "EXPRESSION"
+        ],
+        "outputSchema": {
+          "type": "DECIMAL",
+          "items": null,
+          "scale": 2,
+          "maximum": null,
+          "minimum": 0,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": null,
+          "defaultValue": null
+        },
+        "parameterPolicy": {
+          "fields": {
+            "ratio": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 0.9
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "state": "DRAFT",
+      "revision": 1,
+      "tenantId": "1",
+      "referenceId": null,
+      "activeVersionId": null,
+      "releaseRevision": 0
+    },
+    {
+      "id": "2120457629842046978",
+      "code": "demo_rule_eligibility",
+      "kind": "SCENE",
+      "name": "【演示】会员资格判断",
+      "draft": {
+        "code": "demo_rule_eligibility",
+        "name": "【演示】会员资格判断",
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            },
+            "member": {
+              "type": "BOOLEAN",
+              "items": null,
+              "scale": null,
+              "maximum": null,
+              "minimum": null,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "allowedKinds": [
+          "CONDITION"
+        ],
+        "outputSchema": {
+          "type": "BOOLEAN",
+          "items": null,
+          "scale": null,
+          "maximum": null,
+          "minimum": null,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": null,
+          "defaultValue": null
+        },
+        "parameterPolicy": {
+          "fields": {
+            "threshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 100
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "state": "DRAFT",
+      "revision": 1,
+      "tenantId": "1",
+      "referenceId": null,
+      "activeVersionId": null,
+      "releaseRevision": 0
+    },
+    {
+      "id": "2120457991420411906",
+      "code": "demo_rule_reduction",
+      "kind": "SCENE",
+      "name": "【演示】满额减免流程",
+      "draft": {
+        "code": "demo_rule_reduction",
+        "name": "【演示】满额减免流程",
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "allowedKinds": [
+          "FLOW"
+        ],
+        "outputSchema": {
+          "type": "DECIMAL",
+          "items": null,
+          "scale": 2,
+          "maximum": null,
+          "minimum": 0,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": null,
+          "defaultValue": null
+        },
+        "parameterPolicy": {
+          "fields": {
+            "reduction": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 10
+            },
+            "threshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 100
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "state": "DRAFT",
+      "revision": 1,
+      "tenantId": "1",
+      "referenceId": null,
+      "activeVersionId": null,
+      "releaseRevision": 0
+    },
+    {
+      "id": "2120458139026358273",
+      "code": "demo_rule_tiers",
+      "kind": "SCENE",
+      "name": "【演示】阶梯优惠决策表",
+      "draft": {
+        "code": "demo_rule_tiers",
+        "name": "【演示】阶梯优惠决策表",
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "allowedKinds": [
+          "DECISION_TABLE"
+        ],
+        "outputSchema": {
+          "type": "OBJECT",
+          "items": null,
+          "scale": null,
+          "maximum": null,
+          "minimum": null,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": {
+            "rate": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            },
+            "payable": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": false,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "defaultValue": null
+        },
+        "parameterPolicy": {
+          "fields": {
+            "lowRatio": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 0.9
+            },
+            "highRatio": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 0.8
+            },
+            "lowThreshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 100
+            },
+            "highThreshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 200
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "state": "DRAFT",
+      "revision": 1,
+      "tenantId": "1",
+      "referenceId": null,
+      "activeVersionId": null,
+      "releaseRevision": 0
+    },
+    {
+      "id": "2120458854046138370",
+      "code": "demo_rule_ratio_template",
+      "kind": "TEMPLATE",
+      "name": "【演示】比例折扣模板",
+      "draft": {
+        "examples": [
+          {
+            "name": "比例折扣（表达式） 1",
+            "input": {
+              "amount": 100
+            },
+            "params": {
+              "ratio": 0.9
+            },
+            "expectedOutput": 90
+          },
+          {
+            "name": "比例折扣（表达式） 2",
+            "input": {
+              "amount": 0
+            },
+            "params": {
+              "ratio": 0.9
+            },
+            "expectedOutput": 0
+          },
+          {
+            "name": "比例折扣（表达式） 3",
+            "input": {
+              "amount": 19.99
+            },
+            "params": {
+              "ratio": 0.85
+            },
+            "expectedOutput": 16.99
+          }
+        ],
+        "definition": {
+          "flow": null,
+          "kind": "EXPRESSION",
+          "table": null,
+          "onMatch": null,
+          "condition": null,
+          "otherwise": null,
+          "expression": "round(input.amount * params.ratio, 2)"
+        },
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "parameterUi": {
+          "ratio": {
+            "help": "0到1之间；0.9表示九折，最多四位小数。",
+            "group": null,
+            "label": "折后比例",
+            "order": 0
+          }
+        },
+        "outputSchema": {
+          "type": "DECIMAL",
+          "items": null,
+          "scale": 2,
+          "maximum": null,
+          "minimum": 0,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": null,
+          "defaultValue": null
+        },
+        "formatVersion": 1,
+        "parameterSchema": {
+          "fields": {
+            "ratio": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 0.9
+            }
+          },
+          "additionalProperties": false
+        },
+        "intervalConstraints": []
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120457429417230337",
+      "activeVersionId": "2120459046954762241",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120459867557756930",
+      "code": "demo_rule_eligibility_template",
+      "kind": "TEMPLATE",
+      "name": "【演示】会员资格模板",
+      "draft": {
+        "examples": [
+          {
+            "name": "会员资格（条件） 1",
+            "input": {
+              "amount": 100,
+              "member": true
+            },
+            "params": {
+              "threshold": 100
+            },
+            "expectedOutput": true
+          },
+          {
+            "name": "会员资格（条件） 2",
+            "input": {
+              "amount": 99.99,
+              "member": true
+            },
+            "params": {
+              "threshold": 100
+            },
+            "expectedOutput": false
+          },
+          {
+            "name": "会员资格（条件） 3",
+            "input": {
+              "amount": 200,
+              "member": false
+            },
+            "params": {
+              "threshold": 100
+            },
+            "expectedOutput": false
+          }
+        ],
+        "definition": {
+          "flow": null,
+          "kind": "CONDITION",
+          "table": null,
+          "onMatch": true,
+          "condition": {
+            "id": "eligible",
+            "left": null,
+            "right": null,
+            "children": [
+              {
+                "id": "member",
+                "left": {
+                  "path": "member",
+                  "value": null,
+                  "source": "input"
+                },
+                "right": {
+                  "path": null,
+                  "value": true,
+                  "source": "literal"
+                },
+                "children": null,
+                "operator": "EQ"
+              },
+              {
+                "id": "threshold",
+                "left": {
+                  "path": "amount",
+                  "value": null,
+                  "source": "input"
+                },
+                "right": {
+                  "path": "threshold",
+                  "value": null,
+                  "source": "params"
+                },
+                "children": null,
+                "operator": "GE"
+              }
+            ],
+            "operator": "AND"
+          },
+          "otherwise": false,
+          "expression": null
+        },
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            },
+            "member": {
+              "type": "BOOLEAN",
+              "items": null,
+              "scale": null,
+              "maximum": null,
+              "minimum": null,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "parameterUi": {
+          "threshold": {
+            "help": "达到此金额才命中，包含边界金额。",
+            "group": null,
+            "label": "金额门槛",
+            "order": 0
+          }
+        },
+        "outputSchema": {
+          "type": "BOOLEAN",
+          "items": null,
+          "scale": null,
+          "maximum": null,
+          "minimum": null,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": null,
+          "defaultValue": null
+        },
+        "formatVersion": 1,
+        "parameterSchema": {
+          "fields": {
+            "threshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "intervalConstraints": []
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120457629842046978",
+      "activeVersionId": "2120459984926965761",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120460277580333058",
+      "code": "demo_rule_reduction_template",
+      "kind": "TEMPLATE",
+      "name": "【演示】满额减免流程模板",
+      "draft": {
+        "examples": [
+          {
+            "name": "满额减免（流程） 1",
+            "input": {
+              "amount": 100
+            },
+            "params": {
+              "reduction": 10,
+              "threshold": 100
+            },
+            "expectedOutput": 90
+          },
+          {
+            "name": "满额减免（流程） 2",
+            "input": {
+              "amount": 99.99
+            },
+            "params": {
+              "reduction": 10,
+              "threshold": 100
+            },
+            "expectedOutput": 99.99
+          },
+          {
+            "name": "满额减免（流程） 3",
+            "input": {
+              "amount": 5
+            },
+            "params": {
+              "reduction": 10,
+              "threshold": 0
+            },
+            "expectedOutput": 0
+          }
+        ],
+        "definition": {
+          "flow": {
+            "nodes": [
+              {
+                "id": "start",
+                "kind": "START",
+                "next": "threshold",
+                "cases": null,
+                "onTrue": null,
+                "onFalse": null,
+                "condition": null,
+                "expression": null,
+                "outputSchema": null,
+                "inputBindings": null,
+                "subRuleVersionId": null,
+                "parameterBindings": null
+              },
+              {
+                "id": "threshold",
+                "kind": "CONDITION",
+                "next": null,
+                "cases": null,
+                "onTrue": "discount",
+                "onFalse": "original",
+                "condition": null,
+                "expression": "input.amount >= params.threshold",
+                "outputSchema": null,
+                "inputBindings": null,
+                "subRuleVersionId": null,
+                "parameterBindings": null
+              },
+              {
+                "id": "discount",
+                "kind": "RESULT",
+                "next": null,
+                "cases": null,
+                "onTrue": null,
+                "onFalse": null,
+                "condition": null,
+                "expression": "round(max(input.amount - params.reduction, 0), 2)",
+                "outputSchema": null,
+                "inputBindings": null,
+                "subRuleVersionId": null,
+                "parameterBindings": null
+              },
+              {
+                "id": "original",
+                "kind": "RESULT",
+                "next": null,
+                "cases": null,
+                "onTrue": null,
+                "onFalse": null,
+                "condition": null,
+                "expression": "input.amount",
+                "outputSchema": null,
+                "inputBindings": null,
+                "subRuleVersionId": null,
+                "parameterBindings": null
+              }
+            ],
+            "startNode": "start"
+          },
+          "kind": "FLOW",
+          "table": null,
+          "onMatch": null,
+          "condition": null,
+          "otherwise": null,
+          "expression": null
+        },
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "parameterUi": {
+          "reduction": {
+            "help": "命中后扣减的金额，应付金额最低为零。",
+            "group": null,
+            "label": "减免金额",
+            "order": 1
+          },
+          "threshold": {
+            "help": "达到此金额才命中，包含边界金额。",
+            "group": null,
+            "label": "金额门槛",
+            "order": 0
+          }
+        },
+        "outputSchema": {
+          "type": "DECIMAL",
+          "items": null,
+          "scale": 2,
+          "maximum": null,
+          "minimum": 0,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": null,
+          "defaultValue": null
+        },
+        "formatVersion": 1,
+        "parameterSchema": {
+          "fields": {
+            "reduction": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 10
+            },
+            "threshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "intervalConstraints": []
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120457991420411906",
+      "activeVersionId": "2120460438423502849",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120460883602735106",
+      "code": "demo_rule_tiers_template",
+      "kind": "TEMPLATE",
+      "name": "【演示】阶梯优惠决策表模板",
+      "draft": {
+        "examples": [
+          {
+            "name": "阶梯优惠（决策表） 1",
+            "input": {
+              "amount": 200
+            },
+            "params": {
+              "lowRatio": 0.9,
+              "highRatio": 0.8,
+              "lowThreshold": 100,
+              "highThreshold": 200
+            },
+            "expectedOutput": {
+              "rate": 0.8,
+              "payable": 160
+            }
+          },
+          {
+            "name": "阶梯优惠（决策表） 2",
+            "input": {
+              "amount": 100
+            },
+            "params": {
+              "lowRatio": 0.9,
+              "highRatio": 0.8,
+              "lowThreshold": 100,
+              "highThreshold": 200
+            },
+            "expectedOutput": {
+              "rate": 0.9,
+              "payable": 90
+            }
+          },
+          {
+            "name": "阶梯优惠（决策表） 3",
+            "input": {
+              "amount": 99.99
+            },
+            "params": {
+              "lowRatio": 0.9,
+              "highRatio": 0.8,
+              "lowThreshold": 100,
+              "highThreshold": 200
+            },
+            "expectedOutput": {
+              "rate": 1,
+              "payable": 99.99
+            }
+          }
+        ],
+        "definition": {
+          "flow": null,
+          "kind": "DECISION_TABLE",
+          "table": {
+            "rows": [
+              {
+                "id": "high",
+                "cells": {
+                  "amount": {
+                    "operand": {
+                      "path": "highThreshold",
+                      "value": null,
+                      "source": "params"
+                    },
+                    "operator": "GE"
+                  }
+                },
+                "outputs": {
+                  "rate": "params.highRatio",
+                  "payable": "round(input.amount * params.highRatio, 2)"
+                }
+              },
+              {
+                "id": "low",
+                "cells": {
+                  "amount": {
+                    "operand": {
+                      "path": "lowThreshold",
+                      "value": null,
+                      "source": "params"
+                    },
+                    "operator": "GE"
+                  }
+                },
+                "outputs": {
+                  "rate": "params.lowRatio",
+                  "payable": "round(input.amount * params.lowRatio, 2)"
+                }
+              },
+              {
+                "id": "original",
+                "cells": {
+                  "amount": {
+                    "operand": null,
+                    "operator": "ANY"
+                  }
+                },
+                "outputs": {
+                  "rate": "1",
+                  "payable": "input.amount"
+                }
+              }
+            ],
+            "inputs": [
+              {
+                "id": "amount",
+                "schema": {
+                  "type": "DECIMAL",
+                  "items": null,
+                  "scale": 2,
+                  "maximum": null,
+                  "minimum": 0,
+                  "maxItems": null,
+                  "required": true,
+                  "maxLength": null,
+                  "sensitive": false,
+                  "enumValues": null,
+                  "properties": null,
+                  "defaultValue": null
+                },
+                "source": {
+                  "path": "amount",
+                  "value": null,
+                  "source": "input"
+                }
+              }
+            ],
+            "hitPolicy": "FIRST",
+            "defaultOutput": {
+              "rate": 1,
+              "payable": null
+            }
+          },
+          "onMatch": null,
+          "condition": null,
+          "otherwise": null,
+          "expression": null
+        },
+        "inputSchema": {
+          "fields": {
+            "amount": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "additionalProperties": false
+        },
+        "parameterUi": {
+          "lowRatio": {
+            "help": "低档优惠比例，0.9表示九折。",
+            "group": null,
+            "label": "低档折后比例",
+            "order": 3
+          },
+          "highRatio": {
+            "help": "高档优惠比例，0.8表示八折。",
+            "group": null,
+            "label": "高档折后比例",
+            "order": 1
+          },
+          "lowThreshold": {
+            "help": "高档未命中时匹配此门槛。",
+            "group": null,
+            "label": "低档门槛",
+            "order": 2
+          },
+          "highThreshold": {
+            "help": "优先匹配的高档门槛，应大于低档门槛。",
+            "group": null,
+            "label": "高档门槛",
+            "order": 0
+          }
+        },
+        "outputSchema": {
+          "type": "OBJECT",
+          "items": null,
+          "scale": null,
+          "maximum": null,
+          "minimum": null,
+          "maxItems": null,
+          "required": true,
+          "maxLength": null,
+          "sensitive": false,
+          "enumValues": null,
+          "properties": {
+            "rate": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            },
+            "payable": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": false,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": null
+            }
+          },
+          "defaultValue": null
+        },
+        "formatVersion": 1,
+        "parameterSchema": {
+          "fields": {
+            "lowRatio": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 0.9
+            },
+            "highRatio": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 4,
+              "maximum": 1,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 0.8
+            },
+            "lowThreshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 100
+            },
+            "highThreshold": {
+              "type": "DECIMAL",
+              "items": null,
+              "scale": 2,
+              "maximum": null,
+              "minimum": 0,
+              "maxItems": null,
+              "required": true,
+              "maxLength": null,
+              "sensitive": false,
+              "enumValues": null,
+              "properties": null,
+              "defaultValue": 200
+            }
+          },
+          "additionalProperties": false
+        },
+        "intervalConstraints": []
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120458139026358273",
+      "activeVersionId": "2120461142601007106",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464001321185281",
+      "code": "demo_rule_ratio_a",
+      "kind": "INSTANCE",
+      "name": "【演示】普通商品九折",
+      "draft": {
+        "code": "demo_rule_ratio_a",
+        "name": "【演示】普通商品九折",
+        "endAt": null,
+        "params": {
+          "ratio": 0.9
+        },
+        "startAt": null,
+        "objectId": "demo:1:ratio_a",
+        "objectType": "RULE_DEMO",
+        "environment": "default",
+        "templateVersionId": 2120459046954762241
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120458854046138370",
+      "activeVersionId": "2120465074333200386",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464140316225537",
+      "code": "demo_rule_ratio_b",
+      "kind": "INSTANCE",
+      "name": "【演示】会员商品八折",
+      "draft": {
+        "code": "demo_rule_ratio_b",
+        "name": "【演示】会员商品八折",
+        "endAt": null,
+        "params": {
+          "ratio": 0.8
+        },
+        "startAt": null,
+        "objectId": "demo:1:ratio_b",
+        "objectType": "RULE_DEMO",
+        "environment": "default",
+        "templateVersionId": 2120459046954762241
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120458854046138370",
+      "activeVersionId": "2120465058252238849",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464233119395842",
+      "code": "demo_rule_eligibility_a",
+      "kind": "INSTANCE",
+      "name": "【演示】会员满百资格",
+      "draft": {
+        "code": "demo_rule_eligibility_a",
+        "name": "【演示】会员满百资格",
+        "endAt": null,
+        "params": {
+          "threshold": 100
+        },
+        "startAt": null,
+        "objectId": "demo:1:eligibility_a",
+        "objectType": "RULE_DEMO",
+        "environment": "default",
+        "templateVersionId": 2120459984926965761
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120459867557756930",
+      "activeVersionId": "2120465045673521153",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464317051613185",
+      "code": "demo_rule_reduction_a",
+      "kind": "INSTANCE",
+      "name": "【演示】商品满百减十",
+      "draft": {
+        "code": "demo_rule_reduction_a",
+        "name": "【演示】商品满百减十",
+        "endAt": null,
+        "params": {
+          "reduction": 10,
+          "threshold": 100
+        },
+        "startAt": null,
+        "objectId": "demo:1:reduction_a",
+        "objectType": "RULE_DEMO",
+        "environment": "default",
+        "templateVersionId": 2120460438423502849
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120460277580333058",
+      "activeVersionId": "2120464923430531074",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464405182328834",
+      "code": "demo_rule_tiers_a",
+      "kind": "INSTANCE",
+      "name": "【演示】商品阶梯优惠",
+      "draft": {
+        "code": "demo_rule_tiers_a",
+        "name": "【演示】商品阶梯优惠",
+        "endAt": null,
+        "params": {
+          "lowRatio": 0.9,
+          "highRatio": 0.8,
+          "lowThreshold": 100,
+          "highThreshold": 200
+        },
+        "startAt": null,
+        "objectId": "demo:1:tiers_a",
+        "objectType": "RULE_DEMO",
+        "environment": "default",
+        "templateVersionId": 2120461142601007106
+      },
+      "state": "PUBLISHED",
+      "revision": 2,
+      "tenantId": "1",
+      "referenceId": "2120460883602735106",
+      "activeVersionId": "2120464818237386754",
+      "releaseRevision": 1
+    }
+  ],
+  "templatePublicationProofs": [
+    {
+      "code": "demo_rule_ratio_template",
+      "passed": 1,
+      "report": {
+        "id": 2120459043842588673,
+        "total": 3,
+        "passed": true,
+        "results": [
+          {
+            "name": "比例折扣（表达式） 1",
+            "caseId": -1,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "比例折扣（表达式） 2",
+            "caseId": -2,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "比例折扣（表达式） 3",
+            "caseId": -3,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          }
+        ],
+        "versionId": null,
+        "templateId": 2120458854046138370,
+        "caseSetHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "compareHash": null,
+        "contentHash": "aefd0bec1706aeaae5db2b74fda5046ff0d9df439e2a1a284d8fda326373cadd",
+        "compareVersionId": null
+      },
+      "assetId": "2120458854046138370",
+      "hashValid": true,
+      "testRunId": "2120459043842588673",
+      "versionId": "2120459046954762241"
+    },
+    {
+      "code": "demo_rule_eligibility_template",
+      "passed": 1,
+      "report": {
+        "id": 2120459983320547330,
+        "total": 3,
+        "passed": true,
+        "results": [
+          {
+            "name": "会员资格（条件） 1",
+            "caseId": -1,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "会员资格（条件） 2",
+            "caseId": -2,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "NOT_MATCHED"
+          },
+          {
+            "name": "会员资格（条件） 3",
+            "caseId": -3,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "NOT_MATCHED"
+          }
+        ],
+        "versionId": null,
+        "templateId": 2120459867557756930,
+        "caseSetHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "compareHash": null,
+        "contentHash": "5e45ed2b29ae9f7dcef1da4093af1bf24b680bf1a5f4d7e525d6a0e156e9233a",
+        "compareVersionId": null
+      },
+      "assetId": "2120459867557756930",
+      "hashValid": true,
+      "testRunId": "2120459983320547330",
+      "versionId": "2120459984926965761"
+    },
+    {
+      "code": "demo_rule_reduction_template",
+      "passed": 1,
+      "report": {
+        "id": 2120460436850638849,
+        "total": 3,
+        "passed": true,
+        "results": [
+          {
+            "name": "满额减免（流程） 1",
+            "caseId": -1,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "满额减免（流程） 2",
+            "caseId": -2,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "满额减免（流程） 3",
+            "caseId": -3,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          }
+        ],
+        "versionId": null,
+        "templateId": 2120460277580333058,
+        "caseSetHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "compareHash": null,
+        "contentHash": "cc72ddcda706ad7b9c6965b9b4b5f94de16f4a59150711373cbefcd2d0c48347",
+        "compareVersionId": null
+      },
+      "assetId": "2120460277580333058",
+      "hashValid": true,
+      "testRunId": "2120460436850638849",
+      "versionId": "2120460438423502849"
+    },
+    {
+      "code": "demo_rule_tiers_template",
+      "passed": 1,
+      "report": {
+        "id": 2120461140839399425,
+        "total": 3,
+        "passed": true,
+        "results": [
+          {
+            "name": "阶梯优惠（决策表） 1",
+            "caseId": -1,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "阶梯优惠（决策表） 2",
+            "caseId": -2,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          },
+          {
+            "name": "阶梯优惠（决策表） 3",
+            "caseId": -3,
+            "passed": true,
+            "changed": null,
+            "problems": [],
+            "actualStatus": "SUCCESS"
+          }
+        ],
+        "versionId": null,
+        "templateId": 2120460883602735106,
+        "caseSetHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "compareHash": null,
+        "contentHash": "3e57ffb7aa7939c0507e17c77db04f95191cdc4a5c04185cb63fca164594fa77",
+        "compareVersionId": null
+      },
+      "assetId": "2120460883602735106",
+      "hashValid": true,
+      "testRunId": "2120461140839399425",
+      "versionId": "2120461142601007106"
+    }
+  ],
+  "activeVersions": [
+    {
+      "code": "demo_rule_ratio_template",
+      "hashValid": true,
+      "testRunId": "2120459043842588673",
+      "versionId": "2120459046954762241",
+      "dependencyId": "2120457429417230337"
+    },
+    {
+      "code": "demo_rule_eligibility_template",
+      "hashValid": true,
+      "testRunId": "2120459983320547330",
+      "versionId": "2120459984926965761",
+      "dependencyId": "2120457629842046978"
+    },
+    {
+      "code": "demo_rule_reduction_template",
+      "hashValid": true,
+      "testRunId": "2120460436850638849",
+      "versionId": "2120460438423502849",
+      "dependencyId": "2120457991420411906"
+    },
+    {
+      "code": "demo_rule_tiers_template",
+      "hashValid": true,
+      "testRunId": "2120461140839399425",
+      "versionId": "2120461142601007106",
+      "dependencyId": "2120458139026358273"
+    },
+    {
+      "code": "demo_rule_ratio_a",
+      "hashValid": true,
+      "testRunId": null,
+      "versionId": "2120465074333200386",
+      "dependencyId": "2120459046954762241"
+    },
+    {
+      "code": "demo_rule_ratio_b",
+      "hashValid": true,
+      "testRunId": null,
+      "versionId": "2120465058252238849",
+      "dependencyId": "2120459046954762241"
+    },
+    {
+      "code": "demo_rule_eligibility_a",
+      "hashValid": true,
+      "testRunId": null,
+      "versionId": "2120465045673521153",
+      "dependencyId": "2120459984926965761"
+    },
+    {
+      "code": "demo_rule_reduction_a",
+      "hashValid": true,
+      "testRunId": null,
+      "versionId": "2120464923430531074",
+      "dependencyId": "2120460438423502849"
+    },
+    {
+      "code": "demo_rule_tiers_a",
+      "hashValid": true,
+      "testRunId": null,
+      "versionId": "2120464818237386754",
+      "dependencyId": "2120461142601007106"
+    }
+  ],
+  "executions": [
+    {
+      "id": "2120464822087757826",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464405182328834",
+      "instanceCode": "demo_rule_tiers_a",
+      "durationMicros": 33125,
+      "templateVersionId": "2120461142601007106"
+    },
+    {
+      "id": "2120464930141417473",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464317051613185",
+      "instanceCode": "demo_rule_reduction_a",
+      "durationMicros": 28405,
+      "templateVersionId": "2120460438423502849"
+    },
+    {
+      "id": "2120465048575979521",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464233119395842",
+      "instanceCode": "demo_rule_eligibility_a",
+      "durationMicros": 14178,
+      "templateVersionId": "2120459984926965761"
+    },
+    {
+      "id": "2120465062274576386",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464140316225537",
+      "instanceCode": "demo_rule_ratio_b",
+      "durationMicros": 14011,
+      "templateVersionId": "2120459046954762241"
+    },
+    {
+      "id": "2120465078326177794",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464001321185281",
+      "instanceCode": "demo_rule_ratio_a",
+      "durationMicros": 13149,
+      "templateVersionId": "2120459046954762241"
+    },
+    {
+      "id": "2120465169137053697",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464405182328834",
+      "instanceCode": "demo_rule_tiers_a",
+      "durationMicros": 44106,
+      "templateVersionId": "2120461142601007106"
+    },
+    {
+      "id": "2120465174262493185",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464405182328834",
+      "instanceCode": "demo_rule_tiers_a",
+      "durationMicros": 42479,
+      "templateVersionId": "2120461142601007106"
+    },
+    {
+      "id": "2120465181833211905",
+      "status": "NOT_MATCHED",
+      "problems": [],
+      "instanceId": "2120464233119395842",
+      "instanceCode": "demo_rule_eligibility_a",
+      "durationMicros": 13414,
+      "templateVersionId": "2120459984926965761"
+    },
+    {
+      "id": "2120465188170805249",
+      "status": "SUCCESS",
+      "problems": [],
+      "instanceId": "2120464317051613185",
+      "instanceCode": "demo_rule_reduction_a",
+      "durationMicros": 26425,
+      "templateVersionId": "2120460438423502849"
+    }
+  ],
+  "releases": [
+    {
+      "id": "2120459047336443905",
+      "code": "demo_rule_ratio_template",
+      "action": "PUBLISH",
+      "assetId": "2120458854046138370",
+      "versionId": "2120459046954762241",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120459984926965762",
+      "code": "demo_rule_eligibility_template",
+      "action": "PUBLISH",
+      "assetId": "2120459867557756930",
+      "versionId": "2120459984926965761",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120460438490611714",
+      "code": "demo_rule_reduction_template",
+      "action": "PUBLISH",
+      "assetId": "2120460277580333058",
+      "versionId": "2120460438423502849",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120461142601007107",
+      "code": "demo_rule_tiers_template",
+      "action": "PUBLISH",
+      "assetId": "2120460883602735106",
+      "versionId": "2120461142601007106",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464818304495617",
+      "code": "demo_rule_tiers_a",
+      "action": "PUBLISH",
+      "assetId": "2120464405182328834",
+      "versionId": "2120464818237386754",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120464923430531075",
+      "code": "demo_rule_reduction_a",
+      "action": "PUBLISH",
+      "assetId": "2120464317051613185",
+      "versionId": "2120464923430531074",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120465045673521154",
+      "code": "demo_rule_eligibility_a",
+      "action": "PUBLISH",
+      "assetId": "2120464233119395842",
+      "versionId": "2120465045673521153",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120465058315153410",
+      "code": "demo_rule_ratio_b",
+      "action": "PUBLISH",
+      "assetId": "2120464140316225537",
+      "versionId": "2120465058252238849",
+      "releaseRevision": 1
+    },
+    {
+      "id": "2120465074396114946",
+      "code": "demo_rule_ratio_a",
+      "action": "PUBLISH",
+      "assetId": "2120464001321185281",
+      "versionId": "2120465074333200386",
+      "releaseRevision": 1
+    }
+  ],
+  "runtime": {
+    "deployedAt": "2026-11-11T18:29:32.1577419+08:00",
+    "pid": 9444,
+    "previousPid": 40488,
+    "health": "UP",
+    "demoEnabled": true,
+    "sha256": "EFE30D8E6102068C6CF983CDFEC95D08FBD35CD7EDB5C5E2629319F78C49D927",
+    "deploymentMode": "local minimal patch; only RuleDemoBindingPolicy.class added",
+    "databaseMigrated": false
+  },
+  "keysPreserved": true,
+  "runtimeHashMatches": true,
+  "limitations": [
+    "Scoped backend verification; not the complete workspace suite",
+    "Local minimal adapter patch; not a full workspace release",
+    "No real product/order/member object binding",
+    "Execution output values are verified in browser and recorded separately; database intentionally stores hashes and traces"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-11T00:17:10.908Z",
+  "scope": "Shared page header; actual notices route with isolated mock API",
+  "before": {
+    "headerHeight": 92.09375,
+    "filterTop": 264.09375,
+    "titleFont": "28px"
+  },
+  "after": {
+    "headerHeight": 40,
+    "filterTop": 180,
+    "titleFont": "18px"
+  },
+  "reclaimedPixels": 84.09375,
+  "keyboardDescriptionChecked": true,
+  "responsiveWidths": [
+    1440,
+    390,
+    320
+  ],
+  "themeLocales": [
+    "zh-CN/light",
+    "en-US/dark"
+  ]
+}

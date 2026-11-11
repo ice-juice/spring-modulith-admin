@@ -1,0 +1,354 @@
+{
+  "checkedAt": "2026-11-11T17:51:01.4201804+08:00",
+  "status": "complete",
+  "tasks": [
+    "V1",
+    "V2",
+    "V3"
+  ],
+  "design": "visual-flow-design.md",
+  "guide": "visual-flow-guide.md",
+  "frontend": {
+    "initialGzipKiB": 152,
+    "testFiles": 32,
+    "hashedFiles": 274,
+    "focusedFlowTests": 9,
+    "command": "npm run verify",
+    "oldSourceHashes": 123,
+    "focusedFlowFiles": 3,
+    "oldRoutes": 30,
+    "unitTests": 82,
+    "log": "frontend-next/.e2e-runtime/rule-visual-flow-final-verify-recheck.log",
+    "languages": [
+      "zh-CN",
+      "en-US"
+    ],
+    "lazyModules": 34
+  },
+  "developmentBrowser": {
+    "log": "frontend-next/.e2e-runtime/rule-visual-flow-browser.log",
+    "boundary": "Final container layout adjustment subsequently covered by production-artifact suite.",
+    "passed": 31
+  },
+  "productionBrowser": {
+    "startTime": "2026-11-11T09:44:34.44Z",
+    "duration": 55346.619000000006,
+    "expected": 30,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "realBrowser": {
+    "startTime": "2026-11-11T09:48:43.501Z",
+    "duration": 18964.59,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "real": {
+    "frontendMode": "static preview",
+    "reloadedGraphAndPinnedVersion": true,
+    "ports": [
+      5187,
+      8082
+    ],
+    "simulationCases": 3,
+    "childTemplatePublished": true,
+    "assertionsPassed": true,
+    "parentTemplatePublished": true,
+    "runId": "1794390350814",
+    "command": "SMA_E2E_STATIC=1 npm run test:real -- rule-flow.spec.ts",
+    "nodeCount": 5,
+    "amounts": [
+      100,
+      "99.99",
+      0
+    ],
+    "expectedOutputs": [
+      90,
+      "99.99",
+      0
+    ],
+    "cleanup": {
+      "schema": "sma_next_e2e_1794390350814",
+      "passed": true,
+      "finishedAt": "2026-11-11T09:49:36.73Z",
+      "credentialsPersisted": false
+    },
+    "log": "frontend-next/.e2e-runtime/rule-visual-flow-static-real.log"
+  },
+  "backendArtifact": {
+    "path": "backend/target/rule-menu-deploy/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar",
+    "sha256": "C5898D1C71633E4419A5FF7105AB8BE5E68DC1816865E07B7D215DD1C6C8333B",
+    "fullMavenRepeated": false,
+    "backendCodeChanged": false
+  },
+  "currentService": {
+    "frontendMode": "existing Vite source service",
+    "frontendProxyHealth": "UP",
+    "frontend": "http://127.0.0.1:5174",
+    "flowEditorHttpStatus": 200,
+    "productionBusinessDataSeeded": false,
+    "testListenersRemaining": 0,
+    "backendHealth": "UP",
+    "backend": "http://127.0.0.1:8080"
+  },
+  "sourceFileCount": 61,
+  "sourceFingerprints": [
+    {
+      "path": "e2e-real/rule-flow.spec.ts",
+      "sha256": "07BAF52F2CD94B2AC7C369AF632C1B36242CD413A7F6082C9C4431EE3CD0CDEC"
+    },
+    {
+      "path": "e2e/rule-flow.spec.ts",
+      "sha256": "A27F9A57306D266F53560A6480EC92E4AC619437427F99694781A1DB1B4D625A"
+    },
+    {
+      "path": "e2e/rule-visual.spec.ts",
+      "sha256": "4E4DEEA12BCD3587A82865CBE85F2995EDB017EA010D8401FEA8BD4215C9A1E0"
+    },
+    {
+      "path": "playwright.real.config.ts",
+      "sha256": "138AECF2C04B4BEF6AD42A0D5EEF9485ED18750DDCA1CB6280B64EDB4FF6BEC6"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\exact.test.ts",
+      "sha256": "FD1CC2A313DC6700B7B2BA955DFDE4825C6BD3134589FD00AEAF681DD7348F6E"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\flow-authoring.test.ts",
+      "sha256": "011C2E0568917FA0D73DB7ED7A601EA1C0449D4EA1CFF908AAB2602051B0403F"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\flow-inputs.test.ts",
+      "sha256": "6990C30E5C98C724889EE94E1D2B71B3415C8CFC4D9854E317C3C68212C34AFB"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\flow.test.ts",
+      "sha256": "780AD9E29C5BF2C5147A8190C35FC2EBDB3BABBCF84716144A7E233FCC2C6861"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\history.test.ts",
+      "sha256": "63BFF0ED8719F4892221A857039FD72027BC48B074FE132B1E47A4EB590CE730"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\model.test.ts",
+      "sha256": "A832D5E03BE737641685980CC0134DCFD7BA97FB878A077E7B0E90C11FC9BFDC"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\references.test.ts",
+      "sha256": "1A6F3191C233758D77A78E2262AC67FDDDD0D02DFC5D1F5612197DDD043F3357"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\samples.test.ts",
+      "sha256": "A4BDFDA37162CF9D88C48378E0F9CD04CD87B0008F8A8BE507155F57940F1D83"
+    },
+    {
+      "path": "src/features/rule\\__tests__\\task.test.ts",
+      "sha256": "F1B11B74E3E40E410A8D92B4DB5E7A2AF159CD65943FC2C05C2C0E6C05B9B27B"
+    },
+    {
+      "path": "src/features/rule\\api.ts",
+      "sha256": "F5C37DFC203EA5FC62DF892497D2A93944AD685A6A1946DBEE387C13B972BFFB"
+    },
+    {
+      "path": "src/features/rule\\CatalogPage.vue",
+      "sha256": "972E70D031B7CC294F9AFA1B1B3B3F8D57D5B9AF31E6E073199EF11BE02E4751"
+    },
+    {
+      "path": "src/features/rule\\components\\BatchPanel.vue",
+      "sha256": "F30586406EB43483B92BE4ACF8D67E2A415EC8539A9D3601845A974283CEF668"
+    },
+    {
+      "path": "src/features/rule\\components\\BindingEditor.vue",
+      "sha256": "23D55120BC9ED55F72261754F984A31B7C9F63ADB8E6D87CE1E16A42145F7A7B"
+    },
+    {
+      "path": "src/features/rule\\components\\CodeEditor.vue",
+      "sha256": "69A518A83BE050084639FFD5A9657D1CB12B991CBA1A5FA78CF4863A33295D42"
+    },
+    {
+      "path": "src/features/rule\\components\\ConditionEditor.vue",
+      "sha256": "6B25B459ABD9B26798A3261A3E1E470ADA9D5659C1A8ABA893A63C2D8899D091"
+    },
+    {
+      "path": "src/features/rule\\components\\DecisionEditor.vue",
+      "sha256": "CBCE8FCBFEC3719F291BB438106502628C41D0CE49D97140971DB3867F6EB832"
+    },
+    {
+      "path": "src/features/rule\\components\\ExactNumberInput.vue",
+      "sha256": "7E53A877A5E5B1D449F7489E5A35281AC1AD1680F0925F52D5CA621EA664D499"
+    },
+    {
+      "path": "src/features/rule\\components\\ExecutionView.vue",
+      "sha256": "0824037AC7B91437FF0C504B4F844A31B0F30A1B6183C4CAFFB058791CFB0042"
+    },
+    {
+      "path": "src/features/rule\\components\\FieldConfig.vue",
+      "sha256": "C278916D00DD7BF652BE0DDDC34E3E637D4AD2FB3E4CFAA4347EDA6E7CA15989"
+    },
+    {
+      "path": "src/features/rule\\components\\FlowCanvas.vue",
+      "sha256": "A1C2F9B3B52885D5658936C10ACEAE1031581190EC5CFF6B29C9245B7CC4B543"
+    },
+    {
+      "path": "src/features/rule\\components\\FlowEditor.vue",
+      "sha256": "21E6B96713B306059EC2DFC88721735FF80DA4C523AE7027572A46089A66FB60"
+    },
+    {
+      "path": "src/features/rule\\components\\IdentifierInput.vue",
+      "sha256": "80F6C49CD3A57B8866797A4731C74686ECFCA116307EF463171C7AAFA95BE636"
+    },
+    {
+      "path": "src/features/rule\\components\\InstanceDetails.vue",
+      "sha256": "CC2D1B713892407B69667CD21B1CF038F7475B8062602EA3ADE20C452036AA8B"
+    },
+    {
+      "path": "src/features/rule\\components\\InstanceEditor.vue",
+      "sha256": "376655EB50597B8BB7AECAE51283B82CCD20E8548F010101ADBC9C3573EDE1E0"
+    },
+    {
+      "path": "src/features/rule\\components\\IntervalEditor.vue",
+      "sha256": "BCE6B8AE6F05E52D7D8559DA2A034D5526D39BA4115D6CE12F02CDB7CB8A1A0E"
+    },
+    {
+      "path": "src/features/rule\\components\\JsonField.vue",
+      "sha256": "BDCB066E164642CD5C6DACC71E88BD3B87CA05C40CE1AF194C242A61BC7A042D"
+    },
+    {
+      "path": "src/features/rule\\components\\MonacoEditor.vue",
+      "sha256": "D79B31572EF87543D7C873428AE4CCFD3EFED748D0C52B30BB8EBD06D3D09DDF"
+    },
+    {
+      "path": "src/features/rule\\components\\OperandEditor.vue",
+      "sha256": "8C28E4A1587E2E5881B43803597A0A5351053E69129DEAE76032FF4B8CEBE673"
+    },
+    {
+      "path": "src/features/rule\\components\\ParameterForm.vue",
+      "sha256": "D9B2DC7AB2CD515B356186E51382C8F3E5348CB072064A76C4600B99661C0296"
+    },
+    {
+      "path": "src/features/rule\\components\\ReferencePanel.vue",
+      "sha256": "C5343D69C715E5FDC3FA3D37EA6CE9A1C40A8AD6EA91B141AD1ECA837998ABE8"
+    },
+    {
+      "path": "src/features/rule\\components\\ReleasePanel.vue",
+      "sha256": "50D50E6561F697C4B129CAF619DC3A68DB0BB2F66AF49D7A5E00F3BBB5F00AB2"
+    },
+    {
+      "path": "src/features/rule\\components\\RuleSourceInput.vue",
+      "sha256": "FC24F58E622A4386713A6748FBC24FDFB7987DE790B2910D66843121BDDC7C9F"
+    },
+    {
+      "path": "src/features/rule\\components\\SchemaEditor.vue",
+      "sha256": "FF68AFF0FB80B38A61F9FB79AF24D5EBA0BB69E484675A96560B242AE6690593"
+    },
+    {
+      "path": "src/features/rule\\components\\SimulationPanel.vue",
+      "sha256": "286929825738E07D4322760FE2CAAB1AF326E92BDA6856E4557B399E55C52A1B"
+    },
+    {
+      "path": "src/features/rule\\components\\SubruleConfig.vue",
+      "sha256": "0919F7FABBEFE35521DC63DF60280A0C030984DC7EB808E0F0A561BA911E2CF9"
+    },
+    {
+      "path": "src/features/rule\\components\\TemplateGovernance.vue",
+      "sha256": "FE3FB7EB6FAEC371A9CF602C375D5D445BA5018026BCBEF7593C6A2D37CE7556"
+    },
+    {
+      "path": "src/features/rule\\components\\TestPanel.vue",
+      "sha256": "DB3C5CEA2A57F77CD1646AF285A8B0A58CB57D32832392AC5B0348D019286B22"
+    },
+    {
+      "path": "src/features/rule\\components\\UpgradePanel.vue",
+      "sha256": "CCCAB9B4E791436264182C28BC1552D55641B4C35617AAA256089CD8714FE9BB"
+    },
+    {
+      "path": "src/features/rule\\EditorProbe.vue",
+      "sha256": "A8417B3237EB7D697AD154C7F022D8AA1DAEF7842E3782CEDAA9379C81364846"
+    },
+    {
+      "path": "src/features/rule\\editorWorkers.ts",
+      "sha256": "BA462062E176AE09E6FCDB5C6994E3ACA3EE6F57686CCEB2BF29460325F3CE28"
+    },
+    {
+      "path": "src/features/rule\\exact.ts",
+      "sha256": "7E3242DDD4C58E8295977F987FEF36ED59436947CD92055BFE5D32684DD6F76C"
+    },
+    {
+      "path": "src/features/rule\\flow.ts",
+      "sha256": "83825319C7BD1F4CAD08151A0280B4E5C3A1A2BE2C5DF214166832BA7DBAC187"
+    },
+    {
+      "path": "src/features/rule\\flowAuthoring.ts",
+      "sha256": "27847E5361738294CF747FDB5A7F45C777F2B97B1491C50521363F586368D7C2"
+    },
+    {
+      "path": "src/features/rule\\InstancesPage.vue",
+      "sha256": "B72AA99DDFAD56E0EE3B6B197CA0C6D8BA19BF662B22CE978990AD3C29867FBD"
+    },
+    {
+      "path": "src/features/rule\\model.ts",
+      "sha256": "460AA2DC1E24E2641D9DE33CD5AC67533E4E8D9134E91CBF79306F7EDE72AA8D"
+    },
+    {
+      "path": "src/features/rule\\OperationsPage.vue",
+      "sha256": "BB0A0C35B16E8A29754E7B6C372D55C186AD03E77EFEE45EF5A04CEF48DA43F3"
+    },
+    {
+      "path": "src/features/rule\\references.ts",
+      "sha256": "01EBAB6B25420C313009E6290E1AAFC0BF803A472F8E4F57FA903B8C0DF73D80"
+    },
+    {
+      "path": "src/features/rule\\samples.ts",
+      "sha256": "72168760A0DE366E8435317E86641D60C73F3161398BB8FC467B726C94184C2A"
+    },
+    {
+      "path": "src/features/rule\\ScenesPage.vue",
+      "sha256": "082F6D23EEFE618C592EB57E196A8B651C38761C6F4308C4AA7E8A0EC9289DD9"
+    },
+    {
+      "path": "src/features/rule\\TemplatePage.vue",
+      "sha256": "E714ED1189812C379314DE7FB89EEBA335A8CBAB02A0CA6E3C7781417EFF3E0D"
+    },
+    {
+      "path": "src/features/rule\\TemplateRoute.vue",
+      "sha256": "2163062D3341A55BAFF7AF3ADB8D944490926DB71484EACF592FAF91BB399E44"
+    },
+    {
+      "path": "src/features/rule\\TemplatesPage.vue",
+      "sha256": "794AFE1284566D5D520F50F6041DECC5C9C2E10F0861628E0DAF3CF23DA94767"
+    },
+    {
+      "path": "src/features/rule\\types.ts",
+      "sha256": "E10FF8F3A6F1AA737D3DD79293B6471BADBF3EB9FE6761A7D54BF27DD910B050"
+    },
+    {
+      "path": "src/features/rule\\useRuleHistory.ts",
+      "sha256": "2804B38369114D713D8AC4FFFA1E5FE51B7ED023F4F9B6767738EBDE2F6FFFA8"
+    },
+    {
+      "path": "src/features/rule\\useRuleTask.ts",
+      "sha256": "C0CAA03ED393ABB039A38E5311ACCA0378CA1AF8C3E0A429A4FD1073279B659B"
+    },
+    {
+      "path": "src/locales/en-US/rule.json",
+      "sha256": "6B08AB285693F94C81EC2A8827DA4809AE7E50A82150A44B12C6EA4C5FF64246"
+    },
+    {
+      "path": "src/locales/zh-CN/rule.json",
+      "sha256": "6AFC785D392624599D64CB1C2BCC0DD03A4B9B558FD4A0CBBAC3015842D1E2FE"
+    }
+  ],
+  "boundaries": [
+    "No workflow loops, shared-variable parallelism, HTTP/business-write nodes or dynamic latest-version binding.",
+    "Canvas positions remain session-local and are excluded from the executable document.",
+    "No current-user browser acceptance, real product-binding integration, production load or restoration acceptance.",
+    "Previous dev real run lost UI state before simulation; possible concurrent HMR was not proven. Final static real run passed."
+  ],
+  "screenshots": [
+    "visual-flow-desktop-light.png",
+    "visual-flow-mobile-dark.png"
+  ]
+}

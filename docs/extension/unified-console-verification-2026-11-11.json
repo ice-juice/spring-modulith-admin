@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-11",
+  "feature": "unified-extension-console",
+  "backend": {
+    "rootCommand": "pwsh -NoProfile -File tools/dev/verify-backend.ps1 -Standard -MavenArgs -Dsma.verify.directory=target/extension-unified/target",
+    "result": "BUILD SUCCESS",
+    "tests": 268,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "log": "backend/target/extension-unified-final-verify.log",
+    "databases": [
+      "sma_test_extension_acceptance",
+      "sma_test_release_https"
+    ],
+    "utcJdbc": true
+  },
+  "securityFinalFollowup": {
+    "reason": "optional operation password reset during administrator factor recovery",
+    "command": "backend/mvnw.cmd -B -ntp -f pom.xml -pl extension-security -am verify",
+    "result": "BUILD SUCCESS",
+    "securityTests": 32,
+    "realMysqlTls": true,
+    "log": "backend/target/extension-unified-recovery-verify.log"
+  },
+  "frontend": {
+    "command": "npm run verify",
+    "result": "passed",
+    "unitTests": 71,
+    "log": "backend/target/extension-unified-frontend-delivery.log"
+  },
+  "browser": {
+    "transport": "mock HTTP",
+    "fullSuitePassed": 7,
+    "fullSuiteLog": "backend/target/extension-unified-ui-final.log",
+    "finalExtensionCasesPassed": 4,
+    "finalExtensionLog": "backend/target/extension-unified-ui-delivery.log",
+    "productionUserSessionTested": false
+  },
+  "localRuntime": {
+    "hostPort": 8080,
+    "pid": 40488,
+    "health": "UP",
+    "anonymousConsoleStatus": 401,
+    "releaseServiceConfigured": false
+  },
+  "artifacts": [
+    {
+      "path": "backend/target/extension-unified/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar",
+      "sha256": "591b4b7c934b811ee95432eb0a887918ef71602790cf2318397c82e3002ab8d9"
+    },
+    {
+      "path": "extension-security/target/extension-security-0.0.1-SNAPSHOT.jar",
+      "sha256": "7780f73b11273e0922906a7db8fc61f886072b1a59bd6816a00abc0ac0e576fb"
+    }
+  ],
+  "limitations": [
+    "Production console service and identity bindings not configured",
+    "Real user MFA enrollment not performed",
+    "Docker/Grype and multi-node/WORM/disaster-recovery acceptance remain pending"
+  ]
+}

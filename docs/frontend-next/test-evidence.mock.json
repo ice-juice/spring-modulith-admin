@@ -1,0 +1,252 @@
+{
+  "recordedAt": "2026-11-10T23:47:53.678Z",
+  "kind": "mock",
+  "runner": "Playwright / installed Google Chrome / Windows",
+  "startedAt": "2026-11-10T23:43:04.225Z",
+  "durationMillis": 263237.359,
+  "passed": 38,
+  "failed": 0,
+  "lockSha256": "a00c53aac8fbb4e66d31f565215b92977d73411278c25bb61c586614aa72ba20",
+  "measurements": [
+    {
+      "name": "table-200-performance",
+      "table200Millis": 1070,
+      "budgetMillis": 5000
+    },
+    {
+      "name": "tree-500-performance",
+      "tree500SearchMillis": 60,
+      "budgetMillis": 3000
+    }
+  ],
+  "tests": [
+    {
+      "file": "accessibility.spec.ts",
+      "title": "representative pages satisfy automated WCAG AA checks in both themes and languages",
+      "status": "passed",
+      "durationMillis": 23968
+    },
+    {
+      "file": "accessibility.spec.ts",
+      "title": "mobile row-action menu can open and close an editor, and message tabs keep their URL",
+      "status": "passed",
+      "durationMillis": 4032
+    },
+    {
+      "file": "accessibility.spec.ts",
+      "title": "viewport widths, 200 percent layout and keyboard modal focus remain usable",
+      "status": "passed",
+      "durationMillis": 5330
+    },
+    {
+      "file": "contracts.spec.ts",
+      "title": "maximum page size, column and density preferences are persisted and isolated by account",
+      "status": "passed",
+      "durationMillis": 5236
+    },
+    {
+      "file": "contracts.spec.ts",
+      "title": "role data scopes, custom departments and large permission-tree search retain explicit selections",
+      "status": "passed",
+      "durationMillis": 8257
+    },
+    {
+      "file": "display-polish.spec.ts",
+      "title": "theme has its own entry; language and time zone share a separate entry and persist independently",
+      "status": "passed",
+      "durationMillis": 4685
+    },
+    {
+      "file": "display-polish.spec.ts",
+      "title": "sidebar, business navigation, workspace tabs and database tables use overlay scrollbars without losing scrolling",
+      "status": "passed",
+      "durationMillis": 4447
+    },
+    {
+      "file": "foundation.spec.ts",
+      "title": "design system: table, form validation, focus, theme, locale and responsive samples",
+      "status": "passed",
+      "durationMillis": 4015
+    },
+    {
+      "file": "foundation.spec.ts",
+      "title": "login handles public settings and empty submission without contacting the login endpoint",
+      "status": "passed",
+      "durationMillis": 1200
+    },
+    {
+      "file": "foundation.spec.ts",
+      "title": "dirty editor cancellation opens a separate confirmation and keeps the draft when declined",
+      "status": "passed",
+      "durationMillis": 2376
+    },
+    {
+      "file": "foundation.spec.ts",
+      "title": "captcha refresh and failed login retain username and require a new captcha without automatic resubmission",
+      "status": "passed",
+      "durationMillis": 1403
+    },
+    {
+      "file": "iam.spec.ts",
+      "title": "user form keeps failed drafts, retries once on explicit submission and preserves string IDs",
+      "status": "passed",
+      "durationMillis": 2486
+    },
+    {
+      "file": "iam.spec.ts",
+      "title": "role authorization uses independent checks and preserves hidden choices under search",
+      "status": "passed",
+      "durationMillis": 1784
+    },
+    {
+      "file": "operations.spec.ts",
+      "title": "five notice audiences, existing attachment selection, readers and recycle actions use explicit IDs",
+      "status": "passed",
+      "durationMillis": 10690
+    },
+    {
+      "file": "operations.spec.ts",
+      "title": "task form types, UTC conversion, state transitions and managed assignment retain their contracts",
+      "status": "passed",
+      "durationMillis": 7990
+    },
+    {
+      "file": "operations.spec.ts",
+      "title": "profile drafts survive header preference changes; saved theme, language and tabs survive reload",
+      "status": "passed",
+      "durationMillis": 4474
+    },
+    {
+      "file": "operations.spec.ts",
+      "title": "cache clear, SQL reset and event retry are confirmed writes; referenced files retain visible errors",
+      "status": "passed",
+      "durationMillis": 6341
+    },
+    {
+      "file": "operations.spec.ts",
+      "title": "file thumbnails release authenticated object URLs when their page is left",
+      "status": "passed",
+      "durationMillis": 1904
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "all existing business routes render at desktop and mobile without page errors, missing translations or document overflow",
+      "status": "passed",
+      "durationMillis": 44929
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "dictionary editing is independent of selecting its type and database filtering has an explicit empty state",
+      "status": "passed",
+      "durationMillis": 2833
+    },
+    {
+      "file": "routes.spec.ts",
+      "title": "SQL sorting sends the requested server ordering and document export produces a downloadable file",
+      "status": "passed",
+      "durationMillis": 2424
+    },
+    {
+      "file": "softlight-pages.spec.ts",
+      "title": "role workspace guards unsaved changes, retains failed writes and ignores late role responses",
+      "status": "passed",
+      "durationMillis": 2383
+    },
+    {
+      "file": "softlight-pages.spec.ts",
+      "title": "production login design keeps captcha, accessible forms, branding and both themes across widths",
+      "status": "passed",
+      "durationMillis": 6797
+    },
+    {
+      "file": "softlight-shell.spec.ts",
+      "title": "navigation groups replace the top row, keep nested authorized menus, restore and fall back safely",
+      "status": "passed",
+      "durationMillis": 5049
+    },
+    {
+      "file": "softlight-shell.spec.ts",
+      "title": "mobile navigation groups are reachable and selecting menus keeps navigation and work tabs independent",
+      "status": "passed",
+      "durationMillis": 3319
+    },
+    {
+      "file": "states.spec.ts",
+      "title": "business list routes display request errors and recover into explicit empty states",
+      "status": "passed",
+      "durationMillis": 41211
+    },
+    {
+      "file": "states.spec.ts",
+      "title": "initial table load announces pending state and an unsuccessful refresh retains existing rows",
+      "status": "passed",
+      "durationMillis": 1697
+    },
+    {
+      "file": "visuals.spec.ts",
+      "title": "actual workspace, users and roles: both languages, themes and six widths with reviewable screenshots",
+      "status": "passed",
+      "durationMillis": 16307
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "parameter group keys, failed option loading and masked secrets keep the backend contract",
+      "status": "passed",
+      "durationMillis": 3356
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "lock cannot be escaped, unlock restores the workspace, password change logs out and session revoke requires confirmation",
+      "status": "passed",
+      "durationMillis": 4462
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "application write is exclusive, rotation can be cancelled and credentials are removed on close",
+      "status": "passed",
+      "durationMillis": 3255
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "restricted account hides write operations and denies unauthorized deep links",
+      "status": "passed",
+      "durationMillis": 2318
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "expired session and server forced logout both remove access",
+      "status": "passed",
+      "durationMillis": 3782
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "message connection survives SPA navigation as one connection and reconnects after a transport close",
+      "status": "passed",
+      "durationMillis": 3800
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "423 opens the lock overlay and failed preference writes restore local appearance",
+      "status": "passed",
+      "durationMillis": 2446
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "password reset validates before writing and preserves the string user ID",
+      "status": "passed",
+      "durationMillis": 2490
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "iframe routes resolve authorized menu IDs and reject unsafe or unknown targets",
+      "status": "passed",
+      "durationMillis": 2762
+    },
+    {
+      "file": "workflows.spec.ts",
+      "title": "a new boolean parameter submits its visibly unchecked value as false without toggling it first",
+      "status": "passed",
+      "durationMillis": 3163
+    }
+  ]
+}
