@@ -1,0 +1,26 @@
+team: spring-modulith
+description: Spring Modulith 团队共享的 AI 协作资源
+mode: self
+repo: https://github.com/ice-juice/spring-modulith-admin
+provider: git
+language: zh
+usageReport: false
+sessions:
+  publish:
+    attended: 'off'
+    unattended: 'off'
+sharing:
+  rules:
+    enforced: []
+  docs:
+    localDir: ./.teamai/docs
+  env:
+    injectShellProfile: false
+  gitExclude:
+    enabled: true
+  recall:
+    enabled: false
+  hooks:
+    autoApply: false
+  mcp:
+    autoApply: false
