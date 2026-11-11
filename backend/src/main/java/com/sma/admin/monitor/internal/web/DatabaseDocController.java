@@ -7,7 +7,9 @@ import com.sma.admin.common.ApiResponse;
 import com.sma.admin.common.security.RequiresPermission;
 import com.sma.admin.monitor.internal.service.DatabaseDocService;
 @RestController @RequestMapping("/api/monitor/database") @RequiresPermission("monitor:database:view")
-public class DatabaseDocController {
+@com.sma.admin.common.request.GovernedApi(group="monitor.database")
+public class DatabaseDocController implements com.sma.admin.common.request.RequestAuthorizer {
+ @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){com.sma.admin.common.security.CurrentUser.require();}
  private final DatabaseDocService service;public DatabaseDocController(DatabaseDocService service){this.service=service;}
  @GetMapping public ApiResponse<com.sma.admin.monitor.DatabaseSchema> schema()throws SQLException{return ApiResponse.ok(service.schema());}
  @GetMapping("/markdown") public ResponseEntity<byte[]> markdown()throws SQLException{return ResponseEntity.ok().contentType(new MediaType("text","markdown",StandardCharsets.UTF_8))

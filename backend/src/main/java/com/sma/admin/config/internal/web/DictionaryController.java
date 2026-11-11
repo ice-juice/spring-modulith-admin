@@ -8,10 +8,14 @@ import com.sma.admin.config.DictionaryOption;
 import com.sma.admin.config.internal.service.DictionaryService;
 
 @RestController @RequestMapping("/api/config/dictionaries")
-public class DictionaryController {
+@com.sma.admin.common.request.GovernedApi(group="config.dictionaries")
+public class DictionaryController implements com.sma.admin.common.request.RequestAuthorizer {
     private final DictionaryService service;
     private final com.sma.admin.config.internal.service.BuiltinDictionaries builtin;
     public DictionaryController(DictionaryService service,com.sma.admin.config.internal.service.BuiltinDictionaries builtin) { this.service=service;this.builtin=builtin; }
+    @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){
+        CurrentUser.require();
+    }
     @PostMapping("/initialize") @RequiresPermission("config:dictionary:update") @AuditAction("config:dictionary:initialize")
     public ApiResponse<Void> initialize(){builtin.initialize();return ApiResponse.ok();}
     @GetMapping("/types") @RequiresPermission("config:dictionary:view")

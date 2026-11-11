@@ -1,19 +1,17 @@
 package com.sma.admin.config.internal.service;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import jakarta.validation.constraints.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.*;
+import org.springframework.transaction.annotation.Propagation;
 import tools.jackson.databind.json.JsonMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sma.admin.common.*;
 import com.sma.admin.common.security.CurrentUser;
+import com.sma.admin.common.cache.ManagedCache;
 import com.sma.admin.config.*;
 import com.sma.admin.config.internal.persistence.*;
 
@@ -21,15 +19,12 @@ import com.sma.admin.config.internal.persistence.*;
 public class ParameterService implements ParameterQuery,com.sma.admin.common.security.CacheRegion {
  private final ParameterMapper mapper;private final ParameterGroupMapper groups;private final ConfigNames names;private final WriteLockMapper lock;
  private final ApplicationEventPublisher events;private final JsonMapper json;
- private record CacheKey(long tenant,String key) {}
- private record Cached(Optional<String> value,long generation,Instant until) {}
- private final ConcurrentHashMap<CacheKey,Cached> cache=new ConcurrentHashMap<>();
- private final ConcurrentHashMap<Long,AtomicLong> generations=new ConcurrentHashMap<>();
- private final ConcurrentHashMap<Long,java.util.concurrent.atomic.LongAdder[]> counts=new ConcurrentHashMap<>();
- private java.util.concurrent.atomic.LongAdder[] counters(){return counts.computeIfAbsent(CurrentUser.tenantId(),id->new java.util.concurrent.atomic.LongAdder[]{new java.util.concurrent.atomic.LongAdder(),new java.util.concurrent.atomic.LongAdder()});}
- private AtomicLong generation(){return generations.computeIfAbsent(CurrentUser.tenantId(),id->new AtomicLong());}
- public ParameterService(ParameterMapper mapper,ParameterGroupMapper groups,ConfigNames names,WriteLockMapper lock,ApplicationEventPublisher events,JsonMapper json) {
-  this.mapper=mapper;this.groups=groups;this.names=names;this.lock=lock;this.events=events;this.json=json;
+ private final ManagedCache cache;
+ private final ConfigurationCatalogRegistry catalog;private final DefinedParameterReader effective;private final DefinedParameterService layers;
+ public ParameterService(ParameterMapper mapper,ParameterGroupMapper groups,ConfigNames names,WriteLockMapper lock,ApplicationEventPublisher events,JsonMapper json,ManagedCache cache,
+   ConfigurationCatalogRegistry catalog,DefinedParameterReader effective,DefinedParameterService layers) {
+  this.mapper=mapper;this.groups=groups;this.names=names;this.lock=lock;this.events=events;this.json=json;this.cache=cache;
+  this.catalog=catalog;this.effective=effective;this.layers=layers;
  }
  public record GroupInput(@NotBlank @Pattern(regexp="[a-z][a-z0-9_-]{0,63}") String groupKey,@NotBlank @Size(max=128) String name,@Size(max=256) String nameKey,@NotNull @Min(0) Integer sort,Map<String,String> translations) {}
  public record GroupView(Long id,String groupKey,String name,String defaultName,String nameKey,int sort,boolean builtin,Map<String,String> translations) {}
@@ -39,12 +34,16 @@ public class ParameterService implements ParameterQuery,com.sma.admin.common.sec
  public record View(Long id,String paramKey,String groupKey,String name,String defaultName,String nameKey,String valueType,String value,boolean publicReadable,boolean secret,int sort,boolean builtin,Map<String,String> translations) {}
  public List<GroupView> groups() { return groups.selectList(new LambdaQueryWrapper<ParameterGroupEntity>().orderByAsc(ParameterGroupEntity::getSort).orderByAsc(ParameterGroupEntity::getId)).stream().map(this::groupView).toList(); }
  public List<View> list(String group,String keyword) {
-  var query=new LambdaQueryWrapper<ParameterEntity>().orderByAsc(ParameterEntity::getSort).orderByAsc(ParameterEntity::getId);
+  var query=new LambdaQueryWrapper<ParameterEntity>().notIn(ParameterEntity::getParamKey,LegacyBrandParameters.KEYS)
+   .eq(ParameterEntity::getBrandArchived,false).orderByAsc(ParameterEntity::getSort).orderByAsc(ParameterEntity::getId);
   if(group!=null&&!group.isBlank()) query.eq(ParameterEntity::getGroupKey,group);
   if(keyword!=null&&!keyword.isBlank()) query.and(q -> q.like(ParameterEntity::getName,keyword).or().like(ParameterEntity::getParamKey,keyword));
-  return mapper.selectList(query).stream().map(this::view).toList();
+  return mapper.selectList(query).stream().filter(row->!defined(row.getParamKey())).filter(row->row.getDefinitionContract()==null).map(this::view).toList();
  }
- private ParameterEntity require(long id) { var row=mapper.selectById(id);if(row==null) throw new BizException(CommonErrorCode.DATA_NOT_FOUND);return row; }
+ private ParameterEntity require(long id) { var row=mapper.selectById(id);if(row==null) throw new BizException(CommonErrorCode.DATA_NOT_FOUND);brandKey(row.getParamKey());privateKey(row.getParamKey());if(row.getDefinitionContract()!=null)throw new BizException(ConfigErrorCode.SHARED_UNAVAILABLE);return row; }
+ private boolean defined(String key){return catalog.find(ConfigurationCatalogRegistry.Kind.PARAMETER,key).isPresent();}
+ private void privateKey(String key){if(defined(key))throw new BizException(ConfigErrorCode.SHARED_INVALID);}
+ private void brandKey(String key) { if(LegacyBrandParameters.KEYS.stream().anyMatch(owned->owned.equalsIgnoreCase(key))) throw new BizException(ConfigErrorCode.BRAND_MANAGED); }
  @Transactional public GroupView saveGroup(Long id,GroupInput input) {
   lock.lock(CurrentUser.tenantId());var row=id==null?new ParameterGroupEntity():groups.selectById(id);
   if(row==null) throw new BizException(CommonErrorCode.DATA_NOT_FOUND);
@@ -59,11 +58,14 @@ public class ParameterService implements ParameterQuery,com.sma.admin.common.sec
   groups.deleteById(id);names.replace("parameter-group",id,Map.of());
  }
  @Transactional public View save(Long id,Input input) {
+  brandKey(input.paramKey());privateKey(input.paramKey());
   lock.lock(CurrentUser.tenantId());var row=id==null?new ParameterEntity():require(id);
   if(Boolean.TRUE.equals(row.getBuiltin())&&(!row.getParamKey().equals(input.paramKey())||!row.getValueType().equals(input.valueType())))throw new BizException(ConfigErrorCode.BUILTIN);
   if(groups.selectCount(new LambdaQueryWrapper<ParameterGroupEntity>().eq(ParameterGroupEntity::getGroupKey,input.groupKey()))==0)throw new BizException(CommonErrorCode.DATA_NOT_FOUND);
   String value=input.value()==null&&id!=null&&row.getSecret()?row.getParamValue():input.value();
   validate(input.paramKey(),input.valueType(),value);
+  if(Boolean.TRUE.equals(row.getSecret())&&(!Boolean.TRUE.equals(input.secret())||Boolean.TRUE.equals(input.publicReadable())))throw new BizException(ConfigErrorCode.SECRET_POLICY);
+  if(Boolean.TRUE.equals(input.publicReadable())&&input.paramKey().toLowerCase(Locale.ROOT).startsWith("auth."))throw new BizException(ConfigErrorCode.SECRET_POLICY);
   if(input.secret()&&input.publicReadable())throw new BizException(ConfigErrorCode.INVALID_VALUE);
   row.setParamKey(input.paramKey());row.setGroupKey(input.groupKey());row.setName(input.name());row.setNameKey(input.nameKey());row.setValueType(input.valueType());row.setParamValue(value);
   row.setPublicReadable(input.publicReadable());row.setSecret(input.secret());row.setSort(input.sort());if(id==null)row.setBuiltin(false);
@@ -88,50 +90,60 @@ public class ParameterService implements ParameterQuery,com.sma.admin.common.sec
    if(Set.of("auth.sessionTtlSeconds","auth.rememberTtlSeconds").contains(key)&&(Long.parseLong(value)<60||Long.parseLong(value)>31536000))throw new IllegalArgumentException();
    if("auth.autoLockSeconds".equals(key)&&(Long.parseLong(value)<0||Long.parseLong(value)>86400))throw new IllegalArgumentException();
    if("auth.passwordNoticeDays".equals(key)&&(Long.parseLong(value)<0||Long.parseLong(value)>3650))throw new IllegalArgumentException();
+   if(Set.of("system.copyrightUrl","system.recordUrl").contains(key)&&!value.isBlank()
+     &&com.sma.admin.common.security.WebAddresses.httpLink(value).isEmpty())throw new IllegalArgumentException();
+   if("login.backgroundUrl".equals(key)&&!value.isBlank()
+     &&com.sma.admin.common.security.WebAddresses.localResource(value).isEmpty()
+     &&com.sma.admin.common.security.WebAddresses.httpLink(value).isEmpty())throw new IllegalArgumentException();
   }catch(Exception ex){throw new BizException(ConfigErrorCode.INVALID_VALUE);}
  }
- @Override public String stringValue(String key,String fallback) {
-  var cacheKey=new CacheKey(CurrentUser.tenantId(),key);long revision=generation().get();var entry=cache.get(cacheKey);
-  if(entry!=null&&entry.generation()==revision&&entry.until().isAfter(Instant.now())){counters()[0].increment();return entry.value().orElse(fallback);}
-  counters()[1].increment();
-  var row=mapper.selectOne(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,key));
-  var result=Optional.ofNullable(row==null?null:row.getParamValue());
-  if(cache.size()>10000)cache.clear();
-  cache.put(cacheKey,new Cached(result,revision,Instant.now().plusSeconds(300)));return result.orElse(fallback);
+ @Override @Transactional(propagation=Propagation.SUPPORTS,readOnly=true) public String stringValue(String key,String fallback) {
+  brandKey(key);
+  var registered=effective.read(key);if(registered.isPresent())return registered.get().value()==null?fallback:registered.get().value();
+  ParameterValue value;
+  // Security decisions must not inherit the ordinary display-data staleness window.
+  if(key.toLowerCase(Locale.ROOT).startsWith("auth.")||key.toLowerCase(Locale.ROOT).startsWith("login.")) value=sourceValue(mapper.current(key));
+  else value=cache.get(ConfigCacheCatalog.PARAMETERS,key,ParameterValue.class,()->loadValue(key),item->item==null||!item.secret());
+  return value==null||value.value()==null?fallback:value.value();
  }
- @Override public boolean booleanValue(String key,boolean fallback){return Boolean.parseBoolean(stringValue(key,Boolean.toString(fallback)));}
- @Override public long longValue(String key,long fallback){return Long.parseLong(stringValue(key,Long.toString(fallback)));}
- @Override public BigDecimal decimalValue(String key,BigDecimal fallback){return new BigDecimal(stringValue(key,fallback.toPlainString()));}
+ public record ParameterValue(String value,boolean secret){@Override public String toString(){return "ParameterValue[redacted]";}}
+ private ParameterValue sourceValue(ParameterEntity row){if(row!=null&&row.getDefinitionContract()!=null)throw new BizException(ConfigErrorCode.SHARED_UNAVAILABLE);return row==null?null:new ParameterValue(row.getParamValue(),Boolean.TRUE.equals(row.getSecret()));}
+ private ParameterValue loadValue(String key){return sourceValue(mapper.selectOne(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,key).eq(ParameterEntity::getBrandArchived,false)));}
+ @Override @Transactional(propagation=Propagation.SUPPORTS,readOnly=true) public boolean booleanValue(String key,boolean fallback){return Boolean.parseBoolean(stringValue(key,Boolean.toString(fallback)));}
+ @Override @Transactional(propagation=Propagation.SUPPORTS,readOnly=true) public long longValue(String key,long fallback){return Long.parseLong(stringValue(key,Long.toString(fallback)));}
+ @Override @Transactional(propagation=Propagation.SUPPORTS,readOnly=true) public BigDecimal decimalValue(String key,BigDecimal fallback){return new BigDecimal(stringValue(key,fallback.toPlainString()));}
  @Override public Map<String,String> publicValues(){
   Map<String,String> values=new LinkedHashMap<>();
-  mapper.selectList(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getPublicReadable,true).eq(ParameterEntity::getSecret,false)).forEach(row -> values.put(row.getParamKey(),row.getParamValue()));return Map.copyOf(values);
+  mapper.selectList(new LambdaQueryWrapper<ParameterEntity>().notIn(ParameterEntity::getParamKey,LegacyBrandParameters.KEYS).eq(ParameterEntity::getBrandArchived,false).eq(ParameterEntity::getPublicReadable,true).eq(ParameterEntity::getSecret,false))
+   .stream().filter(row->!defined(row.getParamKey())&&row.getDefinitionContract()==null).forEach(row -> values.put(row.getParamKey(),row.getParamValue()));
+  catalog.entries().stream().filter(entry->entry.kind()==ConfigurationCatalogRegistry.Kind.PARAMETER&&entry.parameter().publicProjection()==ParameterDefinition.PublicProjection.LOGIN_CAPTCHA)
+   .forEach(entry->values.put(entry.key(),effective.read(entry.key()).orElseThrow().value()));return Map.copyOf(values);
  }
- public void refresh(){long tenant=CurrentUser.tenantId();generation().incrementAndGet();cache.keySet().removeIf(key->key.tenant()==tenant);}
+ @Transactional public void refresh(){cache.invalidate(ConfigCacheCatalog.PARAMETERS);}
  @Override public String id(){return "config.parameters";}
- @Override public com.sma.admin.common.security.CacheRegion.Snapshot snapshot(){long tenant=CurrentUser.tenantId();long revision=generation().get();var now=Instant.now();
-  long size=cache.entrySet().stream().filter(entry->entry.getKey().tenant()==tenant&&entry.getValue().generation()==revision&&entry.getValue().until().isAfter(now)).count();
-  var stats=counters();return new com.sma.admin.common.security.CacheRegion.Snapshot(id(),"config.cache.parameters",size,stats[0].sum(),stats[1].sum());}
- @Override public void clear(){refresh();}
+ @Override public com.sma.admin.common.security.CacheRegion.Snapshot snapshot(){var stats=cache.snapshot(id());return new com.sma.admin.common.security.CacheRegion.Snapshot(id(),"config.cache.parameters",stats.size(),stats.hits(),stats.misses());}
+ @Override @Transactional public void clear(){refresh();}
  private void changed(String key){
   events.publishEvent(new ConfigurationChangedEvent(CurrentUser.tenantId(),"parameter",key));
-  if(TransactionSynchronizationManager.isSynchronizationActive())TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){@Override public void afterCommit(){refresh();}});
-  else refresh();
+  refresh();
  }
  private GroupView groupView(ParameterGroupEntity row){var texts=names.translations("parameter-group",row.getId());return new GroupView(row.getId(),row.getGroupKey(),names.name(row.getName(),row.getNameKey(),texts),row.getName(),row.getNameKey(),row.getSort(),row.getBuiltin(),texts);}
  private View view(ParameterEntity row){var texts=names.translations("parameter",row.getId());return new View(row.getId(),row.getParamKey(),row.getGroupKey(),names.name(row.getName(),row.getNameKey(),texts),row.getName(),row.getNameKey(),row.getValueType(),row.getSecret()?null:row.getParamValue(),row.getPublicReadable(),row.getSecret(),row.getSort(),row.getBuiltin(),texts);}
  public record SeedGroup(String key,String name,String nameKey){}
  public record Seed(String key,String group,String name,String nameKey,String type,String value,boolean publicly){}
  @Transactional public void resetBuiltins(List<Seed> specs){
+  specs.forEach(spec->brandKey(spec.key()));
   lock.lock(CurrentUser.tenantId());
-  for(var spec:specs){var row=mapper.selectOne(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,spec.key()));
+  for(var spec:specs){if(defined(spec.key())){layers.inherit(spec.key(),layers.get(spec.key()).snapshot().revision());continue;}var row=mapper.selectOne(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,spec.key()));
    if(row!=null&&row.getBuiltin()){row.setParamValue(spec.value());mapper.updateById(row);changed(row.getParamKey());}}
  }
  @Transactional public void initialize(List<SeedGroup> groupSpecs,List<Seed> specs){
+  specs.forEach(spec->brandKey(spec.key()));
   lock.lock(CurrentUser.tenantId());
   for(var spec:groupSpecs)if(groups.selectCount(new LambdaQueryWrapper<ParameterGroupEntity>().eq(ParameterGroupEntity::getGroupKey,spec.key()))==0){
    var view=saveGroup(null,new GroupInput(spec.key(),spec.name(),spec.nameKey(),0,Map.of()));var row=groups.selectById(view.id());row.setBuiltin(true);groups.updateById(row);
   }
-  for(var spec:specs)if(mapper.selectCount(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,spec.key()))==0){
+  for(var spec:specs)if(!defined(spec.key())&&mapper.selectCount(new LambdaQueryWrapper<ParameterEntity>().eq(ParameterEntity::getParamKey,spec.key()))==0){
    var view=save(null,new Input(spec.key(),spec.group(),spec.name(),spec.nameKey(),spec.type(),spec.value(),spec.publicly(),false,0,Map.of()));var row=require(view.id());row.setBuiltin(true);mapper.updateById(row);
   }
  }

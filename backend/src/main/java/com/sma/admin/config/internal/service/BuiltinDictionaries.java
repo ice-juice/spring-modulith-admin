@@ -9,7 +9,7 @@ public class BuiltinDictionaries {
  public BuiltinDictionaries(DictionaryService service) { this.service=service; }
  @EventListener(ApplicationReadyEvent.class)
  public void initialize() { service.initialize(seeds()); }
- public List<DictionaryService.SeedType> seeds() {
+ public static List<DictionaryService.SeedType> seeds() {
   return List.of(
    new DictionaryService.SeedType("options_boolean","选项 Boolean值","config.dict.options_boolean.name",false,List.of(
     new DictionaryService.SeedItem("true","是","config.dict.options_boolean.i0",null),

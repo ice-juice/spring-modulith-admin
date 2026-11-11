@@ -5,5 +5,5 @@ import lombok.Getter;
 import lombok.Setter;
 @Getter @Setter @TableName("config_user_preference")
 public class PreferenceEntity extends TenantEntity {
- private Long userId;private String locale;private String timeZone;private String theme;private Boolean tabsEnabled;private Boolean keepTabsAfterReload;
+ private Long userId;private String locale;private String timeZone;private String theme;private String skin;private Boolean tabsEnabled;private Boolean keepTabsAfterReload;
 }

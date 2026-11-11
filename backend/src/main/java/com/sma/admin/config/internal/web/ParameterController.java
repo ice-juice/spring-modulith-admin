@@ -7,10 +7,16 @@ import com.sma.admin.common.security.*;
 import com.sma.admin.config.internal.service.ParameterService;
 
 @RestController @RequestMapping("/api/config/parameters")
-public class ParameterController {
+@com.sma.admin.common.request.GovernedApi(group="config.parameters")
+public class ParameterController implements com.sma.admin.common.request.RequestAuthorizer {
  private final ParameterService service;
  private final com.sma.admin.config.internal.service.BuiltinParameters builtin;
  public ParameterController(ParameterService service,com.sma.admin.config.internal.service.BuiltinParameters builtin){this.service=service;this.builtin=builtin;}
+ @Override public void authorizeRequest(String method, Map<String,String> variables){
+  // Config permissions grant the current tenant's configuration scope. The actual
+  // mutation still resolves its object through the tenant-filtered service.
+  CurrentUser.require();
+ }
  @PostMapping("/reset-builtins") @RequiresPermission("config:parameter:update") @AuditAction("config:parameter:reset")
  public ApiResponse<Void> resetBuiltins(){builtin.resetDefaults();return ApiResponse.ok();}
  @GetMapping @RequiresPermission("config:parameter:view")
@@ -31,6 +37,4 @@ public class ParameterController {
  public ApiResponse<Void> delete(@PathVariable long id){service.delete(id);return ApiResponse.ok();}
  @PostMapping("/refresh") @RequiresPermission("config:parameter:update")
  public ApiResponse<Void> refresh(){service.refresh();return ApiResponse.ok();}
- @GetMapping("/public") @PermitAnonymous
- public ApiResponse<Map<String,String>> publicValues(){return ApiResponse.ok(service.publicValues());}
 }

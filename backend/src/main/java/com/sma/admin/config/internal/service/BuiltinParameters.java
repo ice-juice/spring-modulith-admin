@@ -16,8 +16,7 @@ import org.springframework.stereotype.Component;
   new ParameterService.SeedGroup("appearance","界面设置","config.group.appearance"),
   new ParameterService.SeedGroup("legal","备案与版权","config.group.legal")
  );}
- public List<ParameterService.Seed> specs(){return List.of(
-  new ParameterService.Seed("system.name","basic","系统名称","config.param.system.name","STRING","Springboot Modulith Admin",true),
+ public static List<ParameterService.Seed> specs(){return List.of(
   new ParameterService.Seed("system.departmentEnabled","basic","启用部门","config.param.system.departmentEnabled","BOOLEAN","true",false),
   new ParameterService.Seed("system.postEnabled","basic","启用岗位","config.param.system.postEnabled","BOOLEAN","true",false),
   new ParameterService.Seed("system.extendedProfileEnabled","basic","启用用户扩展信息","config.param.system.extendedProfileEnabled","BOOLEAN","true",false),
@@ -28,14 +27,8 @@ import org.springframework.stereotype.Component;
   new ParameterService.Seed("auth.passwordNoticeDays","security","改密提醒天数（0关闭）","config.param.auth.passwordNoticeDays","INTEGER","0",false),
   new ParameterService.Seed("auth.lockAfterRemember","security","保持登录后进入锁屏","config.param.auth.lockAfterRemember","BOOLEAN","false",false),
   new ParameterService.Seed("login.captchaEnabled","login","启用登录验证码","config.param.login.captchaEnabled","BOOLEAN","true",true),
-  new ParameterService.Seed("login.backgroundUrl","login","登录页背景图","config.param.login.backgroundUrl","STRING","",true),
-  new ParameterService.Seed("login.backgroundBlur","login","登录背景模糊","config.param.login.backgroundBlur","BOOLEAN","false",true),
   new ParameterService.Seed("ui.theme","appearance","默认主题","config.param.ui.theme","STRING","light",false),
   new ParameterService.Seed("ui.tabsEnabled","appearance","启用多选项卡","config.param.ui.tabsEnabled","BOOLEAN","true",false),
-  new ParameterService.Seed("ui.keepTabsAfterReload","appearance","刷新后保留选项卡","config.param.ui.keepTabsAfterReload","BOOLEAN","false",false),
-  new ParameterService.Seed("system.copyrightCompany","legal","版权所有人","config.param.system.copyrightCompany","STRING","",true),
-  new ParameterService.Seed("system.copyrightUrl","legal","版权链接","config.param.system.copyrightUrl","STRING","",true),
-  new ParameterService.Seed("system.recordInfo","legal","备案信息","config.param.system.recordInfo","STRING","",true),
-  new ParameterService.Seed("system.recordUrl","legal","备案链接","config.param.system.recordUrl","STRING","",true)
+  new ParameterService.Seed("ui.keepTabsAfterReload","appearance","刷新后保留选项卡","config.param.ui.keepTabsAfterReload","BOOLEAN","false",false)
  );}
 }
