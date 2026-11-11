@@ -6,4 +6,5 @@ import lombok.*;
 @Getter @Setter @TableName("openapi_token")
 public class TokenEntity extends TenantEntity {
  private Long applicationId;private String portal;private String tokenHash;private Long credentialVersion;private Instant expiresAt;
+ private Long tenantSecurityGeneration;
 }

@@ -55,6 +55,50 @@ server:
   port: 8080
 
 sma:
+  security:
+    browser:
+      allowed-origins: ${SMA_SECURITY_BROWSER_ALLOWED_ORIGINS:}
+      maximum-json-bytes: ${SMA_SECURITY_BROWSER_MAXIMUM_JSON_BYTES:2097152}
+      maximum-concurrent-json: ${SMA_SECURITY_BROWSER_MAXIMUM_CONCURRENT_JSON:16}
+      maximum-concurrent-anonymous-json: ${SMA_SECURITY_BROWSER_MAXIMUM_CONCURRENT_ANONYMOUS_JSON:4}
+    requests:
+      # Deployment HMAC keys only; never user passwords or public parameter values.
+      fingerprint-key: ${SMA_SECURITY_REQUESTS_FINGERPRINT_KEY:}
+      fingerprint-key-id: ${SMA_SECURITY_REQUESTS_FINGERPRINT_KEY_ID:v1}
+      previous-fingerprint-keys: ${SMA_SECURITY_REQUESTS_PREVIOUS_FINGERPRINT_KEYS:}
+      max-records-per-tenant: ${SMA_SECURITY_REQUESTS_MAX_RECORDS_PER_TENANT:100000}
+      max-concurrent: ${SMA_SECURITY_REQUESTS_MAX_CONCURRENT:8}
+      minimum-write-interval: ${SMA_SECURITY_REQUESTS_MINIMUM_WRITE_INTERVAL:500ms}
+  mail:
+    dispatch:
+      # Explicit deployment opt-in after tenant profiles, templates and SMTP egress routes are configured.
+      enabled: ${SMA_MAIL_DISPATCH_ENABLED:false}
+  rule:
+    demo:
+      # Synthetic, tenant-scoped demo objects only; never enables real business bindings.
+      enabled: ${SMA_RULE_DEMO_ENABLED:false}
+  common:
+    credentials:
+      # Deployment-owned encryption ring; tenant Google/mail/storage accounts live in their own tenant records.
+      key-file: ${SMA_TENANT_CREDENTIAL_KEY_FILE:}
+  cache:
+    # local | redis | none. Redis requires a deployment-specific namespace and bounded server memory.
+    provider: ${SMA_CACHE_PROVIDER:local}
+    namespace: ${SMA_CACHE_NAMESPACE:sma}
+    deployment-mode: single
+    max-bytes: 67108864
+    max-scopes: 10000
+    ttl-jitter: 0.1
+  extension:
+    console:
+      enabled: ${SMA_EXTENSION_CONSOLE_ENABLED:false}
+      security-url: ${SMA_EXTENSION_CONSOLE_URL:}
+      token-file: ${SMA_EXTENSION_CONSOLE_TOKEN_FILE:}
+  auth:
+    security:
+      # Deployment-owned file; blank leaves enrollment/password setup unavailable, never bypasses existing MFA.
+      key-file: ${SMA_AUTH_SECURITY_KEY_FILE:}
+      issuer: SMA Admin
   openapi:
     master-key: ${SMA_APP_MASTER_KEY:}
   bootstrap:

@@ -24,7 +24,7 @@ public class TodoService {
   Source source,Long createdBy,Instant createdAt,Instant updatedAt){}
  private LambdaQueryWrapper<TodoEntity> inPortal(){return new LambdaQueryWrapper<TodoEntity>().eq(TodoEntity::getPortal,CurrentUser.portal());}
  public PageResult<View> page(PageQuery page,String keyword,Integer state,Integer type,Integer priority,Boolean active,String dateField,Instant from,Instant to,boolean management){
-  var query=inPortal().orderByAsc(TodoEntity::getDueAt).orderByDesc(TodoEntity::getId);
+  var query=inPortal().orderByAsc(TodoEntity::getDueAt).orderByDesc(TodoEntity::getCreatedAt).orderByDesc(TodoEntity::getId);
   if(!management)query.eq(TodoEntity::getUserId,CurrentUser.require().userId());
   query.like(keyword!=null&&!keyword.isBlank(),TodoEntity::getTitle,keyword).eq(state!=null,TodoEntity::getState,state)
    .eq(type!=null,TodoEntity::getType,type).eq(priority!=null,TodoEntity::getPriority,priority).in(Boolean.TRUE.equals(active),TodoEntity::getState,OPEN);

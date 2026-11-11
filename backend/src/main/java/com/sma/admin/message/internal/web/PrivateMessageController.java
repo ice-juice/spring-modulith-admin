@@ -6,7 +6,13 @@ import com.sma.admin.common.*;
 import com.sma.admin.common.security.*;
 import com.sma.admin.message.internal.service.PrivateMessageService;
 @RestController @RequestMapping("/api/message/private") @PermitLoggedIn
-public class PrivateMessageController {
+@com.sma.admin.common.request.GovernedApi(group="message.private",ownResource=true)
+public class PrivateMessageController implements com.sma.admin.common.request.RequestAuthorizer {
+ @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){
+  // Only actor-owned operation metadata can replay. Actual content remains behind
+  // the module's recipient/owner, tenant and portal checks on every domain call.
+  com.sma.admin.common.security.CurrentUser.require();
+ }
  private final PrivateMessageService service;public PrivateMessageController(PrivateMessageService service){this.service=service;}
  @PostMapping public ApiResponse<PrivateMessageService.View> send(@Valid @RequestBody PrivateMessageService.Input input){return ApiResponse.ok(service.send(input));}
  @GetMapping public ApiResponse<PageResult<PrivateMessageService.View>> page(@ModelAttribute PageQuery page,@RequestParam(required=false)String box,@RequestParam(required=false)Long peerId,@RequestParam(required=false)Boolean unread){return ApiResponse.ok(service.page(page,box,peerId,unread));}

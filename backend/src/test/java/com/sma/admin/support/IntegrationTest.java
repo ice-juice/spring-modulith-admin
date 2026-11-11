@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Documented
 @SpringBootTest
 @ActiveProfiles("test")
+@org.springframework.context.annotation.Import(TenantMockMvcConfiguration.class)
 public @interface IntegrationTest {
 
 }

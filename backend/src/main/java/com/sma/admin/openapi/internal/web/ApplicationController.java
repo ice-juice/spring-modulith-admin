@@ -6,7 +6,9 @@ import com.sma.admin.common.*;
 import com.sma.admin.common.security.RequiresPermission;
 import com.sma.admin.openapi.internal.service.ApplicationService;
 @RestController @RequestMapping("/api/openapi/apps")
-public class ApplicationController {
+@com.sma.admin.common.request.GovernedApi(group="openapi.apps")
+public class ApplicationController implements com.sma.admin.common.request.RequestAuthorizer {
+ @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){com.sma.admin.common.security.CurrentUser.require();}
  private final ApplicationService service;public ApplicationController(ApplicationService service){this.service=service;}
  @GetMapping @RequiresPermission("openapi:app:view") public ApiResponse<PageResult<ApplicationService.View>> page(@ModelAttribute PageQuery page,@RequestParam(required=false)String keyword,@RequestParam(required=false)Integer type,@RequestParam(required=false)Boolean enabled){return ApiResponse.ok(service.page(page,keyword,type,enabled));}
  @GetMapping("/{id}") @RequiresPermission("openapi:app:view") public ApiResponse<ApplicationService.View> get(@PathVariable long id){return ApiResponse.ok(service.get(id));}

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -49,7 +50,8 @@ import com.tngtech.archunit.library.GeneralCodingRules;
  */
 class ArchitectureRulesTests {
 
-	static final String BASE = "com.sma.admin";
+	static final String BASE = SpringbootModulithAdminApplication.PLATFORM_PACKAGE;
+	static final String BUSINESS = SpringbootModulithAdminApplication.BUSINESS_PACKAGE;
 
 	static final Pattern MODULE_ID = Pattern.compile("[a-z]+");
 
@@ -57,11 +59,12 @@ class ArchitectureRulesTests {
 
 	static final JavaClasses CLASSES = new ClassFileImporter()
 			.withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-			.importPackages(BASE);
+			.importPackages(BASE, BUSINESS);
 
 	static final DescribedPredicate<JavaClass> MODULE_API_PACKAGE = DescribedPredicate.describe(
 			"reside in a module API (root) package",
-			type -> type.getPackageName().matches(Pattern.quote(BASE) + "\\.[a-z]+"));
+			type -> Stream.of(BASE, BUSINESS).anyMatch(root ->
+					type.getPackageName().matches(Pattern.quote(root) + "\\.[a-z]+")));
 
 	static final DescribedPredicate<JavaMethod> REQUEST_HANDLER = DescribedPredicate.describe(
 			"are request handlers",
@@ -72,11 +75,15 @@ class ArchitectureRulesTests {
 	@Test
 	void modulesDeclareIdDisplayNameAndExplicitDependencies() {
 		List<String> problems = new ArrayList<>();
+		var moduleIds = new HashSet<String>();
 		ApplicationModules.of(SpringbootModulithAdminApplication.class).forEach(module -> {
 			String id = module.getIdentifier().toString();
 			String pkg = module.getBasePackage().getName();
 			if (!MODULE_ID.matcher(id).matches()) {
 				problems.add(id + ": 模块 id 必须是单个小写英文单词（同时用作表前缀、URL 前缀、权限 key 前缀）");
+			}
+			if ((!pkg.equals(BASE + "." + id) && !pkg.equals(BUSINESS + "." + id)) || !moduleIds.add(id)) {
+				problems.add(pkg + ": 模块须为任一包根的直接子包，且包名末段等于全局唯一模块 id " + id);
 			}
 			ApplicationModule metadata = packageInfoAnnotation(pkg);
 			if (metadata == null) {
@@ -93,13 +100,32 @@ class ArchitectureRulesTests {
 		assertThat(problems).isEmpty();
 	}
 
+	@Test
+	void businessClassesBelongToANamedModule() {
+		var modules = ApplicationModules.of(SpringbootModulithAdminApplication.class);
+		assertThat(CLASSES.stream()
+				.filter(type -> type.getPackageName().equals(BUSINESS) || type.getPackageName().startsWith(BUSINESS + "."))
+				.filter(type -> moduleOf(type).isEmpty() || modules.getModuleByName(moduleOf(type))
+						.filter(module -> module.getBasePackage().getName().equals(BUSINESS + "." + moduleOf(type))).isEmpty())
+				.map(JavaClass::getName).toList())
+				.as("业务类必须属于 com.sma.business 下已发现的独立模块").isEmpty();
+	}
+
 	// R2 ---------------------------------------------------------------------------------------------------------
 
 	@Test
 	void commonDoesNotDependOnBusinessModules() {
 		noClasses().that().resideInAPackage(BASE + ".common..")
 				.should().dependOnClassesThat(DescribedPredicate.describe("belong to another application module",
-						type -> type.getPackageName().startsWith(BASE + ".") && !moduleOf(type).equals("common")))
+						type -> !moduleOf(type).isEmpty() && !type.getPackageName().startsWith(BASE + ".common.")
+								&& !type.getPackageName().equals(BASE + ".common")))
+				.check(CLASSES);
+	}
+
+	@Test
+	void platformDoesNotDependOnConcreteBusinessModules() {
+		noClasses().that().resideInAPackage(BASE + "..")
+				.should().dependOnClassesThat().resideInAPackage(BUSINESS + "..")
 				.check(CLASSES);
 	}
 
@@ -135,18 +161,46 @@ class ArchitectureRulesTests {
 		classes().that().areAnnotatedWith(RestController.class)
 				.should().resideInAPackage("..internal.web..")
 				.andShould().haveSimpleNameEndingWith("Controller")
-				.andShould(classCondition("map requests under /api/{module}", type -> {
+				.andShould(classCondition("map requests under one owned /api/{module} or /app/{module} namespace", type -> {
 					String prefix = type.getName().equals(BASE + ".openapi.internal.web.OpenController") ? "/open" : "/api/" + moduleOf(type);
 					List<String> paths = type.tryGetAnnotationOfType(RequestMapping.class)
 							.map(mapping -> Stream.concat(Arrays.stream(mapping.value()), Arrays.stream(mapping.path())).toList())
 							.orElse(List.of());
-					return !paths.isEmpty() && paths.stream().allMatch(p -> p.equals(prefix) || p.startsWith(prefix + "/"));
+					String applicationPrefix="/app/"+moduleOf(type);
+					return !paths.isEmpty() && (paths.stream().allMatch(p -> p.equals(prefix) || p.startsWith(prefix + "/"))
+							|| paths.stream().allMatch(p -> p.equals(applicationPrefix) || p.startsWith(applicationPrefix + "/")));
 				}))
 				.allowEmptyShould(true)
 				.check(CLASSES);
 	}
 
 	// R6 ---------------------------------------------------------------------------------------------------------
+
+	@Test
+	void applicationRoutesRequireAnAudienceOrAReviewedPlatformSelfServicePolicy() {
+		methods().that().areAnnotatedWith(com.sma.admin.common.security.PermitApplicationSelf.class)
+			.should(methodCondition("remain confined to reviewed platform self-service operations", ArchitectureRulesTests::reviewedIdentitySelf)).allowEmptyShould(true).check(CLASSES);
+		methods().that(REQUEST_HANDLER).and().areDeclaredInClassesThat().areAnnotatedWith(RestController.class)
+			.should(methodCondition("use exact application audiences or the reviewed identity login/self-service handlers", method -> {
+				var owner=method.getOwner();var mapping=owner.tryGetAnnotationOfType(RequestMapping.class);
+				boolean application=mapping.map(m->Stream.concat(Arrays.stream(m.value()),Arrays.stream(m.path())).anyMatch(p->p.startsWith("/app/"))).orElse(false);
+				if(!application)return !method.isAnnotatedWith(com.sma.admin.common.security.PermitApplicationSelf.class);
+				if(method.isAnnotatedWith(com.sma.admin.common.security.PermitApplicationUser.class))
+					return method.getAnnotationOfType(com.sma.admin.common.security.PermitApplicationUser.class).value().matches("[a-z][a-z0-9.-]{0,63}");
+				if(!method.isAnnotatedWith(PreAuthorize.class) && !method.isMetaAnnotatedWith(PreAuthorize.class) && owner.isAnnotatedWith(com.sma.admin.common.security.PermitApplicationUser.class))
+					return owner.getAnnotationOfType(com.sma.admin.common.security.PermitApplicationUser.class).value().matches("[a-z][a-z0-9.-]{0,63}");
+				return owner.getName().equals(BASE+".identity.internal.web.IdentityLoginController") && java.util.Set.of("bootstrap","begin","complete","refresh").contains(method.getName()) && method.isAnnotatedWith(com.sma.admin.common.security.PermitAnonymous.class)
+						|| owner.getName().equals(BASE+".identity.internal.web.IdentityEmailLoginController") && java.util.Set.of("begin","verify","register","reset","login").contains(method.getName()) && method.isAnnotatedWith(com.sma.admin.common.security.PermitAnonymous.class)
+						|| reviewedIdentitySelf(method) && method.isAnnotatedWith(com.sma.admin.common.security.PermitApplicationSelf.class);
+			})).allowEmptyShould(true).check(CLASSES);
+	}
+
+	private static boolean reviewedIdentitySelf(JavaMethod method){
+		return method.getOwner().getName().equals(BASE+".identity.internal.web.IdentitySessionController") && java.util.Set.of("current","logout").contains(method.getName())
+				|| method.getOwner().getName().equals(BASE+".identity.internal.web.IdentityAccountController") && java.util.Set.of("methods","passwordProof","googleProofStart","googleProofComplete",
+						"googleLinkStart","googleLinkComplete","emailStart","emailVerify","emailComplete","removePassword","removeGoogle").contains(method.getName())
+				|| method.getOwner().getName().equals(BASE+".file.internal.web.ApplicationUploadTaskController") && java.util.Set.of("initiate","status","parts","putPart","complete","abort").contains(method.getName());
+	}
 
 	@Test
 	void everyRequestHandlerDeclaresAnAccessPolicy() {
@@ -252,7 +306,10 @@ class ArchitectureRulesTests {
 	@Test
 	void generalCodingRules() {
 		GeneralCodingRules.NO_CLASSES_SHOULD_USE_FIELD_INJECTION.check(CLASSES);
-		GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS.check(CLASSES);
+		// One standalone, non-Spring worker uses stdout solely for its bounded private protocol, never application logging.
+		GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS.check(CLASSES.that(com.tngtech.archunit.base.DescribedPredicate.describe(
+				"host classes excluding the reviewed content worker protocol entry",
+				type -> !type.getName().equals(BASE+".file.internal.inspection.ContentInspectionWorker"))));
 		GeneralCodingRules.NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING.check(CLASSES);
 		GeneralCodingRules.NO_CLASSES_SHOULD_USE_JODATIME.check(CLASSES);
 		GeneralCodingRules.OLD_DATE_AND_TIME_CLASSES_SHOULD_NOT_BE_USED.check(CLASSES);
@@ -262,7 +319,8 @@ class ArchitectureRulesTests {
 
 	static String moduleOf(JavaClass type) {
 		String pkg = type.getPackageName();
-		return pkg.startsWith(BASE + ".") ? pkg.substring(BASE.length() + 1).split("\\.")[0] : "";
+		return Stream.of(BASE, BUSINESS).filter(root -> pkg.startsWith(root + "."))
+				.findFirst().map(root -> pkg.substring(root.length() + 1).split("\\.")[0]).orElse("");
 	}
 
 	static ApplicationModule packageInfoAnnotation(String packageName) {

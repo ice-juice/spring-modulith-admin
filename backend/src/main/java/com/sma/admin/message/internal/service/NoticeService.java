@@ -35,7 +35,7 @@ public class NoticeService {
  public record Reader(Long userId,String name,Instant readAt){}
  public PageResult<View> page(PageQuery page,String keyword,String type,Integer priority,String audienceType,boolean trash){
   if(trash)return PageResult.of(recycle.recycled(page.toPage(Map.of()),CurrentUser.portal()),this::view);
-  var query=new LambdaQueryWrapper<NoticeEntity>().eq(NoticeEntity::getPortal,CurrentUser.portal()).orderByDesc(NoticeEntity::getId);
+  var query=new LambdaQueryWrapper<NoticeEntity>().eq(NoticeEntity::getPortal,CurrentUser.portal()).orderByDesc(NoticeEntity::getCreatedAt).orderByDesc(NoticeEntity::getId);
   query.like(keyword!=null&&!keyword.isBlank(),NoticeEntity::getTitle,keyword).eq(type!=null&&!type.isBlank(),NoticeEntity::getType,type)
    .eq(priority!=null,NoticeEntity::getPriority,priority).eq(audienceType!=null&&!audienceType.isBlank(),NoticeEntity::getAudienceType,audienceType);
   return PageResult.of(notices.selectPage(page.toPage(Map.of("createdAt","created_at","priority","priority")),query),this::view);
@@ -80,6 +80,12 @@ public class NoticeService {
  private NoticeRecipientEntity receiver(long id){return recipients.selectOne(new LambdaQueryWrapper<NoticeRecipientEntity>().eq(NoticeRecipientEntity::getNoticeId,id).eq(NoticeRecipientEntity::getUserId,CurrentUser.require().userId()));}
  public PageResult<View> inbox(PageQuery page,Boolean unread){
   return PageResult.of(lookup.inbox(page.toPage(Map.of()),CurrentUser.portal(),CurrentUser.require().userId(),Boolean.TRUE.equals(unread)),this::view);
+ }
+ /** Current recipient authorization, without changing read status or granting management access. */
+ public View inboxNotice(long id){
+  var row=lookup.selectOne(new LambdaQueryWrapper<NoticeEntity>().eq(NoticeEntity::getId,id).eq(NoticeEntity::getPortal,CurrentUser.portal()));
+  if(row==null||receiver(id)==null)throw new BizException(CommonErrorCode.DATA_NOT_FOUND);
+  return view(row);
  }
  @Transactional public View read(long id){
   var row=lookup.selectOne(new LambdaQueryWrapper<NoticeEntity>().eq(NoticeEntity::getId,id).eq(NoticeEntity::getPortal,CurrentUser.portal()).last("FOR UPDATE"));

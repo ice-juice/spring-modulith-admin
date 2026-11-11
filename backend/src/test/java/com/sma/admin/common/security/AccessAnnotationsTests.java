@@ -40,6 +40,14 @@ class AccessAnnotationsTests {
 	}
 
 	@Test
+	void unrecognizedPrincipalCannotGainHumanAccessWithAnAuthority() throws Exception {
+		var forged = UsernamePasswordAuthenticationToken.authenticated("tester", null,
+				AuthorityUtils.createAuthorityList("iam:user:create"));
+		assertThat(granted(forged, "profile")).isFalse();
+		assertThat(granted(forged, "create")).isFalse();
+	}
+
+	@Test
 	void permitAnonymousAllowsEveryone() throws Exception {
 		assertThat(granted(anonymous(), "captcha")).isTrue();
 	}
@@ -52,7 +60,9 @@ class AccessAnnotationsTests {
 	}
 
 	private static Authentication user(String... authorities) {
-		return UsernamePasswordAuthenticationToken.authenticated("tester", null, AuthorityUtils.createAuthorityList(authorities));
+		var principal = new SmaPrincipal(101, "tester", 1, "admin", null, false,
+				DataAccess.none(), java.util.Set.of(authorities), "UTC");
+		return UsernamePasswordAuthenticationToken.authenticated(principal, null, AuthorityUtils.createAuthorityList(authorities));
 	}
 
 	private static Authentication anonymous() {

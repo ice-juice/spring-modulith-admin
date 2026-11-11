@@ -10,7 +10,9 @@ import com.sma.admin.support.IntegrationTest;
 class DatabaseDocTests {
  @Autowired DatabaseDocService service;
  @Test void metadataContainsActualColumnsAndIndexesAndExportsBothLanguages()throws Exception{
-  var schema=service.schema();assertThat(schema.database()).isEqualTo("springboot_modulith_admin_test");
+  var schema=service.schema();
+  String expectedDatabase=java.net.URI.create(com.sma.admin.support.TestDatabase.URL.substring(5)).getPath().substring(1);
+  assertThat(schema.database()).matches("springboot_modulith_admin_test|sma_test_[a-z0-9_]+").isEqualTo(expectedDatabase);
   assertThat(schema.tables()).anySatisfy(table->{assertThat(table.name()).isEqualToIgnoringCase("iam_user");
    assertThat(table.columns()).anySatisfy(column->{assertThat(column.name()).isEqualTo("avatar_file_id");assertThat(column.nullable()).isTrue();});
    assertThat(table.indexes()).anySatisfy(index->{assertThat(index.name()).isEqualTo("idx_iam_user_avatar");assertThat(index.columns()).contains("tenant_id","avatar_file_id");});

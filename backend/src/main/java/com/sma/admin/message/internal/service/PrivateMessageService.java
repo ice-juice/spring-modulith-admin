@@ -28,7 +28,7 @@ public class PrivateMessageService {
   messages.insert(row);events.publishEvent(new PrivateMessageSentEvent(CurrentUser.tenantId(),CurrentUser.portal(),row.getId(),sender.id(),recipient.id()));return view(row);
  }
  public PageResult<View> page(PageQuery page,String box,Long peerId,Boolean unread){
-  var query=inPortal().orderByDesc(PrivateMessageEntity::getId);long userId=CurrentUser.require().userId();
+  var query=inPortal().orderByDesc(PrivateMessageEntity::getCreatedAt).orderByDesc(PrivateMessageEntity::getId);long userId=CurrentUser.require().userId();
   switch(box==null?"inbox":box){
    case "inbox"->query.eq(PrivateMessageEntity::getRecipientId,userId).eq(peerId!=null,PrivateMessageEntity::getSenderId,peerId);
    case "outbox"->query.eq(PrivateMessageEntity::getSenderId,userId).eq(peerId!=null,PrivateMessageEntity::getRecipientId,peerId);

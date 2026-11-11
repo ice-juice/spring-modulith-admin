@@ -23,7 +23,7 @@ public class ApplicationService {
  public record View(Long id,String name,int type,String description,String appId,boolean enabled,boolean signatureRequired,String targetType,String targetId,String targetName,Instant createdAt,Instant updatedAt){}
  public record Credentials(Long id,String appId,String appSecret){}
  public List<OptionItem> types(){return TYPES.stream().sorted().map(type->new OptionItem(type.longValue(),messages.getMessage("openapi.types."+type,null,LocaleContextHolder.getLocale()),false)).toList();}
- public PageResult<View> page(PageQuery page,String keyword,Integer type,Boolean enabled){var query=new LambdaQueryWrapper<ApplicationEntity>().eq(ApplicationEntity::getPortal,CurrentUser.portal()).orderByDesc(ApplicationEntity::getId);
+ public PageResult<View> page(PageQuery page,String keyword,Integer type,Boolean enabled){var query=new LambdaQueryWrapper<ApplicationEntity>().eq(ApplicationEntity::getPortal,CurrentUser.portal()).orderByDesc(ApplicationEntity::getCreatedAt).orderByDesc(ApplicationEntity::getId);
   query.like(keyword!=null&&!keyword.isBlank(),ApplicationEntity::getName,keyword).eq(type!=null,ApplicationEntity::getType,type).eq(enabled!=null,ApplicationEntity::getEnabled,enabled);
   return PageResult.of(mapper.selectPage(page.toPage(Map.of("createdAt","created_at","name","name")),query),this::view);}
  private ApplicationEntity require(long id,boolean lock){var query=new LambdaQueryWrapper<ApplicationEntity>().eq(ApplicationEntity::getId,id).eq(ApplicationEntity::getPortal,CurrentUser.portal());if(lock)query.last("FOR UPDATE");var row=mapper.selectOne(query);if(row==null)throw new BizException(CommonErrorCode.DATA_NOT_FOUND);return row;}

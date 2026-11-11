@@ -13,7 +13,7 @@ import com.sma.admin.support.*;
 @IntegrationTest
 class DashboardTests {
  @Autowired DashboardService dashboard;@Autowired UserService users;@Autowired TodoService todos;
- private UserService.View user(String name){return users.create(new UserService.Create(new UserService.Input(name,name,null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Dashboard@Secure2026"));}
+ private UserService.View user(String name){return users.create(new UserService.Create(new UserService.Input(name,name,null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q759f02600"));}
  @Test void moduleContributionsRespectPermissionTenantPortalAndPersonalDataScope(){
   Users.as(Users.principal(101,295,DataAccess.unrestricted()),()->{
    var a=user("dashboard-a");var b=user("dashboard-b");

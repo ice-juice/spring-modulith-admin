@@ -18,6 +18,7 @@ import com.sma.admin.support.*;
 
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT) @ActiveProfiles("test")
 class SocketTests {
+ @Autowired com.sma.admin.tenant.internal.persistence.DomainMapper domains;
  @LocalServerPort int port;
  @Autowired UserService users;@Autowired SessionIssuer issuer;@Autowired SessionService sessions;@Autowired SessionManager manager;
  @Autowired SocketTicketService tickets;@Autowired NoticeService notices;@Autowired TodoService todos;@Autowired PrivateMessageService messages;
@@ -29,7 +30,9 @@ class SocketTests {
  @Test void realSocketDeliversCommittedMessagesAndForcedLogoutClosesOnlyItsSession()throws Exception{
   long[] ids=new long[2];SocketTicketService.Ticket[] grant=new SocketTicketService.Ticket[1];
   Users.as(Users.principal(101,252,DataAccess.unrestricted()),()->{
-   var user=users.create(new UserService.Create(new UserService.Input("socket-reader","Socket Reader",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Socket@Secure2026"));
+   var domain=new com.sma.admin.tenant.internal.persistence.DomainEntity();domain.setOwnerTenantId(252L);domain.setHostname("127.0.0.2");domain.setPortal("admin");
+   domain.setStatus("ACTIVE");domain.setPrimaryDomain(false);domain.setVerificationStatus("VERIFIED");domain.setTlsStatus("READY");domain.setDnsStatus("READY");domain.setVerifiedAt(java.time.Instant.now());domain.setTlsValidUntil(java.time.Instant.now().plusSeconds(86400));domain.setProvenance("TEST");domains.insert(domain);
+   var user=users.create(new UserService.Create(new UserService.Input("socket-reader","Socket Reader",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q7d42d97c0"));
    ids[0]=user.id();
    Users.as(Users.principal(user.id(),252,DataAccess.unrestricted()),()->{
     var account=users.findById(user.id()).orElseThrow();var login=issuer.issue(account,false,Duration.ofMinutes(5),"127.0.0.1","test");
@@ -37,10 +40,11 @@ class SocketTests {
    });return null;
   });
   try(var client=HttpClient.newHttpClient()){
-   var inbox=new Inbox();var socket=client.newWebSocketBuilder().buildAsync(URI.create("ws://127.0.0.1:"+port+"/api/message/ws?ticket="+grant[0].ticket()),inbox).join();
+   assertThatThrownBy(()->client.newWebSocketBuilder().buildAsync(URI.create("ws://127.0.0.1:"+port+"/api/message/ws?ticket="+grant[0].ticket()),new Inbox()).join()).hasCauseInstanceOf(WebSocketHandshakeException.class);
+   var inbox=new Inbox();var socket=client.newWebSocketBuilder().header("Origin","http://127.0.0.2:"+port).buildAsync(URI.create("ws://127.0.0.2:"+port+"/api/message/ws?ticket="+grant[0].ticket()),inbox).join();
    try{
     assertThat(inbox.messages.poll(10,TimeUnit.SECONDS)).contains("\"type\":\"connected\"");
-    assertThatThrownBy(()->client.newWebSocketBuilder().buildAsync(URI.create("ws://127.0.0.1:"+port+"/api/message/ws?ticket="+grant[0].ticket()),new Inbox()).join()).hasCauseInstanceOf(WebSocketHandshakeException.class);
+    assertThatThrownBy(()->client.newWebSocketBuilder().buildAsync(URI.create("ws://127.0.0.2:"+port+"/api/message/ws?ticket="+grant[0].ticket()),new Inbox()).join()).hasCauseInstanceOf(WebSocketHandshakeException.class);
     Users.as(Users.principal(ids[0],252,DataAccess.unrestricted()),()->{
      notices.save(null,new NoticeService.Input("Socket notice","<p>Content</p>","1",1,"USER",Set.of(ids[0]),Set.of()));return null;
     });

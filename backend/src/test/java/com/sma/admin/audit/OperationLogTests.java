@@ -14,17 +14,19 @@ import com.sma.admin.common.security.*;
 import com.sma.admin.support.*;
 
 @IntegrationTest @AutoConfigureMockMvc
+@org.springframework.test.context.TestPropertySource(properties={"sma.security.requests.fingerprint-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=","sma.security.requests.minimum-write-interval=100ms"})
 class OperationLogTests {
  @Autowired MockMvcTester mvc;@Autowired OperationLogService service;
  @Test void successfulAndRejectedMutationsAreRecordedWithoutRequestBodies(){
   var actor=new SmaPrincipal(101,"operation-tester",211,"admin",null,true,DataAccess.unrestricted(),Set.of("iam:post:create"),"UTC");
   Users.as(actor,()->{
    Users.as(actor,()->{
-    assertThat(mvc.post().uri("/api/iam/posts").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Sales\",\"code\":\"sales\",\"sort\":0,\"enabled\":true}")).hasStatusOk();
+    assertThat(mvc.post().uri("/api/iam/posts").header("Idempotency-Key",UUID.randomUUID().toString()).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Sales\",\"code\":\"sales\",\"sort\":0,\"enabled\":true}")).hasStatusOk();
     return null;
    });
+   org.awaitility.Awaitility.await().pollDelay(Duration.ofMillis(150)).until(()->true);
    Users.as(actor,()->{
-    assertThat(mvc.post().uri("/api/iam/posts").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"SecretMustNotBeLogged\",\"code\":\"sales\",\"sort\":0,\"enabled\":true}"))
+    assertThat(mvc.post().uri("/api/iam/posts").header("Idempotency-Key",UUID.randomUUID().toString()).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"SecretMustNotBeLogged\",\"code\":\"sales\",\"sort\":0,\"enabled\":true}"))
      .hasStatusOk().bodyJson().hasPathSatisfying("$.error",value->value.assertThat().isEqualTo("iam.error.duplicate-code"));
     return null;
    });

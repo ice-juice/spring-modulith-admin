@@ -7,7 +7,9 @@ import com.sma.admin.common.security.RequiresPermission;
 import com.sma.admin.audit.internal.service.LoginLogService;
 
 @RestController @RequestMapping("/api/audit/logins")
-public class LoginLogController {
+@com.sma.admin.common.request.GovernedApi(group="audit.logins",mode=com.sma.admin.common.request.GovernedApi.Mode.QUERY,reason="Paged authorized login audit query")
+public class LoginLogController implements com.sma.admin.common.request.RequestAuthorizer {
+ @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){com.sma.admin.common.security.CurrentUser.require();}
  private final LoginLogService service;
  public LoginLogController(LoginLogService service){this.service=service;}
  @GetMapping @RequiresPermission("audit:login:view")

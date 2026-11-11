@@ -7,8 +7,32 @@ spring:
     password: ${SMA_TEST_DB_PASSWORD:sma_dev}
 
 sma:
+  identity:
+    email-maintenance:
+      enabled: false
+    login-maintenance:
+      enabled: false
+  cache:
+    nodes:
+      enabled: false
+    tasks:
+      dispatch:
+        enabled: false
+  mail:
+    dispatch:
+      # Tests explicitly drive local dispatch; do not inherit a deployment background-send opt-in.
+      enabled: false
+  tenant:
+    bootstrap-hosts: localhost,127.0.0.1,[::1]
+  auth:
+    maintenance:
+      enabled: false
+    security:
+      key-file: src/test/resources/auth-security-test.keys
   openapi:
+    nonce-maintenance:
+      enabled: false
     key-file: target/test-keys/openapi.key
   file:
-    directory: target/test-storage
+    directory: ${sma.verify.directory:target}/test-storage
 

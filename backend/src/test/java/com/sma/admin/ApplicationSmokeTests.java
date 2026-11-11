@@ -23,7 +23,10 @@ class ApplicationSmokeTests {
 
 	@Test
 	void runsAgainstTheMigratedTestDatabase() {
-		assertThat(jdbc.queryForObject("select database()", String.class)).isEqualTo("springboot_modulith_admin_test");
+		String expectedDatabase = java.net.URI.create(com.sma.admin.support.TestDatabase.URL.substring(5)).getPath().substring(1);
+		assertThat(jdbc.queryForObject("select database()", String.class))
+				.matches("springboot_modulith_admin_test|sma_test_[a-z0-9_]+")
+				.isEqualTo(expectedDatabase);
 		Integer eventTable = jdbc.queryForObject(
 				"select count(*) from information_schema.tables where table_schema = database() and upper(table_name) = 'EVENT_PUBLICATION'",
 				Integer.class);

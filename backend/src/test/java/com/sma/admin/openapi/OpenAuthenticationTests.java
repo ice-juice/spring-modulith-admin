@@ -27,6 +27,35 @@ import com.sma.admin.support.*;
 
 @IntegrationTest @AutoConfigureMockMvc
 class OpenAuthenticationTests {
+ @org.springframework.test.context.bean.override.mockito.MockitoSpyBean com.sma.admin.mail.MailReceiptApi mailReceipts;
+ @Test void receiptBridgeRequiresBodySignatureEvenForUnsignedClientsAndRejectsReplayAndCrossTenantSigning()throws Exception{
+  var app=create(5292,false);String token=issue(app,false),path="/open/mail/receipts";
+  String content="{\"application\":\"shop\",\"profileId\":123,\"provider\":\"test-smtp\",\"eventId\":\"event-1\",\"messageId\":\"sma-12345678-1234-1234-1234-123456789012@mail.invalid\",\"type\":\"DELIVERED\",\"occurredAt\":\"2026-11-11T00:00:00Z\"}";
+  org.mockito.Mockito.doAnswer(i->{
+   var actor=ActorContext.require();assertThat(actor.tenantId()).isEqualTo(5292);assertThat(actor.subject()).isEqualTo("app:"+app.appId());
+   return new com.sma.admin.mail.MailReceiptApi.Result(100,"DELIVERED",false);
+  }).when(mailReceipts).accept(org.mockito.ArgumentMatchers.any());
+  mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(content).header("Authorization","Bearer "+token))
+    .andExpect(status().isForbidden()).andExpect(jsonPath("$.error").value("openapi.error.invalid-signature"));
+  String stamp=Long.toString(Instant.now().getEpochSecond()),requestNonce=nonce();
+  mvc.perform(signed("POST",path,"","",content,app,token,stamp,requestNonce)).andExpect(status().isOk()).andExpect(jsonPath("$.data.receiptState").value("DELIVERED"));
+  mvc.perform(signed("POST",path,"","",content,app,token,stamp,requestNonce)).andExpect(status().isConflict());
+  mvc.perform(signed("POST",path,"","",content,app,token,stamp,nonce()).content(content.replace("DELIVERED","BOUNCED"))).andExpect(status().isForbidden());
+  mvc.perform(signed("POST",path,"","",content,app,token,Long.toString(Instant.now().minusSeconds(301).getEpochSecond()),nonce())).andExpect(status().isForbidden());
+  var other=create(5293,false);
+  mvc.perform(signed("POST",path,"","",content,other,token,stamp,nonce())).andExpect(status().isForbidden());
+  org.mockito.Mockito.verify(mailReceipts,org.mockito.Mockito.times(1)).accept(org.mockito.ArgumentMatchers.any());
+ }
+ @Autowired com.sma.admin.tenant.internal.persistence.TenantRecordMapper tenantRows;
+ @Test void tenantSuspensionAndResumeCannotReviveOldMachineTokens()throws Exception{
+  var app=create(5291,false);String token=issue(app,false);
+  var tenant=tenantRows.selectById(5291L);tenant.setStatus("SUSPENDED");tenant.setSecurityGeneration(2L);tenantRows.updateById(tenant);
+  mvc.perform(get("/open/me").header("Authorization","Bearer "+token)).andExpect(status().isUnauthorized());
+  mvc.perform(post("/open/token").contentType(MediaType.APPLICATION_JSON).content(body(app))).andExpect(status().isUnauthorized());
+  tenant.setStatus("ACTIVE");tenant.setSecurityGeneration(3L);tenantRows.updateById(tenant);
+  mvc.perform(get("/open/me").header("Authorization","Bearer "+token)).andExpect(status().isUnauthorized());
+  String fresh=issue(app,false);mvc.perform(get("/open/me").header("Authorization","Bearer "+fresh)).andExpect(status().isOk());
+ }
  @Autowired MockMvc mvc;@Autowired JsonMapper json;@Autowired ApplicationService apps;@Autowired TokenMapper tokens;@Autowired UserService users;@Autowired SessionIssuer sessions;
  private ApplicationService.Credentials create(long tenant,boolean signed){return Users.as(Users.principal(101,tenant,DataAccess.unrestricted()),()->apps.create(new ApplicationService.Input("App "+tenant,1,null,true,signed)));}
  private String body(ApplicationService.Credentials app){return "{\"appId\":\""+app.appId()+"\",\"appSecret\":\""+app.appSecret()+"\"}";}
@@ -78,7 +107,7 @@ class OpenAuthenticationTests {
  }
  @Test void humanTokensAreRejectedByTheApplicationChainAndInvalidCredentialsAreRateLimited()throws Exception{
   String human=Users.as(Users.principal(101,294,DataAccess.unrestricted()),()->{
-   var user=users.create(new UserService.Create(new UserService.Input("open-human","Human",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Human@Secure2026"));
+   var user=users.create(new UserService.Create(new UserService.Input("open-human","Human",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q743fa13c7"));
    return sessions.issue(users.findById(user.id()).orElseThrow(),false,Duration.ofMinutes(5),"127.0.0.1","test").token();
   });
   mvc.perform(get("/open/me").header("Authorization","Bearer "+human)).andExpect(status().isUnauthorized());

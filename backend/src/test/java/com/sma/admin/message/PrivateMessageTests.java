@@ -13,7 +13,7 @@ import com.sma.admin.support.*;
 class PrivateMessageTests {
  @Autowired PrivateMessageService messages;@Autowired UserService users;@Autowired MessageSummaryService summary;
  private final PageQuery page=new PageQuery(1,20,null,null);
- private UserService.View user(String username){return users.create(new UserService.Create(new UserService.Input(username,username,null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Private@Secure2026"));}
+ private UserService.View user(String username){return users.create(new UserService.Create(new UserService.Input(username,username,null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q7a23d9367"));}
  @Test void onlyParticipantsCanReadAndOnlyRecipientCanMarkReadAndCountsArePersonal(){
   Users.as(Users.principal(101,245,DataAccess.unrestricted()),()->{
    var a=user("sender");var b=user("receiver");var c=user("outsider");

@@ -9,7 +9,13 @@ import com.sma.admin.common.security.*;
 import com.sma.admin.message.internal.service.TodoService;
 
 @RestController @RequestMapping("/api/message/todos") @PermitLoggedIn
-public class TodoController {
+@com.sma.admin.common.request.GovernedApi(group="message.todos",ownResource=true)
+public class TodoController implements com.sma.admin.common.request.RequestAuthorizer {
+ @Override public void authorizeRequest(String method,java.util.Map<String,String> variables){
+  // Only actor-owned operation metadata can replay. Actual content remains behind
+  // the module's recipient/owner, tenant and portal checks on every domain call.
+  com.sma.admin.common.security.CurrentUser.require();
+ }
  private final TodoService service;public TodoController(TodoService service){this.service=service;}
  public record State(@NotNull @Min(1) @Max(5) Integer state){}
  public record Batch(@NotNull @Size(min=1,max=100) Set<@NotNull Long> ids){}

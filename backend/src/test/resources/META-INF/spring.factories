@@ -1,2 +1,2 @@
-org.springframework.test.context.TestExecutionListener=com.sma.admin.support.CleanTestDatabaseListener
+org.springframework.test.context.TestExecutionListener=com.sma.admin.support.CleanTestDatabaseListener,com.sma.admin.support.TenantTestFixtures
 

@@ -17,7 +17,8 @@ import com.sma.admin.openapi.internal.persistence.*;
 public class SignatureVerifier {
  private final NonceMapper nonces;private final NonceMaintenance maintenance;public SignatureVerifier(NonceMapper nonces,NonceMaintenance maintenance){this.nonces=nonces;this.maintenance=maintenance;}
  @Transactional public void verify(ApplicationEntity app,RequestProof proof,String secret){
-  if(!app.getSignatureRequired())return;
+  // Receipt bridges always require a fresh, body-bound signature, including legacy unsigned applications.
+  if(!app.getSignatureRequired() && !org.springframework.web.util.UriUtils.decode(proof.path(),StandardCharsets.UTF_8).startsWith("/open/mail/"))return;
   try{
    if(!app.getAppId().equals(proof.appId())||proof.timestamp()==null||!proof.timestamp().matches("[0-9]{1,12}")||proof.nonce()==null||!proof.nonce().matches("[A-Za-z0-9_-]{16,64}")||proof.signature()==null||!proof.signature().matches("[a-fA-F0-9]{64}"))throw new IllegalArgumentException();
    long timestamp=Long.parseLong(proof.timestamp());if(Math.abs(Instant.now().getEpochSecond()-timestamp)>300)throw new IllegalArgumentException();

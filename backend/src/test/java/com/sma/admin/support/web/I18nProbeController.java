@@ -34,6 +34,9 @@ public class I18nProbeController {
 		throw new BizException(CommonErrorCode.DATA_NOT_FOUND);
 	}
 
+    @GetMapping("/cache-busy")
+    public ApiResponse<Void> cacheBusy() { throw new com.sma.admin.common.cache.CacheUnavailableException(); }
+
 	@GetMapping("/duplicate")
 	public ApiResponse<Void> duplicate() {
 		throw new BizException(CommonErrorCode.DUPLICATE_DATA, "admin");

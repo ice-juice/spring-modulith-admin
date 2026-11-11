@@ -51,7 +51,7 @@ class TodoTests {
  }
  @Test void assignedTasksBelongToRecipientAndManagementDataScopeIsIndependent(){
   Users.as(Users.principal(101,244,DataAccess.unrestricted()),()->{
-   var user=users.create(new UserService.Create(new UserService.Input("assignee","Assignee",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Assignee@Secure2026"));
+   var user=users.create(new UserService.Create(new UserService.Input("assignee","Assignee",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q723f5a8e3"));
    var row=todos.save(null,input(3,null,"https://example.test/task",user.id()),true);
    assertThat(todos.pendingCount()).isZero();
    assertThat(todos.page(page,null,null,null,null,null,null,null,null,true).total()).isEqualTo(1);
@@ -64,7 +64,7 @@ class TodoTests {
  @Test void managedEndpointAppliesFiltersWithoutExpandingDataScope(){
   var manager=new SmaPrincipal(101,"manager",1244,"admin",null,false,DataAccess.unrestricted(),Set.of("message:todo:view"),"UTC");
   Users.as(manager,()->{
-   var user=users.create(new UserService.Create(new UserService.Input("filter-assignee","Assignee",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Assignee@Secure2026"));
+   var user=users.create(new UserService.Create(new UserService.Input("filter-assignee","Assignee",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q723f5a8e3"));
    todos.save(null,new TodoService.Input("Needle",null,null,1,2,due,user.id(),null),true);
    todos.save(null,new TodoService.Input("Other","Details",null,2,1,due.plusSeconds(3600),user.id(),null),true);
    assertThat(mvc.get().uri("/api/message/todos/managed").param("keyword","Needle").param("state","1").param("type","1")

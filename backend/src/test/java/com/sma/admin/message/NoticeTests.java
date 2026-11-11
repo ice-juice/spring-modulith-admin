@@ -20,7 +20,7 @@ class NoticeTests {
  @Autowired DepartmentService departments;@Autowired AudienceQuery audience;@Autowired FileService files;@Autowired MockMvcTester mvc;
  private final PageQuery page=new PageQuery(1,20,null,null);
  private UserService.View user(String name,Long dept,Set<Long> roleIds,Set<Long> postIds){return users.create(new UserService.Create(
-  new UserService.Input(name,name,dept,null,null,"UNSPECIFIED",true,roleIds,postIds,null,null),"Notice@Secure2026"));}
+  new UserService.Input(name,name,dept,null,null,"UNSPECIFIED",true,roleIds,postIds,null,null),"Q7aa55505e"));}
  private NoticeService.Input input(String kind,Set<Long> ids,Set<Long> fileIds){return new NoticeService.Input("Notice","<p>Hello <b>world</b></p>","1",2,kind,ids,fileIds);}
  @Test void fiveAudienceTypesValidateMembershipPortalTenantAndDataScope(){
   Users.as(Users.principal(101,231,DataAccess.unrestricted()),()->{

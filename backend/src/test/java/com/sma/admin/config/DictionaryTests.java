@@ -13,15 +13,18 @@ import com.sma.admin.support.*;
 class DictionaryTests {
  @Autowired DictionaryService service;
  @Autowired com.sma.admin.config.internal.service.BuiltinDictionaries builtin;
- @Test void builtinCatalogIsCompleteIdempotentAndProtected() {
-  assertThat(service.types()).hasSize(13);
-  builtin.initialize();
-  assertThat(service.types()).hasSize(13);
-  var type=service.types().stream().filter(row -> row.typeKey().equals("sex")).findFirst().orElseThrow();
-  assertThatThrownBy(()->service.saveType(type.id(),new DictionaryService.TypeInput(type.typeKey(),type.defaultName(),type.nameKey(),false,false,0,Map.of()))).isInstanceOf(BizException.class);
-  assertThatThrownBy(() -> service.deleteType(type.id())).isInstanceOf(BizException.class);
-  try { LocaleContextHolder.setLocale(Locale.US); assertThat(service.options("sex")).extracting(DictionaryOption::label).containsExactly("Male","Female"); }
-  finally { LocaleContextHolder.resetLocaleContext(); }
+ @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
+ @Test void builtinCatalogIsSharedInheritedAndCannotBeRecreatedAsPrivateCopies() {
+  Users.as(Users.principal(101,173,DataAccess.unrestricted()),() -> {
+   builtin.initialize();builtin.initialize();
+   assertThat(service.types()).isEmpty();
+   assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM config_dictionary_type WHERE tenant_id=173",Long.class)).isZero();
+   assertThatThrownBy(()->service.saveType(null,new DictionaryService.TypeInput("sex","Copy",null,false,true,0,Map.of()))).isInstanceOf(BizException.class);
+   try { LocaleContextHolder.setLocale(Locale.US); assertThat(service.options("sex")).extracting(DictionaryOption::label).containsExactly("Male","Female");
+    assertThat(service.options("extend_dic_demo").get(1).children()).extracting(DictionaryOption::value).containsExactly("v21","v22","v23"); }
+   finally { LocaleContextHolder.resetLocaleContext(); }
+   return null;
+  });
  }
  @Test void customTreeTranslationCycleDeletionAndTenantIsolation() {
   Users.as(Users.principal(101,171,DataAccess.unrestricted()),() -> {

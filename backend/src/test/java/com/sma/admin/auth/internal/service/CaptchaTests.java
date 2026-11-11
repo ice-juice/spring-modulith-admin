@@ -15,9 +15,11 @@ class CaptchaTests {
         var mapper=mock(CaptchaMapper.class);
         var random=mock(SecureRandom.class); when(random.nextInt(anyInt())).thenReturn(0);
         var now=Instant.parse("2026-11-10T00:00:00Z");
-        var service=new CaptchaService(mapper,random,Clock.fixed(now,ZoneOffset.UTC));
+        var tenants=mock(TenantAuthenticationGuard.class);when(tenants.capture(anyLong(),anyString())).thenReturn(1L);
+        when(tenants.active(anyLong(),anyString(),anyLong())).thenReturn(true);
+        var service=new CaptchaService(mapper,random,Clock.fixed(now,ZoneOffset.UTC),tenants);
         AtomicReference<CaptchaEntity> inserted=new AtomicReference<>();
-        doAnswer(call -> { var row=call.getArgument(0,CaptchaEntity.class); row.setId(1L); inserted.set(row); return 1; }).when(mapper).insert(any(CaptchaEntity.class));
+        doAnswer(call -> { var row=call.getArgument(0,CaptchaEntity.class); row.setId(1L); row.setTenantId(1L); inserted.set(row); return 1; }).when(mapper).insert(any(CaptchaEntity.class));
         var challenge=service.issue();
         assertThat(challenge.image()).startsWith("data:image/png;base64,");
         var row=inserted.get();

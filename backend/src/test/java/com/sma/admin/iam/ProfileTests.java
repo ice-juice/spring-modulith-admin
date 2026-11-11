@@ -15,7 +15,7 @@ class ProfileTests {
  @Autowired UserService users;@Autowired ProfileService profiles;@Autowired FileService files;
  @Test void profileSupportsNullableFieldsAndOwnedAvatarsWithoutInvalidatingCredentials(){
   Users.as(Users.principal(101,224,DataAccess.unrestricted()),()->{
-   var account=users.create(new UserService.Create(new UserService.Input("profile","Profile",null,"test@example.test","123","UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Profile@Secure2026"));
+   var account=users.create(new UserService.Create(new UserService.Input("profile","Profile",null,"test@example.test","123","UNSPECIFIED",true,Set.of(),Set.of(),null,null),"Q70a005368"));
    Users.as(Users.principal(account.id(),224,DataAccess.own()),()->{
     long version=users.findById(account.id()).orElseThrow().credentialVersion();
     byte[] png=Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1EAAAAASUVORK5CYII=");

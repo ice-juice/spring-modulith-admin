@@ -20,12 +20,31 @@ class MonitorTests {
  }
  @Test void cacheMetadataAndClearAreTenantScopedAndNeverExposeValues(){
   Users.as(Users.principal(101,262,DataAccess.unrestricted()),()->{parameters.stringValue("tenant-a","private-a");parameters.stringValue("tenant-a","private-a");return null;});
-  Users.as(Users.principal(101,263,DataAccess.unrestricted()),()->{
-   parameters.stringValue("tenant-b","private-b");var row=caches.list().getFirst();assertThat(row.size()).isEqualTo(1);assertThat(row.misses()).isEqualTo(1);
-   caches.clear("config.parameters");assertThat(caches.list().getFirst().size()).isZero();return null;
+  Users.as(cacheManager(263),()->{
+   parameters.stringValue("tenant-b","private-b");var row=parameterCache();assertThat(row.size()).isEqualTo(1);assertThat(row.misses()).isEqualTo(1);
+   caches.clear("config.parameters");assertThat(parameterCache().size()).isZero();return null;
   });
-  Users.as(Users.principal(101,262,DataAccess.unrestricted()),()->{
-   var row=caches.list().getFirst();assertThat(row.size()).isEqualTo(1);assertThat(row.hits()).isEqualTo(1);caches.clearAll();assertThat(caches.list().getFirst().size()).isZero();return null;
+  Users.as(cacheManager(262),()->{
+   var row=parameterCache();assertThat(row.size()).isEqualTo(1);assertThat(row.hits()).isEqualTo(1);caches.clearAll();assertThat(parameterCache().size()).isZero();return null;
   });
  }
+ @Test void governedDirectoryHttpShowsPolicyAndScopeButNotValuesOrConnectionSecrets(){
+  var viewer=new SmaPrincipal(101,"cache-viewer",264,"admin",null,false,DataAccess.unrestricted(),java.util.Set.of("monitor:cache:view"),"UTC");
+  Users.as(viewer,()->{
+   assertThat(mvc.get().uri("/api/monitor/caches/directory").param("owner","config").param("scenario","dictionary-options"))
+    .hasStatusOk().bodyJson().hasPathSatisfying("$.data.length()",v->v.assertThat().isEqualTo(1));return null;
+  });
+  Users.as(viewer,()->{
+   assertThat(mvc.get().uri("/api/monitor/caches/directory/config.dictionary-options"))
+    .hasStatusOk().bodyJson().hasPath("$.data.observation.policy.effective.ttl")
+    .hasPathSatisfying("$.data.scope",v->v.assertThat().isEqualTo("TENANT"))
+    .hasPathSatisfying("$.data.allowedOperations.length()",v->v.assertThat().isEqualTo(0))
+    .doesNotHavePath("$.data.observation.password").doesNotHavePath("$.data.observation.namespace")
+    .doesNotHavePath("$.data.values");return null;
+  });
+  Users.as(viewer,()->{assertThat(mvc.delete().uri("/api/monitor/caches/config.dictionary-options")).hasStatus(403);return null;});
+  Users.as(Users.principal(101,264,DataAccess.none()),()->{assertThat(mvc.get().uri("/api/monitor/caches/directory")).hasStatus(403);return null;});
+ }
+ private SmaPrincipal cacheManager(long tenant){return new SmaPrincipal(101,"cache-manager",tenant,"admin",null,false,DataAccess.unrestricted(),java.util.Set.of("monitor:cache:clear","monitor:cache:view"),"UTC");}
+ private CacheService.View parameterCache(){return caches.list().stream().filter(row->row.id().equals("config.parameters")).findFirst().orElseThrow();}
 }

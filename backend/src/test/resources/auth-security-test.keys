@@ -1,0 +1,5 @@
+# PUBLIC deterministic fixtures for disposable test databases ONLY. Never configure these in a deployment.
+encryption.active=test
+encryption.test=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+pepper.active=test
+pepper.test=AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=

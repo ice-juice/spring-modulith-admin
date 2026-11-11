@@ -1,0 +1,36 @@
+CREATE TABLE extension_work (
+    id BIGINT NOT NULL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    deployment_id VARCHAR(80) NOT NULL,
+    plugin_id VARCHAR(80) NOT NULL,
+    entry_id VARCHAR(80) NOT NULL,
+    permission VARCHAR(140) NOT NULL,
+    work_key_hash CHAR(64) NOT NULL,
+    owner_subject VARCHAR(200) NOT NULL,
+    portal VARCHAR(64) NOT NULL,
+    input_sha256 CHAR(64) NOT NULL,
+    selection_json TEXT NOT NULL,
+    members_json TEXT NOT NULL,
+    state VARCHAR(20) NOT NULL,
+    claim_id VARCHAR(80),
+    result_base64 MEDIUMTEXT,
+    failure VARCHAR(100),
+    started_at DATETIME(3),
+    completed_at DATETIME(3),
+    created_at DATETIME(3) NOT NULL,
+    created_by BIGINT NOT NULL,
+    updated_at DATETIME(3) NOT NULL,
+    updated_by BIGINT NOT NULL,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE KEY uq_extension_work(tenant_id,portal,deployment_id,plugin_id,entry_id,work_key_hash),
+    INDEX ix_extension_work_state(tenant_id,state)
+);
+CREATE TABLE extension_runtime_reference (
+    id VARCHAR(250) NOT NULL PRIMARY KEY,
+    deployment_id VARCHAR(80) NOT NULL,
+    bundle_id VARCHAR(80) NOT NULL,
+    artifact_hash CHAR(64) NOT NULL,
+    reference_count BIGINT NOT NULL,
+    INDEX ix_extension_reference_hash(artifact_hash),
+    CONSTRAINT ck_extension_reference_count CHECK (reference_count >= 0)
+);

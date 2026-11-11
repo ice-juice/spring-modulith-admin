@@ -14,6 +14,7 @@ import com.sma.admin.support.*;
 
 @IntegrationTest
 @AutoConfigureMockMvc
+@org.springframework.test.context.TestPropertySource(properties="sma.security.requests.fingerprint-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
 class DepartmentTests {
     @Autowired DepartmentService service;
     @Autowired MockMvcTester mvc;
@@ -55,7 +56,8 @@ class DepartmentTests {
         });
         var admin = new SmaPrincipal(101, "admin", 102, "admin", null, true, DataAccess.unrestricted(), Set.of("iam:department:view", "iam:department:create"), "UTC");
         Users.as(admin, () -> {
-            assertThat(mvc.post().uri("/api/iam/departments").contentType(MediaType.APPLICATION_JSON).content("""
+            assertThat(mvc.post().uri("/api/iam/departments").with(Users.request(admin))
+                    .header("Idempotency-Key",java.util.UUID.randomUUID().toString()).contentType(MediaType.APPLICATION_JSON).content("""
                     {"parentId":"0","name":"Sales","code":"sales","sort":0,"enabled":true}
                     """)).hasStatusOk().bodyJson().hasPathSatisfying("$.code", v -> v.assertThat().isEqualTo(0));
             return null;

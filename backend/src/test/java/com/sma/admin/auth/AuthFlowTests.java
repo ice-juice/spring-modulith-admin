@@ -32,7 +32,7 @@ class AuthFlowTests {
     void bearerLoginReloadsPermissionsThenLogoutInvalidatesToken() throws Exception {
         var role=roles.save(null,new RoleService.Input(0L,"Login role","login-role",0,true,DataScope.SELF,Set.of(),null));
         var input=new UserService.Input("login-tester","Login Tester",null,null,null,"UNSPECIFIED",true,Set.of(role.id()),Set.of(),"en-US","America/New_York");
-        users.create(new UserService.Create(input,"Test@Secure2026"));
+        users.create(new UserService.Create(input,"Q7d4e10594"));
         String challenge=fixtureChallenge("ABCDE");
         var login=mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginBody("login-tester",challenge,"ABCDE")).exchange();
         assertThat(login).hasStatusOk().bodyJson().hasPathSatisfying("$.code",v -> v.assertThat().isEqualTo(0));
@@ -55,8 +55,8 @@ class AuthFlowTests {
     @Test
     void concurrentSingleTerminalLoginsLeaveOneSessionAndExpiredSessionsAreDenied() throws Exception {
         var input=new UserService.Input("single-tester","Single Tester",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,"UTC");
-        users.create(new UserService.Create(input,"Test@Secure2026"));
-        var account=users.authenticate("single-tester","Test@Secure2026","admin").orElseThrow();
+        users.create(new UserService.Create(input,"Q7d4e10594"));
+        var account=users.authenticate("single-tester","Q7d4e10594","admin").orElseThrow();
         try(var executor=java.util.concurrent.Executors.newFixedThreadPool(2)) {
             var one=executor.submit(() -> issuer.issue(account,true,java.time.Duration.ofHours(8),"127.0.0.1","test-one"));
             var two=executor.submit(() -> issuer.issue(account,true,java.time.Duration.ofHours(8),"127.0.0.1","test-two"));
@@ -73,13 +73,13 @@ class AuthFlowTests {
     @Test
     void passwordChangesInvalidateEvenSessionsIssuedFromAnEarlierAuthenticationSnapshot() {
         var input=new UserService.Input("version-tester","Version Tester",null,null,null,"UNSPECIFIED",true,Set.of(),Set.of(),null,"UTC");
-        var created=users.create(new UserService.Create(input,"Test@Secure2026"));
-        var oldSnapshot=users.authenticate("version-tester","Test@Secure2026","admin").orElseThrow();
+        var created=users.create(new UserService.Create(input,"Q7d4e10594"));
+        var oldSnapshot=users.authenticate("version-tester","Q7d4e10594","admin").orElseThrow();
         var previous=issuer.issue(oldSnapshot,false,java.time.Duration.ofHours(8),"127.0.0.1","existing-session-fixture");
-        users.resetPassword(created.id(),"Changed@Secure2026");
+        users.resetPassword(created.id(),"Q7fc1401e1");
         var stale=issuer.issue(oldSnapshot,false,java.time.Duration.ofHours(8),"127.0.0.1","stale-login-fixture");
         assertThat(sessionService.resolve(stale.token())).isEmpty();
-        var current=users.authenticate("version-tester","Changed@Secure2026","admin").orElseThrow();
+        var current=users.authenticate("version-tester","Q7fc1401e1","admin").orElseThrow();
         var good=issuer.issue(current,false,java.time.Duration.ofHours(8),"127.0.0.1","current-fixture");
         assertThat(sessionService.resolve(good.token())).isPresent();
         org.awaitility.Awaitility.await().atMost(java.time.Duration.ofSeconds(5)).untilAsserted(() ->
@@ -98,10 +98,10 @@ class AuthFlowTests {
     }
     private String fixtureChallenge(String answer) {
         String id=UUID.randomUUID().toString();
-        var row=new CaptchaEntity(); row.setChallengeId(id); row.setAnswerHash(Tokens.hash(id+":"+answer)); row.setExpiresAt(Instant.now().plusSeconds(120)); captchas.insert(row);
+        var row=new CaptchaEntity(); row.setChallengeId(id); row.setAnswerHash(Tokens.hash(id+":"+answer)); row.setExpiresAt(Instant.now().plusSeconds(120));row.setPortal("admin");row.setTenantSecurityGeneration(1L); captchas.insert(row);
         return id;
     }
     private String loginBody(String username,String id,String answer) {
-        return "{\"username\":\""+username+"\",\"password\":\"Test@Secure2026\",\"portal\":\"admin\",\"captchaId\":\""+id+"\",\"captcha\":\""+answer+"\",\"remember\":false}";
+        return "{\"username\":\""+username+"\",\"password\":\"Q7d4e10594\",\"portal\":\"admin\",\"captchaId\":\""+id+"\",\"captcha\":\""+answer+"\",\"remember\":false}";
     }
 }

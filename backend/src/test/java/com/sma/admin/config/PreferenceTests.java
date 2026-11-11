@@ -10,6 +10,21 @@ import com.sma.admin.support.*;
 @IntegrationTest
 class PreferenceTests {
  @Autowired PreferenceService service;
+ @Test void skinIsIndependentCompatibleAndScoped(){
+  Users.as(Users.principal(201,291,DataAccess.unrestricted()),()->{
+   assertThat(service.get(201,null,null).skin()).isEqualTo("iris");
+   service.save(new PreferenceService.Input("zh-CN","UTC","dark",true,false,"celadon"));
+   assertThat(service.get(201,null,null)).satisfies(p->{assertThat(p.skin()).isEqualTo("celadon");assertThat(p.theme()).isEqualTo("dark");});
+   service.save(new PreferenceService.Input("en-US","UTC","light",true,false));
+   assertThat(service.get(201,null,null).skin()).isEqualTo("celadon");
+   assertThat(service.get(202,null,null).skin()).isEqualTo("iris");
+   Users.as(Users.principal(201,292,DataAccess.unrestricted()),()->{assertThat(service.get(201,null,null).skin()).isEqualTo("iris");return null;});
+   assertThatThrownBy(()->service.save(new PreferenceService.Input("en-US","UTC","dark",true,false,"invalid"))).isInstanceOf(BizException.class);
+   service.save(new PreferenceService.Input("en-US","UTC","system",true,false,"amber"));
+   assertThat(service.get(201,null,null).skin()).isEqualTo("amber");
+   service.reset();assertThat(service.get(201,null,null).skin()).isEqualTo("iris");return null;
+  });
+ }
  @Test void preferencesAreScopedToAuthenticatedUserAndTenantAndValidateIanaZones(){
   Users.as(Users.principal(101,191,DataAccess.unrestricted()),()->{
    service.save(new PreferenceService.Input("en-US","America/New_York","dark",true,true));

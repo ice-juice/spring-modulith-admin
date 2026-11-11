@@ -14,7 +14,7 @@ import com.sma.admin.support.*;
 
 @IntegrationTest @AutoConfigureMockMvc
 class FileTests {
- @Autowired FileService service;@Autowired LocalStorage storage;@Autowired MockMvcTester mvc;
+ @Autowired FileService service;@Autowired LocalStorage storage;@Autowired MockMvcTester mvc;@Autowired FileProperties properties;
  @Test void generatedStorageKeysPreventTraversalAndAssetsAreTenantAndOwnerScoped(){
   var actor=new SmaPrincipal(101,"uploader",221,"admin",10L,false,DataAccess.own(),Set.of("file:file:view","file:file:upload","file:file:delete"),"UTC");
   Users.as(actor,()->{
@@ -39,7 +39,7 @@ class FileTests {
   });
  }
  @Test void forgedAndTruncatedRasterUploadsRollbackMetadataAndBinary()throws Exception{
-  java.nio.file.Path root=java.nio.file.Path.of("target/test-storage");
+  java.nio.file.Path root=java.nio.file.Path.of(properties.directory());
   long before;try(var paths=java.nio.file.Files.list(root)){before=paths.count();}
   Users.as(Users.principal(101,225,DataAccess.unrestricted()),()->{
    assertThatThrownBy(()->service.upload(new MockMultipartFile("file","fake.png","image/png","not an image".getBytes(StandardCharsets.UTF_8))))

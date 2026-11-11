@@ -15,6 +15,16 @@ public class SocketHub extends TextWebSocketHandler {
  private final SocketTicketService tickets;private final SocketProperties properties;private final JsonMapper json;
  private final Map<String,Connection> connections=new ConcurrentHashMap<>();
  private record Connection(WebSocketSession session,SocketTicketService.Grant grant){}
+ public record Audience(long tenantId,String portal,long userId){}
+ /** Capture only server-authenticated connection ownership, never caller supplied subscriptions. */
+ public Set<Audience> subscriptions(){return connections.values().stream().map(c->new Audience(c.grant().tenantId(),c.grant().portal(),c.grant().userId())).collect(java.util.stream.Collectors.toUnmodifiableSet());}
+ public void revalidate(Audience audience,long lastSessionId,String reason){
+  for(var entry:connections.entrySet()){
+   var grant=entry.getValue().grant();
+   if(grant.tenantId()==audience.tenantId()&&grant.userId()==audience.userId()&&grant.portal().equals(audience.portal())&&!tickets.active(grant))
+    close(entry.getKey(),grant.sessionId()==lastSessionId?reason:"SESSION_INVALID");
+  }
+ }
  public SocketHub(SocketTicketService tickets,SocketProperties properties,JsonMapper json){this.tickets=tickets;this.properties=properties;this.json=json;}
  @Override public synchronized void afterConnectionEstablished(WebSocketSession session)throws Exception{
   var grant=(SocketTicketService.Grant)session.getAttributes().get("sma.socket-grant");

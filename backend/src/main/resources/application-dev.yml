@@ -1,0 +1,4 @@
+# Explicit local entry for the development profile. Production must register its own verified domains.
+sma:
+  tenant:
+    bootstrap-hosts: localhost,127.0.0.1,[::1]

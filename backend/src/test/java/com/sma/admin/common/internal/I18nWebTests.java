@@ -19,6 +19,18 @@ class I18nWebTests {
 	@Autowired
 	MockMvcTester mvc;
 
+    @org.junit.jupiter.api.BeforeEach
+    void useRecognizedHumanIdentity(org.junit.jupiter.api.TestInfo test) {
+        if (test.getTestMethod().orElseThrow().isAnnotationPresent(WithMockUser.class)) {
+            var principal = com.sma.admin.support.Users.principal(101, 1,
+                    com.sma.admin.common.security.DataAccess.none());
+            var context = org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+                    .authenticated(principal, null, java.util.List.of()));
+            org.springframework.security.test.context.TestSecurityContextHolder.setContext(context);
+        }
+    }
+
 	@Test
 	@WithMockUser
 	void businessErrorsUseTheDefaultLanguageWithoutHeader() {
@@ -27,6 +39,15 @@ class I18nWebTests {
 				.hasPathSatisfying("$.error", v -> v.assertThat().isEqualTo("common.error.data-not-found"))
 				.hasPathSatisfying("$.message", v -> v.assertThat().isEqualTo("数据不存在或已被删除"));
 	}
+
+    @Test @WithMockUser
+    void cacheBackpressureIsARealLocalized503RatherThanASuccessResponse() {
+        assertThat(mvc.get().uri("/api/test-probe/cache-busy")).hasStatus(503).bodyJson()
+                .hasPathSatisfying("$.error", value -> value.assertThat().isEqualTo("common.error.unavailable"))
+                .hasPathSatisfying("$.message", value -> value.assertThat().isEqualTo("服务暂时繁忙，请稍后重试"));
+        assertThat(mvc.get().uri("/api/test-probe/cache-busy").header("Accept-Language", "en-US")).hasStatus(503).bodyJson()
+                .hasPathSatisfying("$.message", value -> value.assertThat().isEqualTo("The service is temporarily busy; please try again later"));
+    }
 
 	@Test
 	@WithMockUser

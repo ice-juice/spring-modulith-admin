@@ -72,4 +72,19 @@ class PermissionTests {
     private PermissionService.Input input(Long parent,String key,String name,String path,Map<String,String> translations) {
         return new PermissionService.Input(parent,key,name,null,"MENU",path,null,"ROUTE",0,true,false,true,translations);
     }
+    @Test void rootMenuPromotionKeepsExistingIdentityAndAdminSettings() {
+        Users.as(Users.principal(101,1132,DataAccess.unrestricted()), () -> {
+            String key="rule:template:view", label="rule.permission.template.view";
+            service.sync(java.util.List.of(new PermissionSpec(key,null,label,"Rules","BUTTON",null,null,0,"admin",true)));
+            var old=service.list().stream().filter(row->row.permissionKey().equals(key)).findFirst().orElseThrow();
+            service.save(old.id(),new PermissionService.Input(0L,key,"Customized",label,"BUTTON",null,null,"ROUTE",11,false,true,false,Map.of()));
+            var menu=new PermissionSpec(key,null,label,"Rules","MENU","/rule/templates","Connection",80,"admin",true);
+            service.sync(java.util.List.of(menu)); service.sync(java.util.List.of(menu));
+            var current=service.list().stream().filter(row->row.permissionKey().equals(key)).findFirst().orElseThrow();
+            assertThat(current.id()).isEqualTo(old.id()); assertThat(current.type()).isEqualTo("MENU");
+            assertThat(current.path()).isEqualTo("/rule/templates"); assertThat(current.defaultName()).isEqualTo("Customized");
+            assertThat(current.enabled()).isFalse(); assertThat(current.hidden()).isTrue(); assertThat(current.superAdminDefault()).isFalse();
+            assertThat(current.sort()).isEqualTo(11);return null;
+        });
+    }
 }
