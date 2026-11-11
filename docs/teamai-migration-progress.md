@@ -13,7 +13,7 @@
 | 1 | 清点、备份旧配置和仓库 | 无 | 确认资源清单、工作区状态及可恢复备份 | 完成 |
 | 2 | 迁移资源，切换 workspace 单仓模式 | 1 | 配置指向本项目 `.teamai/`；规则和文档完整；统计开关保留 | 完成 |
 | 3 | 验证同步与接入，更新 README 和代理规则 | 2 | `teamai pull`、`status`、`doctor`、`hooks list`；记录宿主限制 | 完成（宿主限制见下） |
-| 4 | 清理独立 GitHub 仓库和旧本地副本 | 3 | 核对精确目标、备份存在、旧绑定消失、远端删除结果 | 进行中 |
+| 4 | 停用旧本地副本，移交云端旧仓库删除 | 3 | 旧绑定及活动副本消失；归档后同步通过；确认云端删除责任 | 本地完成；云端由用户自行删除 |
 
 ## 执行记录
 
@@ -24,3 +24,7 @@
 - `teamai pull` 成功同步 1 份规则和 1 份文档；`status` 确认当前应用仓库绑定；`hooks list` 确认 Claude、Codex、Copilot、Antigravity 的注册位置。
 - `doctor` 已执行，资源、配置、Git 钩子和同步检查通过，但不是全绿：现有 CLI 不接受小九AI 深层 `CODEX_HOME`，仍按标准 `.codex` 注册；Copilot 尚未信任本目录。不修改宿主路径或扩大信任。手动同步项目资源已验证，小九AI/Copilot 自动会话接入未验收，这两项作为宿主限制保留。
 - 共享配置关闭开关、旧规则逐字节比较、README/AGENTS/成员上手/迁移进度的本地链接及 `git diff --check` 通过。本次不涉及应用代码、构建或数据库，无需重启服务或执行应用测试。
+- 迁移资源已发布到当前应用仓库 `main`：`4fe161b`（CLI 骨架）和 `99a3f53`（迁移文档及关闭评分配置）。README 仅暂存本次新增段落，其他并行修改未纳入提交；既有未提交代理规则只补充本次单仓约束，仍保留原工作区状态。
+- 自动审批拒绝递归删除旧本地副本（`blocked by policy`），改为可恢复归档：旧 `team-repo`、`reports-wt`、`learnings-wt` 和旧 fetch 缓存均已移到上述备份目录的 `retired-install/`，并修复归档 worktree 引用。活动分区不再包含旧副本。
+- 归档后再次运行 `teamai pull`、`doctor`、`status`，项目资源同步正常，原有宿主限制不变；远端 main 与迁移提交一致，统计与会话发布仍关闭。
+- GitHub 浏览器未登录，且未找到可用的 GitHub API 管理凭据；用户明确选择自行删除云端旧仓库。删除入口：`https://github.com/ice-juice/spring-modulith-teamai/settings` → Danger Zone → Delete this repository。此次未删除云端仓库，不以未登录的 404 作为删除证据。
