@@ -8,6 +8,20 @@ Springboot Modulith Admin 是一套前后端分离的后台管理系统，产品
 
 P0～P4 的范围内代码与自动验证已完成；最终功能对照与待人工验收项见 [docs/acceptance.md](docs/acceptance.md)，部署与主密钥持久化见 [docs/deployment.md](docs/deployment.md)。P4-4 仍保留登录后浏览器人工巡检，不将自动测试等同于人工验收。
 
+## TeamAI：与项目同仓管理
+
+团队 AI 资源位于本项目根目录的 [`.teamai/`](.teamai/teamai.yaml)，与 `README.md`、`backend/`、`frontend-next/` 同级，使用当前应用仓库管理，无需独立 TeamAI 仓库。共享规则放 `.teamai/rules/`，文档放 `.teamai/docs/`，团队自定义技能放 `.teamai/skills/`；本机状态与凭据不入库。开发约束仍以 [AGENTS.md](AGENTS.md) 和专项规则为准，避免维护重复副本。
+
+安装 Node.js 20+ 与 `teamai-cli` 后，在项目根目录运行：
+
+```powershell
+teamai init --self --scope workspace --provider git
+teamai pull
+teamai doctor
+```
+
+同仓资源随项目版本管理，通用资源在基座主线维护，业务专属资源在业务分支维护。`init --self` 会自动提交 TeamAI 骨架；执行前检查当前差异。统计上报、会话发布及自动 recall 默认关闭。CLI 当前不支持小九AI的深层 `CODEX_HOME` 路径，手动 `teamai pull` 可同步项目资源，但不代表小九AI自动钩子已生效；Copilot 使用项目钩子前还需信任该目录。详见[成员上手](.teamai/docs/getting-started.md)及[迁移记录与验证边界](docs/teamai-migration-progress.md)。
+
 ## 1. 底座基调
 
 | 决策 | 内容 | 理由 |
