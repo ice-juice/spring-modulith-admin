@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>com.sma</groupId><artifactId>sma-backend-reactor</artifactId><version>0.0.1-SNAPSHOT</version><relativePath>../../pom.xml</relativePath></parent>
+  <artifactId>example-extension-echo</artifactId><version>1.0.0</version>
+  <properties><project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp></properties>
+  <dependencies><dependency><groupId>com.sma</groupId><artifactId>extension-sdk</artifactId><version>0.0.1-SNAPSHOT</version><scope>provided</scope></dependency></dependencies>
+</project>

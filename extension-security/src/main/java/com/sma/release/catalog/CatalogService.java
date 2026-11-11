@@ -9,15 +9,26 @@ import org.springframework.stereotype.Service;
 import com.sma.extension.protocol.*;
 import com.sma.release.auth.IdentityService;
 import com.sma.release.auth.SecurityRecords;
+import com.sma.release.auth.AccountManagement;
 import com.sma.release.store.ReleaseDatabase;
+import com.sma.release.deployment.DeploymentService;
+import com.sma.release.deployment.ValidationService;
 
 @Service
 public class CatalogService {
     private final ReleaseDatabase database;
     private final IdentityService identities;
     private final ArtifactFiles files;
-    public CatalogService(ReleaseDatabase database, IdentityService identities, ArtifactFiles files) {
-        this.database = database; this.identities = identities; this.files = files;
+    private final ValidationService validation;
+    private final DeploymentService deployments;
+    private final AccountManagement accounts;
+    private final com.sma.release.auth.MachineManagement machines;
+    private final com.sma.release.store.AuditContinuity auditContinuity;
+    private final com.sma.release.auth.ConsoleIdentityService consoleIdentities;
+    public CatalogService(ReleaseDatabase database, IdentityService identities, ArtifactFiles files, ValidationService validation, DeploymentService deployments,AccountManagement accounts,com.sma.release.auth.MachineManagement machines,com.sma.release.store.AuditContinuity auditContinuity,com.sma.release.auth.ConsoleIdentityService consoleIdentities) {
+        this.database = database; this.identities = identities; this.files = files; this.validation=validation; this.deployments=deployments;this.accounts=accounts;this.machines=machines;
+        this.auditContinuity=auditContinuity;
+        this.consoleIdentities=consoleIdentities;
     }
     public List<Group> groups(String session) {
         return database.transaction(tx -> { var p = identities.principal(tx, session); return tx.list("group", Group.class).stream().filter(g -> canRead(tx, p, g.id(), null)).toList(); });
@@ -44,6 +55,7 @@ public class CatalogService {
             String actionId = "a-" + Hashes.sha256((p.userId() + ":" + command.idempotencyKey()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
             var existing = tx.get("action", actionId, ActionReceipt.class);
             if (existing.isPresent()) { Checks.require(existing.get().intentHash().equals(intent.digest()), "idempotency-conflict"); return existing.get(); }
+            auditContinuity.requireHealthy(tx);
             Checks.require(policy(tx).revision() == intent.policyRevision(), "policy-revision-conflict");
             // Failures roll back both grant consumption and the command. Failed proof attempts are committed separately.
             identities.consume(tx, session, command.grant(), intent, actionId);
@@ -56,7 +68,31 @@ public class CatalogService {
                 case POLICY_UPDATE -> updatePolicy(tx, p, intent, command.parameters());
                 case DEPENDENCY_REGISTER -> registerDependency(tx, p, intent, command.parameters());
                 case EXCEPTION_CREATE -> registerException(tx, p, intent, command.parameters());
-                case UPLOAD -> reserveUpload(tx, p, intent);
+                case DELETE -> deleteArtifact(tx,intent,ProtocolJson.read(command.parameters(),String.class));
+                case USER_CREATE -> accounts.create(tx,p,ProtocolJson.read(command.parameters(),AccountManagement.Create.class));
+                case IDENTITY_BIND -> consoleIdentities.bind(tx,p,ProtocolJson.read(command.parameters(),com.sma.release.auth.ConsoleIdentityService.Bind.class));
+                case USER_UPDATE -> accounts.change(tx,p,ProtocolJson.read(command.parameters(),AccountManagement.Change.class));
+                case FACTOR_RESET -> accounts.resetFactor(tx,p,ProtocolJson.read(command.parameters(),AccountManagement.Reset.class));
+                case CREDENTIAL_UPDATE -> accounts.changeCredentials(tx,p,ProtocolJson.read(command.parameters(),AccountManagement.PasswordChange.class));
+                case OPERATION_PASSWORD_UPDATE -> accounts.changeOperationPassword(tx,p,ProtocolJson.read(command.parameters(),AccountManagement.OperationPassword.class));
+                case TRUST_UPDATE -> deployments.rotateKeys(tx,p,intent.environment(),ProtocolJson.read(command.parameters(),com.sma.release.crypto.SigningService.Rotation.class));
+                case MACHINE_CREATE -> {var id=machines.create(tx,p,ProtocolJson.read(command.parameters(),com.sma.release.auth.MachineManagement.Create.class));deployments.initializeEnvironments(tx);yield id;}
+                case MACHINE_UPDATE -> {var id=machines.change(tx,p,ProtocolJson.read(command.parameters(),com.sma.release.auth.MachineManagement.Change.class));deployments.initializeEnvironments(tx);yield id;}
+                case MACHINE_ROTATE -> machines.stage(tx,p,ProtocolJson.read(command.parameters(),com.sma.release.auth.MachineManagement.Rotate.class));
+                case MACHINE_ACTIVATE -> machines.activate(tx,p,ProtocolJson.read(command.parameters(),com.sma.release.auth.MachineManagement.Activate.class));
+                case CANCEL_RELEASE -> deployments.cancel(tx,p,intent,ProtocolJson.read(command.parameters(),DeploymentService.Cancel.class));
+                case GUARD_CONFIGURE -> deployments.configureGuard(tx,p,intent,ProtocolJson.read(command.parameters(),com.sma.release.deployment.CanaryGuard.Request.class),actionId);
+                case UPLOAD -> reserveUpload(tx, p, intent, command.parameters());
+                case VALIDATE -> {
+                    group(tx,intent,true);
+                    String artifactId=ProtocolJson.read(command.parameters(),String.class);
+                    var artifact=tx.get("artifact",artifactId,Artifact.class).orElseThrow(() -> new ProtocolException("artifact-not-found"));
+                    Checks.require(artifact.pluginId().equals(intent.pluginId()) && plugin(tx,artifact.pluginId()).groupId().equals(intent.groupId())
+                            && artifact.environment().equals(intent.environment()),"validation-context-mismatch");
+                    yield validation.enqueue(tx,artifact,intent.policyRevision());
+                }
+                case PUBLISH, CANARY, PROMOTE, ROLLBACK -> deployments.propose(tx,p,intent,ProtocolJson.read(command.parameters(),ExecutionDocuments.Release.class),actionId);
+                case REVOKE, QUARANTINE -> deployments.revoke(tx,p,intent,ProtocolJson.read(command.parameters(),String.class));
                 default -> throw new ProtocolException("unsupported-command");
             };
             var receipt = new ActionReceipt(actionId, p.userId(), intent.digest(), "ACCEPTED", resource, tx.now());
@@ -118,7 +154,15 @@ public class CatalogService {
         Checks.require(tx.get("exception", permit.id(), VulnerabilityGate.ExceptionPermit.class).isEmpty(), "exception-id-used");
         tx.put("exception", permit.id(), permit); return permit.id();
     }
-    private String reserveUpload(ReleaseDatabase.Tx tx, SecurityRecords.Principal principal, ActionIntent intent) {
+    private String deleteArtifact(ReleaseDatabase.Tx tx,ActionIntent intent,String artifactId) {
+        group(tx,intent,false);var artifact=tx.get("artifact",artifactId,Artifact.class).orElseThrow(() -> new ProtocolException("artifact-not-found"));
+        var plugin=plugin(tx,artifact.pluginId());
+        Checks.require(artifact.pluginId().equals(intent.pluginId()) && plugin.groupId().equals(intent.groupId()) && artifact.environment().equals(intent.environment()),"artifact-scope-mismatch");
+        ArtifactRetention.requireDeletable(tx,artifact,policy(tx));
+        tx.put("artifact",artifact.id(),new Artifact(artifact.id(),artifact.uploadId(),artifact.fileIndex(),artifact.groupId(),artifact.pluginId(),artifact.environment(),artifact.sha256(),artifact.bytes(),artifact.name(),"DELETE_PENDING",artifact.manifest(),artifact.report(),artifact.createdAt()));
+        return artifact.id();
+    }
+    private String reserveUpload(ReleaseDatabase.Tx tx, SecurityRecords.Principal principal, ActionIntent intent,byte[] parameters) {
         var group = group(tx, intent, true); var plugin = plugin(tx, intent.pluginId()); var policy = policy(tx);
         Checks.require(plugin.groupId().equals(group.id()) && plugin.revision() == intent.expectedRevision(), "plugin-revision-conflict");
         Checks.require(!intent.files().isEmpty() && intent.files().size() <= policy.batchFiles(), "invalid-upload-files");
@@ -130,12 +174,19 @@ public class CatalogService {
             Checks.require(file.bytes() <= policy.batchBytes() - total, "batch-quota-exceeded"); total += file.bytes(); if (source) sources += file.bytes();
         }
         Checks.require(sources <= policy.sourceBatchBytes(), "source-quota-exceeded");
+        SourceBuildPlan build=null;
+        if(sources>0) {
+            build=ProtocolJson.read(parameters,SourceBuildPlan.class);
+            Checks.require(build.manifest().pluginId().equals(plugin.id()),"build-plugin-mismatch");
+            build.validateInputs(intent.files(),policy,validation.dependencies(tx));
+        }
         Checks.require(total <= policy.pluginBytes() - pluginStorage(tx, plugin.id()), "plugin-quota-exceeded");
         Checks.require(total <= policy.groupBytes() - groupStorage(tx, group.id()), "group-quota-exceeded");
         Checks.require(total <= policy.repositoryBytes() - repositoryStorage(tx), "repository-quota-exceeded");
         try { var disk = java.nio.file.Files.getFileStore(files.root()); policy.checkSpace(disk.getTotalSpace(), disk.getUsableSpace(), activeReservations(tx), Math.multiplyExact(total, 2)); }
         catch (IOException failure) { throw new ProtocolException("storage-unavailable", failure); }
         String id = "u-" + UUID.randomUUID();
+        if(build!=null) tx.put("source-plan",id,build);
         tx.put("upload", id, new Upload(id, principal.userId(), principal.sessionId(), group.id(), group.revision(), plugin.id(), plugin.revision(), intent.environment(), policy.revision(), intent.files(), tx.now(), tx.now().plusSeconds(900), "RECEIVING")); return id;
     }
     public Chunk uploadChunk(String session, String uploadId, int fileIndex, int index, byte[] bytes) {
@@ -194,11 +245,10 @@ public class CatalogService {
     private boolean canRead(ReleaseDatabase.Tx tx, SecurityRecords.Principal p, String group, String environment) {
         return p.securityAdmin() || tx.list("scope", SecurityRecords.ScopeGrant.class).stream().anyMatch(g -> g.read() && g.userId().equals(p.userId()) && g.groupId().equals(group) && (environment == null || g.environment().equals(environment)));
     }
-    private long activeReservations(ReleaseDatabase.Tx tx) { return tx.list("upload", Upload.class).stream().filter(u -> u.state().equals("RECEIVING")).mapToLong(Upload::reservedBytes).sum(); }
+    private long activeReservations(ReleaseDatabase.Tx tx) { return StorageUsage.reserved(tx); }
     private long pluginStorage(ReleaseDatabase.Tx tx, String id) {
-        return tx.list("artifact", Artifact.class).stream().filter(a -> a.pluginId().equals(id)).mapToLong(Artifact::bytes).sum()
-                + tx.list("upload", Upload.class).stream().filter(u -> u.pluginId().equals(id) && u.state().equals("RECEIVING")).mapToLong(Upload::reservedBytes).sum();
+        return StorageUsage.plugin(tx,id);
     }
-    private long groupStorage(ReleaseDatabase.Tx tx, String id) { return tx.list("plugin", Plugin.class).stream().filter(p -> p.groupId().equals(id)).mapToLong(p -> pluginStorage(tx, p.id())).sum(); }
-    private long repositoryStorage(ReleaseDatabase.Tx tx) { return tx.list("artifact", Artifact.class).stream().mapToLong(Artifact::bytes).sum() + activeReservations(tx); }
+    private long groupStorage(ReleaseDatabase.Tx tx, String id) { return StorageUsage.group(tx,id); }
+    private long repositoryStorage(ReleaseDatabase.Tx tx) { return StorageUsage.repository(tx); }
 }

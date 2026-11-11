@@ -46,6 +46,19 @@ public class ReleaseDatabase {
                 jdbc.update("INSERT INTO release_document(kind,id,body) VALUES(?,?,?)", kind, id, body);
         }
         public void delete(String kind, String id) { jdbc.update("DELETE FROM release_document WHERE kind=? AND id=?", kind, id); }
+        public List<AuditEntry> auditPage(long after,int limit) {
+            Checks.require(after>=0 && limit>=1 && limit<=200,"invalid-page");
+            return jdbc.query("SELECT sequence_id,occurred_at,actor,action,resource_id,outcome,detail_hash,previous_hash,entry_hash FROM release_audit WHERE sequence_id>? ORDER BY sequence_id LIMIT ?",
+                    (row,index) -> new AuditEntry(new Audit(row.getLong(1),Instant.parse(row.getString(2)),row.getString(3),row.getString(4),row.getString(5),row.getString(6),row.getString(7),row.getString(8)),row.getString(9)),after,limit);
+        }
+        public com.sma.extension.protocol.AuditStream.Batch auditExport(long after,String expectedHash,int limit) {
+            Checks.require(after>=0 && limit>0 && limit<=200,"invalid-page");Checks.hash(expectedHash);
+            String anchor=after==0?"0".repeat(64):jdbc.query("SELECT entry_hash FROM release_audit WHERE sequence_id=?",(rs,n) -> rs.getString(1),after).stream().findFirst().orElseThrow(() -> new com.sma.extension.protocol.ProtocolException("audit-anchor-missing"));
+            Checks.require(anchor.equals(expectedHash),"audit-anchor-mismatch");
+            long head=jdbc.queryForObject("SELECT COALESCE(MAX(sequence_id),0) FROM release_audit",Long.class);
+            var entries=auditPage(after,limit).stream().map(e -> new com.sma.extension.protocol.AuditStream.Hashed(new com.sma.extension.protocol.AuditStream.Entry(e.entry().sequence(),e.entry().occurredAt(),e.entry().actor(),e.entry().action(),e.entry().resource(),e.entry().outcome(),e.entry().detailHash(),e.entry().previousHash()),e.entryHash())).toList();
+            return new com.sma.extension.protocol.AuditStream.Batch(after,anchor,entries,head);
+        }
         public void audit(String actor, String action, String resource, String outcome, String detailHash) {
             Checks.text(actor, 100); Checks.text(action, 80); Checks.text(resource, 160); Checks.text(outcome, 80); Checks.hash(detailHash);
             String previous = jdbc.query("SELECT entry_hash FROM release_audit ORDER BY sequence_id DESC LIMIT 1", (rs, n) -> rs.getString(1))
@@ -59,4 +72,5 @@ public class ReleaseDatabase {
     }
     public record Audit(long sequence, Instant occurredAt, String actor, String action, String resource,
             String outcome, String detailHash, String previousHash) {}
+    public record AuditEntry(Audit entry,String entryHash) {}
 }

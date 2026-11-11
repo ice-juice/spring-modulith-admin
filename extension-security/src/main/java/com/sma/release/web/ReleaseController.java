@@ -21,6 +21,10 @@ public class ReleaseController {
     public record Login(String username, String password, String otp) { @Override public String toString() { return "Login[redacted]"; } }
     public record EnrollmentRequest(String username, String password, String enrollmentToken, String otp) { @Override public String toString() { return "EnrollmentRequest[redacted]"; } }
     public record Proof(String challengeId, String operationPassword, String otp) { @Override public String toString() { return "Proof[redacted]"; } }
+    public record Recovery(String username,String password,String recoveryCode,String newOperationPassword) { @Override public String toString() { return "Recovery[redacted]"; } }
+    @PostMapping("/auth/recovery") ApiReply<SecurityRecords.NewAccount> recovery(@RequestBody Recovery input,HttpServletRequest request) {
+        return ApiReply.ok(identities.recoverFactor(input.username(),input.password(),input.recoveryCode(),request.getRemoteAddr(),input.newOperationPassword()));
+    }
     @PostMapping("/auth/login") ApiReply<SecurityRecords.LoginTicket> login(@RequestBody Login input, HttpServletRequest request) {
         return ApiReply.ok(identities.login(input.username(), input.password(), input.otp(), request.getRemoteAddr()));
     }

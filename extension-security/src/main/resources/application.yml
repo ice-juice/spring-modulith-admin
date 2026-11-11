@@ -24,3 +24,8 @@ release:
   encryption-key: ${SMA_RELEASE_ENCRYPTION_KEY}
   origin: ${SMA_RELEASE_ORIGIN}
   bootstrap-file: ${SMA_RELEASE_BOOTSTRAP_FILE:}
+  console-binding-file: ${SMA_RELEASE_CONSOLE_BINDING_FILE:}
+  audit:
+    required: ${SMA_RELEASE_AUDIT_REQUIRED:false}
+    maximum-lag-seconds: ${SMA_RELEASE_AUDIT_MAX_LAG_SECONDS:120}
+    maximum-unmirrored-entries: ${SMA_RELEASE_AUDIT_MAX_PENDING:100}

@@ -12,4 +12,5 @@ public record ReleaseProperties(String issuer, String application, Path director
         Checks.require(directory != null && encryptionKey != null && !encryptionKey.isBlank(), "release-key-and-directory-required");
         Checks.require(origin != null && origin.startsWith("https://"), "release-https-origin-required");
     }
+    @Override public String toString() { return "ReleaseProperties[issuer="+issuer+", secrets=redacted]"; }
 }

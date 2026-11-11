@@ -5,8 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /** Separate executable and database, never component-scanned into the business host. */
-@SpringBootApplication
+@SpringBootApplication(exclude=org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration.class)
 @ConfigurationPropertiesScan
+@org.springframework.scheduling.annotation.EnableScheduling
 public class ReleaseSecurityApplication {
     public static void main(String[] args) { SpringApplication.run(ReleaseSecurityApplication.class, args); }
 }

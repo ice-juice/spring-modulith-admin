@@ -11,6 +11,13 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class TrustProtocolTests {
+    @Test void canonicalDocumentsIgnoreMapAndSetInsertionOrderButRetainArrayOrder() {
+        var first=new java.util.LinkedHashMap<String,Object>();first.put("z",new java.util.LinkedHashSet<>(List.of("b","a")));first.put("a",List.of(2,1));
+        var second=new java.util.LinkedHashMap<String,Object>();second.put("a",List.of(2,1));second.put("z",new java.util.LinkedHashSet<>(List.of("a","b")));
+        assertThat(ProtocolJson.write(first)).isEqualTo(ProtocolJson.write(second));
+        assertThat(new String(ProtocolJson.write(first),StandardCharsets.UTF_8)).isEqualTo("{\"a\":[2,1],\"z\":[\"a\",\"b\"]}");
+        second.put("a",List.of(1,2));assertThat(ProtocolJson.write(first)).isNotEqualTo(ProtocolJson.write(second));
+    }
     @Test void signedDocumentsCannotChangePurposeEnvironmentBytesOrLifetime() throws Exception {
         var pair = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
         var now = Instant.parse("2026-11-10T00:00:00Z");

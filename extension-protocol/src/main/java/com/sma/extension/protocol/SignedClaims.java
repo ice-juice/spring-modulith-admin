@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public record SignedClaims(int format, Purpose purpose, String keyId, String issuer, String audience,
         String environment, String documentId, Instant issuedAt, Instant expiresAt, byte[] body) {
-    public enum Purpose { ARTIFACT, RELEASE, LEASE, WORK_ORDER, SCAN }
+    public enum Purpose { ARTIFACT, PREPARE, RELEASE, LEASE, REVOCATIONS, POLICY, WORK_ORDER, SCAN }
     public SignedClaims {
         Checks.require(format == 1, "unsupported-signature-format");
         Objects.requireNonNull(purpose); Checks.id(keyId); Checks.id(issuer); Checks.id(audience); Checks.id(environment);

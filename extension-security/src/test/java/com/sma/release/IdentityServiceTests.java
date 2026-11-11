@@ -36,6 +36,7 @@ class IdentityServiceTests {
     private String secret;
     private String session;
     private NewAccount account;
+    private List<String> recoveryCodes;
     @BeforeEach void setup() throws Exception {
         var dataSource = new JdbcDataSource();
         dataSource.setURL("jdbc:h2:mem:" + UUID.randomUUID() + ";MODE=MySQL;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000");
@@ -45,7 +46,8 @@ class IdentityServiceTests {
         identity = new IdentityService(database, new CredentialService(new SecretVault(properties)));
         account = identity.bootstrap("operator", LOGIN, OPERATION);
         var enrollment = identity.beginEnrollment("operator", LOGIN, account.enrollmentToken(), "127.0.0.1"); secret = enrollment.secret();
-        assertThat(identity.completeEnrollment("operator", LOGIN, account.enrollmentToken(), otp(), "127.0.0.1")).hasSize(10);
+        recoveryCodes=identity.completeEnrollment("operator", LOGIN, account.enrollmentToken(), otp(), "127.0.0.1");
+        assertThat(recoveryCodes).hasSize(10);
         clock.advance(30); session = identity.login("operator", LOGIN, otp(), "127.0.0.1").token();
     }
     @Test void loginTotpCannotBeReusedForAnOperationAndFailuresArePersisted() throws Exception {
@@ -88,6 +90,14 @@ class IdentityServiceTests {
         assertThat(user.operationHash()).startsWith("$argon2id$").doesNotContain(OPERATION);
         assertThat(user.sealedTotp()).doesNotContain(secret);
         assertThat(user.enrollmentTokenHash()).isNull();
+    }
+    @Test void factorRecoveryImmediatelyInvalidatesSessionsAndCannotReuseTheRecoveryCode() {
+        var ticket=identity.recoverFactor("operator",LOGIN,recoveryCodes.getFirst(),"127.0.0.1");
+        assertThat(ticket.userId()).isEqualTo(account.userId());
+        assertThatThrownBy(() -> identity.principal(session)).hasMessage("unauthenticated");
+        assertThatThrownBy(() -> identity.recoverFactor("operator",LOGIN,recoveryCodes.getFirst(),"127.0.0.1")).hasMessage("authentication-failed");
+        var enrollment=identity.beginEnrollment("operator",LOGIN,ticket.enrollmentToken(),"127.0.0.1");
+        assertThat(enrollment.secret()).isNotEqualTo(secret);
     }
     private ActionIntent intent(String marker) {
         return new ActionIntent(ActionIntent.Action.UPLOAD, "production", "general", 1, "demo", 0, 1,

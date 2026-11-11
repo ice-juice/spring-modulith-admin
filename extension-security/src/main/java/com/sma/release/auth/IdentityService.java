@@ -28,7 +28,7 @@ public class IdentityService {
         });
     }
     public NewAccount createAccount(ReleaseDatabase.Tx tx, String actor, String username, String loginPassword, String operationPassword, boolean admin) {
-        Checks.id(username); Checks.require(!loginPassword.equals(operationPassword), "operation-password-must-differ");
+        Checks.id(username);Checks.require(loginPassword!=null && operationPassword!=null,"password-required");Checks.require(!loginPassword.equals(operationPassword), "operation-password-must-differ");
         Checks.require(tx.list("user", User.class).stream().noneMatch(u -> u.username().equals(username)), "username-exists");
         String id = UUID.randomUUID().toString(), token = credentials.randomToken();
         var expires = tx.now().plus(Duration.ofMinutes(15));
@@ -38,10 +38,18 @@ public class IdentityService {
         return new NewAccount(id, token, expires);
     }
     public Enrollment beginEnrollment(String username, String loginPassword, String enrollmentToken, String source) {
+        return beginEnrollment(username,loginPassword,enrollmentToken,source,null);
+    }
+    public Enrollment beginConsoleEnrollment(String session,String operationPassword,String enrollmentToken) {
+        var p=principal(session);return beginEnrollment(p.username(),operationPassword,enrollmentToken,"console",session);
+    }
+    private Enrollment beginEnrollment(String username,String password,String enrollmentToken,String source,String consoleSession) {
         return resolve(database.transaction(tx -> {
+            boolean operation=consoleSession!=null;
+            if(operation)Checks.require(principal(tx,consoleSession).username().equals(username),"unauthenticated");
             String throttle = throttleKey(username, source); if (!mayAttempt(tx, throttle)) return Attempt.<Enrollment>error("authentication-throttled");
             var user = userByName(tx, username);
-            if (!credentials.passwordMatches(loginPassword, user == null ? null : user.loginHash()) || user == null || !user.enabled()
+            if (!credentials.passwordMatches(password, user == null ? null : operation?user.operationHash():user.loginHash()) || user == null || !user.enabled()
                     || user.enrolled() || user.enrollmentExpiresAt() == null || !tx.now().isBefore(user.enrollmentExpiresAt())
                     || !safeTokenMatch(enrollmentToken, user.enrollmentTokenHash())) return failed(tx, throttle, "enrollment", username);
             // One display only. The confirmation token is kept separately and cannot redisplay the seed.
@@ -51,11 +59,32 @@ public class IdentityService {
             return Attempt.ok(new Enrollment(credentials.totpSecret(user.id(), user.sealedTotp()), "SMA Release", user.username(), user.enrollmentExpiresAt()));
         }));
     }
+    /** Only LocalBootstrap's protected, exact-input recovery path invokes this; never an HTTP factor-reset route. */
+    public NewAccount renewBootstrapEnrollment(ReleaseDatabase.Tx tx,NewAccount previous,String username,String loginPassword,String operationPassword) {
+        var user=tx.get("user",previous.userId(),User.class).orElseThrow(() -> new ProtocolException("bootstrap-account-unavailable"));
+        Checks.require(user.enabled() && user.securityAdmin() && !user.enrolled() && user.username().equals(username)
+                && safeTokenMatch(previous.enrollmentToken(),user.enrollmentTokenHash()) && credentials.passwordMatches(loginPassword,user.loginHash())
+                && credentials.passwordMatches(operationPassword,user.operationHash()),"bootstrap-recovery-not-allowed");
+        Checks.require(!tx.now().isBefore(previous.expiresAt()),"bootstrap-enrollment-not-expired");
+        String token=credentials.randomToken();var expires=tx.now().plusSeconds(900);
+        tx.put("user",user.id(),new User(user.id(),user.username(),user.loginHash(),user.operationHash(),credentials.newSealedTotp(user.id()),-1,user.credentialVersion()+1,
+                true,false,true,credentials.tokenHash(token),expires,List.of()));
+        tx.delete("enrollment-shown",user.id());tx.audit("local-bootstrap","initial-enrollment-renew",user.id(),"previous-token-revoked",EMPTY_HASH);
+        return new NewAccount(user.id(),token,expires);
+    }
     public List<String> completeEnrollment(String username, String loginPassword, String enrollmentToken, String code, String source) {
+        return completeEnrollment(username,loginPassword,enrollmentToken,code,source,null);
+    }
+    public List<String> completeConsoleEnrollment(String session,String operationPassword,String enrollmentToken,String code) {
+        var p=principal(session);return completeEnrollment(p.username(),operationPassword,enrollmentToken,code,"console",session);
+    }
+    private List<String> completeEnrollment(String username,String password,String enrollmentToken,String code,String source,String consoleSession) {
         return resolve(database.transaction(tx -> {
+            boolean operation=consoleSession!=null;
+            if(operation)Checks.require(principal(tx,consoleSession).username().equals(username),"unauthenticated");
             String throttle = throttleKey(username, source); if (!mayAttempt(tx, throttle)) return Attempt.<List<String>>error("authentication-throttled");
             var user = userByName(tx, username);
-            if (!credentials.passwordMatches(loginPassword, user == null ? null : user.loginHash()) || user == null || !user.enabled() || user.enrolled()
+            if (!credentials.passwordMatches(password, user == null ? null : operation?user.operationHash():user.loginHash()) || user == null || !user.enabled() || user.enrolled()
                     || user.enrollmentExpiresAt() == null || !tx.now().isBefore(user.enrollmentExpiresAt()) || !safeTokenMatch(enrollmentToken, user.enrollmentTokenHash())
                     || !tx.get("enrollment-shown", user.id(), Boolean.class).orElse(false)) return failed(tx, throttle, "enrollment", username);
             long step = credentials.validUnusedTotpStep(user, code, tx.now());
@@ -88,14 +117,53 @@ public class IdentityService {
         String hash = credentials.tokenHash(token);
         var session = tx.get("session", hash, Session.class).orElseThrow(() -> new ProtocolException("unauthenticated"));
         var user = tx.get("user", session.userId(), User.class).orElseThrow(() -> new ProtocolException("unauthenticated"));
-        Checks.require(user.enabled() && user.enrolled() && user.credentialVersion() == session.credentialVersion()
+        boolean console=ConsoleIdentityService.validateOrigin(tx,session);
+        Checks.require(user.enabled() && (user.enrolled() || console) && user.credentialVersion() == session.credentialVersion()
                 && tx.now().isBefore(session.expiresAt()), "unauthenticated");
         return new Principal(user.id(), user.username(), session.id(), user.credentialVersion(), user.securityAdmin());
     }
     public void logout(String token) {
         database.transaction(tx -> { var p = principal(tx, token); tx.delete("session", credentials.tokenHash(token)); tx.audit(p.userId(), "logout", p.sessionId(), "success", EMPTY_HASH); return null; });
     }
+    /** Recovery consumes a one-time recovery code and immediately invalidates sessions and pending action grants. */
+    public NewAccount recoverFactor(String username,String loginPassword,String recoveryCode,String source) {
+        return recoverFactor(username,loginPassword,recoveryCode,source,null);
+    }
+    public NewAccount recoverFactor(String username,String loginPassword,String recoveryCode,String source,String newOperationPassword) {
+        return recoverFactor(username,loginPassword,recoveryCode,source,newOperationPassword,null);
+    }
+    public NewAccount recoverConsoleFactor(String session,String operationPassword,String recoveryCode) {
+        var p=principal(session);return recoverFactor(p.username(),operationPassword,recoveryCode,"console",null,session);
+    }
+    private NewAccount recoverFactor(String username,String password,String recoveryCode,String source,String newOperationPassword,String consoleSession) {
+        return resolve(database.transaction(tx -> {
+            boolean operation=consoleSession!=null;
+            if(operation)Checks.require(principal(tx,consoleSession).username().equals(username),"unauthenticated");
+            String throttle="recovery:"+throttleKey(username,source);
+            if(!mayAttempt(tx,throttle)) return Attempt.<NewAccount>error("authentication-throttled");
+            var user=userByName(tx,username);
+            if(!credentials.passwordMatches(password,user==null?null:operation?user.operationHash():user.loginHash()) || user==null || !user.enabled() || !user.enrolled())
+                return failed(tx,throttle,"factor-recovery",username);
+            String codeHash;
+            try { codeHash=credentials.tokenHash(recoveryCode); } catch(ProtocolException invalid) { return failed(tx,throttle,"factor-recovery",username); }
+            if(user.recoveryHashes().stream().noneMatch(h -> Hashes.equalHex(h,codeHash))) return failed(tx,throttle,"factor-recovery",username);
+            String operationHash=user.operationHash();
+            if(newOperationPassword!=null) {
+                Checks.require(!credentials.passwordMatches(newOperationPassword,user.loginHash()),"operation-password-must-differ");
+                operationHash=credentials.passwordHash(newOperationPassword);
+            }
+            String enrollment=credentials.randomToken();var expires=tx.now().plusSeconds(900);
+            var changed=new User(user.id(),user.username(),user.loginHash(),operationHash,credentials.newSealedTotp(user.id()),-1,user.credentialVersion()+1,
+                    user.enabled(),false,user.securityAdmin(),credentials.tokenHash(enrollment),expires,List.of());
+            tx.put("user",user.id(),changed);tx.delete("enrollment-shown",user.id());tx.delete("throttle",throttle);
+            tx.audit(user.id(),"factor-recovery",user.id(),"sessions-revoked",EMPTY_HASH);
+            return Attempt.ok(new NewAccount(user.id(),enrollment,expires));
+        }));
+    }
     public void requireScope(ReleaseDatabase.Tx tx, Principal principal, ActionIntent intent) {
+        Checks.require(tx.get("user",principal.userId(),User.class).orElseThrow().enrolled(),"console-enrollment-required");
+        if((intent.action()==ActionIntent.Action.CREDENTIAL_UPDATE || intent.action()==ActionIntent.Action.OPERATION_PASSWORD_UPDATE) && intent.environment().equals("security") && intent.groupId().equals("identity")
+                && intent.pluginId().equals("user-"+principal.userId())) return;
         if (principal.securityAdmin()) return;
         boolean allowed = tx.list("scope", ScopeGrant.class).stream().anyMatch(g -> g.userId().equals(principal.userId())
                 && g.groupId().equals(intent.groupId()) && g.environment().equals(intent.environment()) && g.actions().contains(intent.action()));

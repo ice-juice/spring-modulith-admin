@@ -77,6 +77,14 @@ public class ArtifactFiles {
     public InputStream openArtifact(String artifactId) throws IOException {
         Path file = artifactPath(artifactId); requireSafe(file); return Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS);
     }
+    public void deleteChunk(String uploadId,int fileIndex,int index) throws IOException {
+        Path file=chunkPath(uploadId,fileIndex,index); requireSafe(file.getParent());
+        Checks.require(!Files.isSymbolicLink(file),"linked-storage-path");Files.deleteIfExists(file);
+    }
+    public void deleteUnpublishedArtifact(String artifactId) throws IOException {
+        Path file=artifactPath(artifactId);requireSafe(file.getParent());
+        Checks.require(!Files.isSymbolicLink(file),"linked-storage-path");Files.deleteIfExists(file);
+    }
     public Path artifactPath(String artifactId) { Checks.id(artifactId); return root.resolve("artifacts").resolve(artifactId + ".bin"); }
     private Path chunkPath(String uploadId, int fileIndex, int index) {
         Checks.id(uploadId); Checks.require(fileIndex >= 0 && fileIndex < 20 && index >= 0 && index < 10000, "invalid-chunk-index");

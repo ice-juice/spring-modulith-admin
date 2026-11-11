@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "pluginId": "echo",
+  "version": "1.0.0",
+  "sdkMajor": 1,
+  "implementationClass": "example.EchoPlugin",
+  "entries": [
+    {"id": "echo", "kind": "SERVICE", "contract": "json-v1", "permission": "extension:invoke:echo", "identities": ["USER"], "stateful": false}
+  ],
+  "dependencies": [],
+  "capabilities": [],
+  "metrics": []
+}

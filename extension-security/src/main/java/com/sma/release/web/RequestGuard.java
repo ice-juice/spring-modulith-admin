@@ -31,7 +31,7 @@ public class RequestGuard extends OncePerRequestFilter {
         response.setHeader("Cache-Control", "no-store"); response.setHeader("Pragma", "no-cache"); response.setHeader("Referrer-Policy", "no-referrer");
         String origin = request.getHeader("Origin");
         if (origin != null && !origin.equals(properties.origin())) { reject(response, 403, "origin-denied"); return; }
-        if (request.getRequestURI().startsWith("/release/v1/auth/")) {
+        if (request.getRequestURI().startsWith("/release/v1/auth/") || request.getRequestURI().startsWith("/release/v1/console/enrollment/") || request.getRequestURI().equals("/release/v1/console/recovery")) {
             String source = Hashes.sha256(request.getRemoteAddr().getBytes(java.nio.charset.StandardCharsets.UTF_8));
             boolean allowed = database.transaction(tx -> {
                 long minute = tx.now().getEpochSecond()/60;
@@ -46,6 +46,10 @@ public class RequestGuard extends OncePerRequestFilter {
         if (request.getContentLengthLong() > limit) { reject(response, 413, "request-too-large"); return; }
         byte[] body = request.getInputStream().readNBytes(limit+1);
         if (body.length > limit) { reject(response, 413, "request-too-large"); return; }
+        if(body.length>0 && request.getContentType()!=null && request.getContentType().toLowerCase(java.util.Locale.ROOT).startsWith("application/json")) {
+            try { ProtocolJson.validateValue(body); }
+            catch(com.sma.extension.protocol.ProtocolException invalid) { reject(response,400,"invalid-document");return; }
+        }
         chain.doFilter(new HttpServletRequestWrapper(request) {
             @Override public ServletInputStream getInputStream() {
                 var input = new ByteArrayInputStream(body);
