@@ -120,8 +120,7 @@ test("sample scenes require an explicit save and replacing edited fields can be 
     "比例折扣（表达式）",
   );
   await dialog.getByRole("button", { name: "保存", exact: true }).click();
-  const saved = fixture.writes.find((write) => write.path === "/scenes");
-  expect(saved?.body.allowedKinds).toEqual(["EXPRESSION"]);
+  await expect.poll(() => fixture.writes.find((write) => write.path === "/scenes")?.body.allowedKinds).toEqual(["EXPRESSION"]);
   expect(fixture.writes.some((write) => write.path === "/templates")).toBe(
     false,
   );

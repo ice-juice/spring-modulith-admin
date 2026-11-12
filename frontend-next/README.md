@@ -52,6 +52,15 @@ npm run test:real
 
 实际页面截图：`node scripts/capture-softlight.mjs`（Node 26 原生 TypeScript 支持；使用隔离模拟 API）。只看原始设计样板：`npx vite --config design-preview/vite.config.ts`，端口 5186，不接真实 API，也不进入生产包。
 
+## 快捷入口、可调面板与收藏布局
+
+- 顶部打开“我的随手栏”，在常用标签/个人便签旁点击 `+` 展开授权页面入口；点击前重新核对服务端 targets，进入已有工作标签时保留原查询和导航守卫。方向键切换分类，Escape 收起快捷入口。
+- `/iam/roles` 的角色目录与权限区之间可拖动调整；规则模板页打开“模拟与解释”后，可调整右侧面板。聚焦分隔条后左右键每次16px、Shift每次32px，Home/End到边界，Escape或双击复位。容器窄时自动上下排列，编辑内容不重建。
+- 随手栏常用标签区提供列表/卡片切换；搜索、别名编辑与排序不因布局切换清空。布局偏好以服务端 scope 为键存本地，仅保存 `list/cards`；不保存搜索词或草稿。偏好存储不可用时仍可切换。
+- 通用组件位于 `src/components/business/QuickTabMenu.vue`、`ResizablePanels.vue`；收藏状态与动效位于 `features/workspace/bookmark-layout.ts`。支持语义主题、双语及减少动态效果，不增加 GSAP 或外站运行依赖。来源和取舍见 [LeiBox 参考](../docs/frontend-next/leibox-reference/README.md)，实际验收见 [专项进度](../docs/frontend-next/leibox-ui-progress.md)。
+
+验证：`npx playwright test --config playwright.leibox.config.ts`（独立5216端口）；生产包验证先运行 `npm run verify`，再设置 `$env:SMA_LEIBOX_STATIC='1'` 执行同一命令。该套件覆盖本功能、IAM、规则编辑/流程、表格工作区和管理壳；原随手栏继续使用 `playwright.shelf.config.ts`（5198）。均不复用用户运行服务。UI/模拟接口验收不代表后端或部署已升级。
+
 ## 构建与发布
 
 ```powershell

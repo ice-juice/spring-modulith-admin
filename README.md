@@ -26,6 +26,8 @@ P0～P4 的范围内代码与自动验证已完成；最终功能对照与待人
 
 ## 基座维护与二次开发
 
+新版前端新增随手栏授权快捷入口、角色管理/规则编辑的可调宽度双栏、收藏列表/卡片切换。使用位置、键盘操作和独立5216验证入口见 [前端使用说明](frontend-next/README.md#快捷入口可调面板与收藏布局)；实施与实际验证边界见 [LeiBox UI 进度](docs/frontend-next/leibox-ui-progress.md)。原始组件参考与署名保留在 `docs/frontend-next/leibox-reference/`，产品适配在现有前端组件与 workspace 模块内，不改变后端协议。
+
 P08 正在建设统一缓存治理与多实例访问连续性：[方案与边界](docs/proposals/P08-cache-governance-and-cluster.md)、[逐项实施与验证](docs/cache-governance-progress.md)。公开缓存契约位于 `backend/src/main/java/com/sma/admin/common/cache/`；新增能力以进度证据为准，不能据方案宣称当前服务已支持 Redis 或集群。
 
 P08 已支持 Local/Redis/None 配置切换，部署覆盖见[缓存运行说明](docs/cache-governance-operations.md)。Redis 需显式部署 namespace 和正数 maxmemory；现有缓存管理接口保留。完整应用多实例门禁尚未通过，`deployment-mode=multi` 仍拒绝启动。

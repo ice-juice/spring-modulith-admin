@@ -1,0 +1,157 @@
+import { test, expect } from '@playwright/test'
+import { fullApi } from './full-api'
+import { login } from './mock-api'
+import type { ShelfBoard } from '../src/features/workspace/shelf'
+import { ruleFixture } from './rule-fixture'
+import AxeBuilder from '@axe-core/playwright'
+
+test('quick links use current authorized targets and work on narrow screens', async ({ page }) => {
+  await fullApi(page)
+  const board: ShelfBoard = { scope: 'leibox.admin.101', mode: 'drawer', version: '0', bookmarks: [], targets: [{ id: 'users', title: '用户管理', path: '/iam/users', icon: null }, { id: 'roles', title: '角色管理', path: '/iam/roles', icon: null }] }
+  let writes = 0
+  await page.route('**/api/workspace/shelf**', route => {
+    if (route.request().method() !== 'GET') writes++
+    return route.fulfill({ json: { code: 0, data: route.request().url().includes('/notes') ? [] : board } })
+  })
+  await login(page, '/')
+  await page.getByRole('button', { name: '我的随手栏', exact: true }).click()
+  const drawer = page.getByRole('dialog', { name: '我的随手栏', exact: true })
+  await drawer.getByRole('button', { name: '展开快捷入口' }).click()
+  await drawer.locator('[data-shelf-shortcuts]').getByRole('button', { name: '角色管理' }).click()
+  await expect(page).toHaveURL(/\/iam\/roles$/)
+  await expect(drawer).not.toBeVisible()
+  await page.setViewportSize({ width: 320, height: 800 })
+  await page.getByRole('button', { name: '我的随手栏', exact: true }).click()
+  await drawer.getByRole('button', { name: '展开快捷入口' }).click()
+  await expect(drawer.locator('[data-shelf-shortcuts]').getByRole('button', { name: '用户管理' })).toBeEnabled()
+  board.targets = board.targets.filter(target => target.id !== 'users')
+  await drawer.locator('[data-shelf-shortcuts]').getByRole('button', { name: '用户管理' }).click()
+  await expect(page).toHaveURL(/\/iam\/roles$/)
+  await expect(drawer.locator('[data-shelf-shortcuts]').getByRole('button', { name: '用户管理' })).toHaveCount(0)
+  await drawer.getByRole('button', { name: '收起快捷入口' }).focus()
+  await page.keyboard.press('Escape')
+  await expect(drawer).toBeVisible()
+  await expect(drawer.getByRole('button', { name: '展开快捷入口' })).toBeFocused()
+  await drawer.getByRole('button', { name: '常用标签', exact: true }).focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(drawer.getByRole('button', { name: '个人便签', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  expect(writes).toBe(0)
+})
+
+test('resizable role panels clamp widths, reset, and preserve permission drafts', async ({ page }) => {
+  const api = await fullApi(page)
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  await login(page, '/iam/roles')
+  const grip = page.getByRole('separator', { name: /调整全部角色宽度/ })
+  await expect(grip).toBeVisible()
+  await page.getByRole('checkbox', { name: '编辑用户', exact: true }).click()
+  await expect(page.getByText('有未保存的权限修改', { exact: true })).toBeVisible()
+  await grip.focus(); await grip.press('End')
+  await expect(grip).toHaveAttribute('aria-valuenow', '420')
+  await grip.press('Home'); await expect(grip).toHaveAttribute('aria-valuenow', '220')
+  await grip.press('Escape'); await expect(grip).toHaveAttribute('aria-valuenow', '280')
+  const box = (await grip.boundingBox())!
+  await page.mouse.move(box.x + box.width / 2, box.y + 80); await page.mouse.down()
+  await page.mouse.move(box.x + box.width / 2 + 64, box.y + 80, { steps: 8 }); await page.mouse.up()
+  await expect(grip).toHaveAttribute('aria-valuenow', '344')
+  await grip.dblclick(); await expect(grip).toHaveAttribute('aria-valuenow', '280')
+  const touch = await page.context().newCDPSession(page), touchBox = (await grip.boundingBox())!
+  const x = touchBox.x + touchBox.width / 2, y = touchBox.y + 60
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] })
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + 40, y }] })
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await expect(grip).toHaveAttribute('aria-valuenow', '320')
+  await touch.detach(); await grip.focus(); await grip.press('Escape')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(grip).not.toBeVisible()
+  await expect(page.getByRole('checkbox', { name: '编辑用户', exact: true })).toBeChecked()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  await expect(grip).toHaveAttribute('aria-valuenow', '280')
+  await expect(page.getByRole('checkbox', { name: '编辑用户', exact: true })).toBeChecked()
+  expect(api.writes.filter(write => write.path.startsWith('/iam/'))).toHaveLength(0)
+  await page.screenshot({ path: 'test-results-leibox/roles-light.png' })
+})
+
+test('resizing rule sidebar preserves the editor element and unsaved input', async ({ page }) => {
+  const fixture = await ruleFixture(page, 'http://127.0.0.1:5216')
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  await page.goto('/rule/templates/' + fixture.template.id)
+  const name = page.getByRole('textbox', { name: '名称', exact: true })
+  await name.fill('保留规则草稿')
+  await name.evaluate(el => el.setAttribute('data-leibox-original-editor', 'true'))
+  await page.getByRole('button', { name: '模拟与解释', exact: true }).click()
+  const grip = page.getByRole('separator', { name: /调整规则试算与治理面板宽度/ })
+  await expect(grip).toBeVisible()
+  await grip.focus(); await grip.press('ArrowLeft')
+  await expect(grip).toHaveAttribute('aria-valuenow', '356')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(grip).not.toBeVisible()
+  await expect(name).toHaveValue('保留规则草稿')
+  await expect(name).toHaveAttribute('data-leibox-original-editor', 'true')
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  await expect(grip).toHaveAttribute('aria-valuenow', '356')
+  await expect(name).toHaveAttribute('data-leibox-original-editor', 'true')
+  expect(fixture.writes).toHaveLength(0)
+})
+
+test('bookmark morph preserves drafts, search and order; layout is scoped and storage has no content', async ({ page }) => {
+  const api = await fullApi(page)
+  const targets = [{ id: 'users', title: '用户管理', path: '/iam/users', icon: null }, { id: 'roles', title: '角色管理', path: '/iam/roles', icon: null }]
+  const board: ShelfBoard = { scope: 'leibox.admin.101', mode: 'drawer', version: '0', targets, bookmarks: targets.map((target, i) => ({ id: String(i), menuId: target.id, alias: '', position: i, target })) }
+  board.bookmarks.push({ id: 'expired', menuId: 'expired', alias: '失效收藏', position: 2, target: null })
+  let writes = 0
+  await page.route('**/api/workspace/shelf**', route => {
+    if (route.request().method() !== 'GET') {
+      writes++
+      const ids = route.request().postDataJSON().ids as string[]
+      board.bookmarks.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+    }
+    return route.fulfill({ json: { code: 0, data: route.request().url().includes('/notes') ? [] : board } })
+  })
+  await login(page, '/')
+  await page.getByRole('button', { name: '我的随手栏', exact: true }).click()
+  const drawer = page.getByRole('dialog', { name: '我的随手栏', exact: true })
+  await drawer.getByLabel('搜索页面标签', { exact: true }).fill('用户')
+  const row = drawer.locator('[data-shelf-bookmark]').first()
+  await row.getByRole('button', { name: '修改个人名称', exact: true }).click()
+  const alias = row.getByRole('textbox', { name: '个人显示名称', exact: true })
+  await alias.fill('不能丢失的别名草稿')
+  await alias.evaluate(el => el.setAttribute('data-original-alias', 'true'))
+  await drawer.getByRole('button', { name: '卡片视图', exact: true }).click()
+  await expect(alias).toHaveValue('不能丢失的别名草稿')
+  await expect(alias).toHaveAttribute('data-original-alias', 'true')
+  await expect(drawer.locator('[data-shelf-bookmark]')).toHaveCount(1)
+  await drawer.getByRole('button', { name: '个人便签', exact: true }).click()
+  await drawer.getByRole('button', { name: '常用标签', exact: true }).click()
+  await expect(alias).toHaveValue('不能丢失的别名草稿')
+  await drawer.getByRole('button', { name: '列表视图', exact: true }).click()
+  await expect(alias).toHaveAttribute('data-original-alias', 'true')
+  await row.getByRole('button', { name: '取消', exact: true }).click()
+  await drawer.getByLabel('搜索页面标签', { exact: true }).fill('')
+  await drawer.getByRole('button', { name: '卡片视图', exact: true }).click()
+  await expect(drawer.getByRole('button', { name: '失效收藏', exact: true })).toBeDisabled()
+  expect(writes).toBe(0)
+  await drawer.locator('[data-shelf-bookmark]').first().getByRole('button', { name: '下移', exact: true }).click()
+  await expect(drawer.locator('[data-shelf-bookmark]').first()).toContainText('角色管理')
+  expect(writes).toBe(1)
+  expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toContain('不能丢失的别名草稿')
+  await page.keyboard.press('Escape'); await page.reload()
+  await page.getByRole('button', { name: '我的随手栏', exact: true }).click()
+  await expect(drawer.getByRole('button', { name: '卡片视图', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.setViewportSize({ width: 320, height: 800 })
+  await page.evaluate(() => document.documentElement.classList.add('dark'))
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await drawer.getByRole('button', { name: '列表视图', exact: true }).click()
+  await drawer.getByRole('button', { name: '卡片视图', exact: true }).click()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  await page.screenshot({ path: 'test-results-leibox/bookmarks-dark-320.png' })
+  board.scope = 'leibox.other.101'
+  Object.assign(api.preferences, { locale: 'en-US', theme: 'dark' })
+  await page.reload()
+  await page.getByRole('button', { name: 'My shelf', exact: true }).click()
+  const english = page.getByRole('dialog', { name: 'My shelf', exact: true })
+  await expect(english.getByRole('button', { name: 'List view', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  expect((await new AxeBuilder({ page }).include('[data-slot="sheet-content"]').withTags(['wcag2a', 'wcag2aa']).analyze()).violations).toEqual([])
+})

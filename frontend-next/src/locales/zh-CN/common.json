@@ -251,6 +251,11 @@
     }
   },
   "shelf": {
+    "listView": "列表视图",
+    "cardView": "卡片视图",
+    "bookmarkLayout": "收藏布局",
+    "quickOpen": "展开快捷入口",
+    "quickClose": "收起快捷入口",
     "tagCount": "{count} / 30 个标签",
     "searchTags": "搜索页面标签",
     "notes": "个人便签",
@@ -339,6 +344,11 @@
     "closeFloat": "收起窗口",
     "tabActions": "页签操作",
     "lockedExit": "仍有未保存的便签。建议先解锁保存；继续退出将丢弃本次修改。"
+  },
+  "resizePanels": {
+    "handle": "调整{panel}宽度（方向键调整，双击或 Escape 复位）",
+    "width": "宽度 {width} 像素",
+    "rulePanel": "规则试算与治理面板"
   },
   "brandLinks": {
     "website": "官方网站",

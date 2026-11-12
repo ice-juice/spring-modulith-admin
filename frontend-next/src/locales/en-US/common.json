@@ -251,6 +251,11 @@
     }
   },
   "shelf": {
+    "listView": "List view",
+    "cardView": "Card view",
+    "bookmarkLayout": "Bookmark layout",
+    "quickOpen": "Open quick links",
+    "quickClose": "Close quick links",
     "tagCount": "{count} / 30 bookmarks",
     "searchTags": "Search bookmarks",
     "notes": "Personal notes",
@@ -339,6 +344,11 @@
     "closeFloat": "Close window",
     "tabActions": "Tab actions",
     "lockedExit": "Some notes are not saved. Unlock and save them first, or continue signing out to discard these edits."
+  },
+  "resizePanels": {
+    "handle": "Resize {panel} (arrow keys; double-click or Escape to reset)",
+    "width": "Width {width} pixels",
+    "rulePanel": "rule simulation and governance panel"
   },
   "brandLinks": {
     "website": "Website",

@@ -18,6 +18,7 @@ import IntervalEditor from "./components/IntervalEditor.vue";
 import TemplateGovernance from "./components/TemplateGovernance.vue";
 import ReleasePanel from "./components/ReleasePanel.vue";
 import ReferencePanel from "./components/ReferencePanel.vue";
+import ResizablePanels from "@/components/business/ResizablePanels.vue";
 import { referencesFor, ruleReferencesKey } from "./references";
 import { isSampleId, sampleDocument } from "./samples";
 import { ruleGet } from "./api";
@@ -297,10 +298,7 @@ void loadFunctions();
         dirty ? t("rule.unsaved") : t("rule.saved")
       }}</span>
     </div>
-    <div
-      class="grid min-w-0 gap-4"
-      :class="simulationOpen ? 'xl:grid-cols-[minmax(0,1fr)_340px]' : ''"
-    >
+    <ResizablePanels side="right" :initial="340" :min="280" :max="520" :main-min="500" :enabled="simulationOpen" :label="t('common.resizePanels.rulePanel')">
       <form
         :key="editorGeneration"
         ref="form"
@@ -476,7 +474,7 @@ void loadFunctions();
           />
         </section>
       </form>
-      <div class="space-y-4">
+      <template #panel><div class="space-y-4">
         <ReleasePanel
           v-if="row"
           :key="row.revision"
@@ -500,6 +498,5 @@ void loadFunctions();
           @result="flowTrace = $event.trace"
           @reset="flowTrace = []"
         />
-      </div></div
-  ></template>
+      </div></template></ResizablePanels></template>
 </template>

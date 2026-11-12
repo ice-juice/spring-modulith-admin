@@ -4,7 +4,7 @@ import { login } from './mock-api'
 import { ruleFixture } from './rule-fixture'
 
 test('rule list tables keep their custom pagination visible on desktop and mobile', async ({ page }) => {
-  const api = await ruleFixture(page, 'http://127.0.0.1:5174')
+  const api = await ruleFixture(page)
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 844 })
     for (const path of ['/rule/scenes', '/rule/templates', '/rule/instances']) {

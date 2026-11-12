@@ -33,6 +33,8 @@ P10租户/域名管理位于features/tenant的TenantsPage、DomainsPage与Domain
 
 ## 柔光主题与管理壳
 
+- 快捷标签、可调双栏和收藏布局复用 `QuickTabMenu`、`ResizablePanels` 与 workspace/bookmark-layout。快捷目标只取服务端授权 targets，点击前重读并核对同一身份，走 shelfNavigate/现有路由守卫；禁止把示例菜单或任意 URL 直接接入。双栏按实际容器限制尺寸、提供键盘/触屏与窄屏堆叠，不能通过布局 key 重建表单或清草稿；ResizeObserver 延迟到下一帧，销毁时释放观察器/捕获/动画帧。收藏视图只按服务端 scope 保存 list/cards，正文/别名草稿/搜索不持久化；锁屏/身份隔离仍按随手栏协议。LeiBox 原包只在 docs/frontend-next/leibox-reference 留存来源，不得将其演示 HTML/SVG/网络脚本直接注入产品。验证 `playwright.leibox.config.ts`（5216，SMA_LEIBOX_STATIC=1验证已构建包）、workspace 单元、原 shelf 专项及完整 verify；不将模拟UI当真实后端验收。
+
 安全专项C3c3a缓存任务按原预览/原键恢复；QUEUED/RUNNING不当完成，PARTIAL含UNKNOWN子项继续保留未知。内部LOCAL入队回执不是原生任务编号；取消请求独立于原提交，以允许取消在途任务。策略LOCAL原输入/version保持，回执后重读；预览不能自行入队。回归cache/operation-registry单元、cache-governance浏览器（含刷新/取消）。
 
 P08缓存管理保留`/monitor/caches`，协议与状态机在`features/monitor/cache.ts`。Long版本/ID保持字符串，计数未知不当零，共享条目不跨节点重复累加；逻辑完成、历史节点确认与当前在线分别展示。一次提交绑定原预览ID和Idempotency-Key，未知结果先读回，禁止自动换键重发；身份改变或页面离开丢弃迟到响应并清理操作草稿。业务读取权限、区域管理权和操作权仍由服务端检查。阶段进度见[缓存治理进度](../docs/cache-governance-progress.md)，验证cache.test.ts、完整verify及后续隔离真实任务/策略联调，不把协议单测当页面验收。
