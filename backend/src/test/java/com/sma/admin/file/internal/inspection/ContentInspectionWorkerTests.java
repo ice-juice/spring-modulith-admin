@@ -40,9 +40,9 @@ class ContentInspectionWorkerTests {
         for(String value:List.of("\ufeffname,value\r\n会员,-12.5\r\n","name,\"quoted,cell\"\n","a,\"escaped \"\"quote\"\"\"\n","x,+12.5e-2","a,\"two\nlines\""))
             assertThat(inspect(FileFormat.CSV,value).verdict()).isEqualTo(Verdict.PASS);
     }
-    @Test void unavailableProcessorsCapacityDigestAndMissingSourcesCannotPass()throws Exception{
+    @Test void malformedVideoCapacityDigestAndMissingSourcesCannotPass()throws Exception{
         byte[] bytes=utf8("content");var input=source(bytes);
-        assertThat(ContentInspectionWorker.inspect(input,directory,request(FileFormat.MP4,bytes)).code()).isEqualTo(Code.PROCESSOR_UNAVAILABLE);
+        assertThat(ContentInspectionWorker.inspect(input,directory,request(FileFormat.MP4,bytes)).verdict()).isEqualTo(Verdict.REJECT);
         assertThat(ContentInspectionWorker.inspect(input,directory,new Request(1,FileFormat.TEXT,bytes.length,"a".repeat(64),0)).verdict()).isEqualTo(Verdict.REJECT);
         assertThat(ContentInspectionWorker.inspect(directory.resolve("missing"),directory,request(FileFormat.TEXT,bytes)).verdict()).isEqualTo(Verdict.ERROR);
         Path large=directory.resolve("large.blob");try(var file=new java.io.RandomAccessFile(large.toFile(),"rw")){file.setLength(TextContentInspection.MAXIMUM_BYTES+1);}

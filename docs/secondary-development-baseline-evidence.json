@@ -1,0 +1,317 @@
+{
+  "status": "local-single-instance-development-baseline",
+  "fullReactor": {
+    "tests": 1465,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 71,
+    "passed": 1394
+  },
+  "sourceZipSha256": "aef2d648e5f5f46e490e06f0b6dd31b7bf26e8a29345a26cd4a3a4e6ae725c90",
+  "runtimeJarSha256": "cc398429f21752a1dcdab621e14e44443892f9695b0f1390147ea57f978310dd",
+  "fullReactorLogSha256": "6b60177dafa1d60e49690d4523f63e81038c1708879de91d9249b8eaacf1f04a",
+  "verifiedInputManifestSha256": "2e359b972ddcfcb435128649ec86dc92475f62421b4c9543c3833ffc35ac6d2e",
+  "auditRestart": {
+    "loginCount": 4,
+    "operationCount": 12,
+    "restartPassed": true,
+    "artifactSha256": "cc398429f21752a1dcdab621e14e44443892f9695b0f1390147ea57f978310dd"
+  },
+  "files": 2927,
+  "sourceZipBytes": 36442847,
+  "skippedClasses": [
+    {
+      "class": "com.sma.admin.common.internal.BusinessCacheMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_SECOND_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.BusinessLedgerMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P11_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.BusinessMapperRoutingMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_SECOND_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.BusinessOutboxDeliveryMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_SECOND_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.CacheConfirmationTests",
+      "count": 1,
+      "reasons": [
+        ""
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.CacheControlPropagationTests",
+      "count": 1,
+      "reasons": [
+        ""
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.CacheRedisConfigurationTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.CacheRuntimeControlTests",
+      "count": 5,
+      "reasons": [
+        ""
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.RedisCacheStoreTests",
+      "count": 9,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.RedisCacheWarmupExecutionTests",
+      "count": 7,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.RedisDurableRevisionIntegrationTests",
+      "count": 2,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.RedisManagedCacheTests",
+      "count": 6,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.cache.RedisProviderIntegrationTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.deployment.StorageOutboxDrainMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P08_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.ParameterLayerLockMysqlTests",
+      "count": 2,
+      "reasons": [
+        "Environment variable [SMA_P10_PARAMETER_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.persistence.DataSourceIdentityMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_JDBC_DB_B] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.common.internal.StorageLedgerProviderMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P11_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.config.DictionaryCodeSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_PARAMETER_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.config.DictionaryLayerSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_PARAMETER_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.config.ParameterInheritanceSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_PARAMETER_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.config.ParameterPresentationSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_PARAMETER_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.config.RedisBasicDataCacheTests",
+      "count": 5,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.config.SharedConfigurationSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_SHARED_CONFIG_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.file.internal.inspection.NativeVideoInspectionTests",
+      "count": 2,
+      "reasons": [
+        ""
+      ]
+    },
+    {
+      "class": "com.sma.admin.file.internal.service.LocalTransferStorageTests",
+      "count": 1,
+      "reasons": [
+        ""
+      ]
+    },
+    {
+      "class": "com.sma.admin.iam.RedisIamDisplayCacheTests",
+      "count": 5,
+      "reasons": [
+        "Environment variable [SMA_CACHE_REDIS_TEST_PORT] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.BrandMigrationTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_BRAND_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.DomainSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_DOMAIN_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.internal.service.StorageDirectoryMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_TEST_DB_URL] with value [jdbc:mysql://127.0.0.1:13306/sma_test_p10_final_20261112?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true] does not match regular expression [jdbc:mysql://[^/]+/sma_test_p11_x1b_platform_20261112(\\?.*)?]"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.internal.service.StorageMigrationMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P11_BUSINESS_DB_URL] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.internal.service.StorageProvisionMysqlTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_TEST_DB_URL] with value [jdbc:mysql://127.0.0.1:13306/sma_test_p10_final_20261112?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true] does not match regular expression [jdbc:mysql://[^/]+/sma_test_p11_x1b_platform_20261112(\\?.*)?]"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.internal.service.StorageSwitchMysqlTests",
+      "count": 2,
+      "reasons": [
+        "Environment variable [SMA_TEST_DB_URL] with value [jdbc:mysql://127.0.0.1:13306/sma_test_p10_final_20261112?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true] does not match regular expression [jdbc:mysql://[^/]+/sma_test_p11_x1b_platform_20261112(\\?.*)?]"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.LegacyBrandSchemaUpgradeTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_BRAND_LEGACY_UPGRADE_DB] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.NonDefaultPlatformBootstrapTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_NONDEFAULT_BOOTSTRAP] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.admin.tenant.TenantDirectoryBootstrapTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_P10_EMPTY_BOOTSTRAP] does not exist"
+      ]
+    },
+    {
+      "class": "com.sma.release.SecurityMysqlHttpsTests",
+      "count": 1,
+      "reasons": [
+        "Environment variable [SMA_RELEASE_IT_DB_URL] does not exist"
+      ]
+    }
+  ],
+  "packagedAtUtc": "2026-11-12T16:37:03.858354+00:00",
+  "runtimeHarnessSha256": "6dba045e1d824aa11e3a818ee7a38aba4025117a341e271de8bda08616522c28",
+  "gitPublication": {
+    "source": "verified delivery snapshot",
+    "normalization": "Repository .gitattributes LF policy; no product source changes",
+    "legacyBaselineFiles": 122,
+    "legacyLineEndingUpdates": [
+      "frontend/src/locales/en-US/audit.json",
+      "frontend/src/locales/en-US/auth.json",
+      "frontend/src/locales/en-US/iam.json",
+      "frontend/src/locales/zh-CN/audit.json",
+      "frontend/src/locales/zh-CN/auth.json",
+      "frontend/src/locales/zh-CN/iam.json",
+      "frontend/src/views/LoginView.vue",
+      "frontend/vite.config.ts",
+      "frontend/src/views/auth/TotpView.vue"
+    ],
+    "excludedLegacyGeneratedOrLocalFiles": [
+      "frontend/.vscode/settings.json",
+      "frontend/target/browser-audit-build.log",
+      "frontend/target/ui-390-check.html",
+      "frontend/target/ui-route-check.html",
+      "frontend/target/ui-viewport-check.html",
+      "frontend/verify-frontend.log"
+    ],
+    "excludedUnrelatedDocumentationTools": [
+      "tools/docs/README.md",
+      "tools/docs/build_referral_points_pdf.py",
+      "tools/docs/build_referral_three_table_diagram.py",
+      "docs/proposals/P13-game-referral-points.md",
+      "docs/images/P13-referral-three-tables.png"
+    ],
+    "publicationChecks": [
+      "verified source content parity allowing Git EOL normalization",
+      "legacy frontend 122 tracked file checksums",
+      "30-route inventory",
+      "previously executed acceptance harness syntax"
+    ],
+    "gitHarnessSha256": "fc6241047f55d4e3a3deebb01595c0556cce1a19b6a6ab506669e0aa7062bec4",
+    "preservedWhitespace": "Original verified migration SQL trailing whitespace and source EOF blank lines are retained; published Flyway scripts are not rewritten."
+  }
+}

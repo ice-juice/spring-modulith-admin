@@ -251,3 +251,57 @@ C4d2细分：d2a先实现独立worker的有界请求/报告协议、TEXT/JSON/CS
 C4d2a正在验收：InspectionProtocol严格绑定schema/引擎/原始格式/大小/摘要/派生预算，禁止任意输出路径；ContentInspectionWorker独立入口处理TEXT/JSON/CSV，未知处理器返回ERROR。BoundedInspectionProcess限制节点子进程并发、输入/输出各16KiB、总截止，清除继承Java/Docker选项环境，失败终止子进程并保留未知活进程的名额。初编译因Jackson3 JsonFactory已移至core.json包失败，已修正；p09-c4d2a-unit-recheck.log 38项中36通过，2项待修正：架构禁止stdout需要为唯一独立worker的有界管道协议登记精确例外；超时测试读到了fixture尚未写完的PID文件，改为写临时文件后rename发布。已补CSV Unicode空白/格式前缀公式拒绝、关闭后拒绝新进程与确认子进程死亡后的容量回收；继续复跑，不标完成。
 
 C4d2a复跑p09-c4d2a-unit-final.log被并行config修改的瞬时编译错误阻断：BuiltinDictionaryCatalog调用seeds时，该方法当轮编译仍为非静态；随后只读核验当前BuiltinDictionaries.seeds已由并行工作改为static。未修改/回滚config文件，将基于当前源码重跑本专项。
+
+C4d2a最终结果补记：当前提交中保留的p09-c4d2a-unit-current.log（2026-11-12 05:48）38项全部通过：预检9、worker协议/文本6、真实子进程3、架构17、普通端点1、Modulith2。真实JVM验证64/32MiB堆、超时杀子进程、标准输出/错误输出限额、环境清除、故障后容量恢复；文本结构/CSV公式及协议源摘要绑定通过。仅证明独立进程协议，尚未提供容器网络/OS隔离或恶意软件扫描；d2b图片处理继续待实施。本次按开发调度双写子项状态。当前切入第1组X3预算作用域登记，C4d整体仍进行中。
+
+C4d2b实施中（2026-11-12，X3已本地验收）：worker加入PNG/JPEG/GIF/WebP容器边界核验、完整解码与新PNG衍生图；PNG CRC与IDAT连续性、JPEG EOI、GIF全帧/结尾、WebP RIFF尺寸/片块边界拒绝尾随内容。固定解码器白名单，WebP使用Maven Central当前发布3.15.3的TwelveMonkeys；固定32MiB输入、8192边长/单帧1600万像素/累计3200万像素/32帧，衍生图限传入预算与64MiB更小者，排他创建不覆写，去原始元数据。GIF每帧检查，衍生图为首帧静态PNG；APNG/动画WebP当前明确拒绝，不能只扫首帧冒充完整支持。真实云/杀毒/容器运行均未接入。WebP夹具由仓库脚本按固定像素本地生成，Pillow12.0.0仅安装在target/p09-fixture-python用于生成，不是生产或测试依赖；无第三方图像。GitHub样例目录请求被403限流后未采用外部图片。编译p09-c4d2b-compile.log通过，p09-c4d2b-unit.log正在检查图像/进程/架构/普通预算基线。
+
+C4d2b首轮p09-c4d2b-unit.log共49项通过，补充像素一致性与输出资源故障分类后p09-c4d2b-final.log共37项通过。复查ImageIO自动SPI发现发现宿主classpath风险：新增WebP解码依赖不能让旧FileService自动获得新解码器；已将库限定test scope用于独立worker测试，d2d镜像另行打包，宿主生产不带该库。新增WorkerPackagingBoundaryTests固定此边界，并追加PublicImageEncoderTests/FileRollbackCleanupTests旧路径回归；最终p09-c4d2b-packaging.log正在执行，尚不标d2b完成。
+
+C4d2b最终本地验收（2026-11-12）：p09-c4d2b-packaging.log共41项全部通过（图片6、worker文本/协议6、打包边界1、旧公开图片2/文件回滚1、架构17、普通端点1、预算登记5、Modulith2），构建57秒。首轮49项另涵盖预检9及真实子进程3，后续37项增加原/衍生像素一致性和CAPACITY/IO准确分类，再以最终41项验证test-scope依赖及旧路径回归。真实WebP独立JVM输出PNG，其摘要/大小/像素与报告一致；截断/尾随/CRC/尺寸/帧数拒绝、元数据清除、输出限额和禁止覆写均验证。没有容器OS/禁网/生产镜像或恶意软件验收，也未接任务发布；最大真实图片夹具为小图，8192/1600万像素是处理上限而非容量测量。公开上传继续SCANNING。手册11.4、README和后端规则已同步，开发调度同批标d2b本地完成。下一子项C4d2c PDF/Office/ZIP，之后d2d MP4/隔离执行器、d3杀毒、d4持久扫描/发布；C4e生命周期及C5～C9仍保留完整范围。
+
+C4d2c拆分（依赖d2b完成）：c1先实现ZIP/OOXML共用容器审查，检查中央目录与本地条目一致性、加密/链接/路径/重复、条目数/总膨胀量/压缩比/CRC，流式核对每项，不向宿主目录解压；仅形成内部结构结果，不赋予worker PASS。c2加入OOXML关系/内容类型/宏与嵌入对象/XML资源边界及通用ZIP叶子内容递归检查；c3加入PDF受控解析和活动动作/附件/外部引用检查后接入worker。每子项验证后双写进度，保留杀毒及容器隔离为后续必需门禁。
+
+C4d2c1首轮p09-c4d2c1.log共32项，31通过，路径夹具1失败：ZIP写库会先规范化反斜线，导致测试未真正包含恶意原始路径。已改为向本地头/中央目录同时写入原始UTF-8名称，确保验证实际攻击字节；没有放宽路径规则。另补伪造小膨胀量/压缩流尾随字节及预解析中央目录真实条目数，在库分配目录模型前先限量。新子项尚未接worker PASS，继续复验。
+
+C4d2c1本地完成（2026-11-12）：p09-c4d2c1-recheck.log 33项全部通过（ArchiveInspectionTests7、worker打包1、架构17、模块2、普通端点1、预算目录5）。按真实字节验证stored/deflate/数据描述符/UTF-8、路径/设备/链接/Unicode与大小写别名、目录冲突、加密/多卷/不支持扩展、CRC/头目录不一致、截断/尾随、压缩炸弹、伪小膨胀声明、伪条目计数及压缩流内额外字节。先限中央目录真实条目，再交Commons Compress 1.28.0解析属性；实际Inflate/CRC/SHA256限流，无提取文件。上限64MiB压缩、32MiB单项、256MiB展开、1000项、100倍比例、16层路径；ZIP64/未知扩展另需资源配置，不静默解释。只返回内部Manifest，不连worker PASS，也不代替叶子内容/杀毒。调度同批标c1本地完成，继续c2 OOXML关系/XML及ZIP叶子检查。
+
+C4d2c2按验证边界再分a/b：a实现OPC/OOXML结构及XML/关系/主动内容检查，返回需进一步验证的媒体清单；b完成通用ZIP与Office包内叶子内容校验后才可接worker内容PASS。当前a新增OfficePackageInspection：要求内容类型/根officeDocument关系/对应主XML，拒绝宏/ActiveX/嵌入对象/外部链接、危险域及公式函数，关系目标必须为真实内部部件且不能越根；SAX禁DOCTYPE/外部实体/stylesheet，限制8MiB单XML/64层/10万节点/属性数量与长度。支持受审常用公式与字段，未知功能拒绝。普通ZIP和Office仍不接worker PASS，媒体虽登记仍需b解码。p09-c4d2c2a.log验证中，未标本子项完成。
+
+C4d2c2a本地完成（2026-11-12）：p09-c4d2c2a.log及最终p09-c4d2c2a-final.log均38项全通过（Office包6、ZIP7、架构17、模块2、普通端点1、预算目录5）。最终补测真实本地文件实体引用仍拒绝，以及PowerPoint action程序动作拒绝；DOCX/XLSX/PPTX最小合法包/内部关系、错误主类型/宏/嵌入/外部目标/越根/悬空关系、XML外部实体/stylesheet/深度、DDE/危险公式/程序动作与合法SUM/IF均覆盖。媒体伪图片测试明确返回待验证清单，不生成内容PASS，防止把包结构验证伪称完整安全。调度、手册11.5、README和后端规则同批更新；没有真实Office渲染、容器隔离或杀毒验收。下一c2b需将Office媒体与通用ZIP每个叶子文件的类型/结构串联并限制递归/临时盘总额，之后c3 PDF处理；所有未支持的包仍保持不可放行，不能提前接READY。
+
+C4d2c2b实施中：新增ArchiveContentInspection串联ZIP每个叶子和Office返回的媒体，重新核对提取字节与Manifest摘要，再走文本结构/全帧图片解码或嵌套包检查；临时文件由worker随机命名，绝不使用压缩包路径，完成或拒绝后清理本人临时项。根和所有嵌套共用展开字节/1000项预算，最多再嵌套2层，余量传入ArchiveInspection先行约束，不能每层重置额度。Office结构＋媒体均通过后才能给内容PASS；PASS仍不等于杀毒/READY。PDF/MP4成员因处理器尚未接入返回ERROR/PROCESSOR_UNAVAILABLE，不给部分通过。公开上传发布仍未改，开始本地专项验证。
+
+C4d2c2b本地完成（2026-11-12）：p09-c4d2c2b.log共56项全通过：递归内容6、ZIP7、Office6、图片6、worker6、架构17、模块2、普通端点1、预算5。覆盖合法文本/空文本/JSON/CSV/图片/嵌套包、单恶意成员整包拒绝、假Office媒体与嵌套文档拒绝、全树深度/数量/累计字节与scratch预算、缺PDF/MP4处理器不部分通过、真实256MiB堆子进程及临时项清空。未执行杀毒，内容PASS不代表READY；文件任务仍SCANNING，强杀残留/真实配额释放由后续生命周期处理。手册11.5和调度已同步。继续c3 PDF，按受控解析器限制结构/对象/解码流预算，拒绝加密、动作/脚本、附件/外部文件和无法完整检查对象；之后再推进隔离执行器与杀毒。
+
+C4d2c3实施中：锁定PDFBox3.0.8，独立worker使用strict parse(false)，要求PDF头/最终EOF，拒绝加密（含空用户密码）、JavaScript/动作/外部文件/附件/表单/富媒体；遍历当前xref所有可解析对象（不仅catalog可达对象），限制索引数/对象节点/深度/字串，解码所有索引流并计每流16MiB/总64MiB，图片声明限制8192单边/1600万像素；检查页内容token/内联图尺寸及过滤器白名单。文件上限32MiB、页1000、token100万；复杂解码器可能在建流时分配内存，必须依赖外层worker堆/时限/后续OS隔离，不能把循环字节计数宣传成库内部零分配。不渲染/不CDR/不作病毒结论，未知过滤器ERROR。PDF接入根文件和ZIP成员同一检查，MP4仍无处理器。编译p09-c4d2c3-compile.log通过，p09-c4d2c3.log专项验证中。
+
+C4d2c3本地完成（2026-11-12）：p09-c4d2c3.log组合63项全部通过（PDF7、递归包6、ZIP7、Office6、图片6、worker6、架构17、模块2、普通端点1、预算5），之后补入真实构造xref中不可达/转义JS键用例，p09-c4d2c3-final.log PDF8项全通过。验证classic/object-stream合法PDF、各活动内容拒绝、空/非空用户密码加密拒绝、尾随/截断/坏结构、真实17MiB解码流超限、图像尺寸超限、未知过滤器、ZIP内同样检查、真实256MiB独立JVM仅输出绑定报告、不可达普通对象允许而转义/J#53拒绝。未据小夹具宣称生产文档兼容、渲染/CDR或全量容量验收；PDFBox解码预分配由独立worker硬内存/时限约束，后续OS隔离必需。手册11.6/11.5、README、后端规则及开发调度同批更新。C4d2c本地内容子项完成，上传发布仍未改；下一d2d视频与受控隔离执行器，d3恶意软件、d4持久扫描、C4e生命周期、C5～C9和X5联合验收均未完成。
+
+C4d2d实施拆分（依赖d2c完成）：d1先实现MP4 ISO-BMFF框架/数据引用检查与ffprobe受控输出/参数限制、真实小视频fixture或明确协议替身边界；d2独立打包worker最小运行制品及镜像/原生依赖；d3实现仅受控容器执行的宿主入口、凭据不传入、只读源/有限scratch/禁网/低权限/CPU内存PID/截止与清理；d4容器真实性验收。当前PATH无docker/podman/ffprobe/ffmpeg，标准Docker路径不存在；WSL --list --verbose仅返回安装帮助、非可用Linux证据。先继续不依赖容器守护进程的实现与验证；绝不把JVM测试当容器隔离，也不修改系统安装状态或重启用户服务。
+
+C4d2d1实施：从Maven Central下载org.bytedeco:ffmpeg:8.1.2-1.5.14:windows-x86_64到backend/target/p09-video-tools，核对仓库提供SHA1=d84fe6debb37938661264be921425c4b81136c0b（sha512端点404，未宣称签名验证），只展开固定平台目录的exe/dll到该临时目录。ffprobe -version实测8.1.2；脚本生成两段1秒64×48纯色/可选440Hz音频夹具，不安装系统、不放生产依赖。新增MP4非分片容器检查（边界、moov大小/层数、轨道、仅self-contained url数据引用、sample data index、拒绝fragment/DRM）及固定ffprobe命令：file协议、mov格式、禁外部dref/绝对引用、线程1、64MiB单次分配、32MiB probe、8流、30秒、16KiB输出；JSON检查格式/尺寸/时长/帧率/编解码/通道。根MP4和ZIP视频使用同一门禁。p09-c4d2d1.log正在实际native与JVM组合验证；旧worker测试的MP4未实现断言已随功能改为伪视频拒绝，下一轮确认最新源码。所有证据只是原生程序本地运行，不是容器禁网/OS隔离验收。
+
+C4d2d1本地原生完成（2026-11-12）：首轮p09-c4d2d1.log 44项中43通过，唯一失败为已过时的MP4未实现断言；最新p09-c4d2d1-final.log 44项全部通过（视频策略/容器5、真实ffprobe2、包成员6、worker6、架构17、模块2、普通端点1、预算5）。真实测试显式选择target中的ffprobe8.1.2，覆盖1秒视频/带音频视频、JVM内再起原生子进程及ZIP中视频；缺工具ERROR、外部dref/异常sample index/尾随/截断/fragment/过大moov、参数限定、JSON大小/格式/codec/尺寸/帧率/时长等拒绝均通过。未声称逐帧视频完整性、20GiB容量或容器禁网。调度/手册同步，继续d2d2最小worker制品。
+
+d2d2/3输出归属细化：worker制品只打包inspection及少量纯Java helper/契约和受审解析库，不携带Spring宿主、application.yml、数据库驱动、业务模块或部署凭据。后续容器以只读冻结源、硬限额tmpfs输出/临时目录、低权限禁网运行；图片输出需要在容器仍运行时核验取回，采用有界请求行/报告行＋host ACK的hold-output协议，读回只允许报告中的固定衍生文件并验证类型/大小/摘要，之后ACK退出与有界清理。不能用无限制宿主bind输出目录冒充磁盘隔离，也不能把docker CLI超时当容器已停止；控制面须精确持久名称/标记与rm/inspect对账。真实容器资源缺口仍保留，不提前实施依赖已验证隔离的发布。
+
+C4d2d2按制品/镜像分a/b，保留完整范围：a最小JAR与解析依赖可独立本地验收；b包含Java/原生ffprobe的固定镜像需真实构建与隔离环境验收，不能随a完成而标整体通过。
+
+C4d2d2a本地完成（2026-11-12）：根reactor `-pl backend -am -Dsma.verify.directory=target/p09-worker-bundle-final/target -Pfile-inspection-worker -DskipTests package`，日志p09-c4d2d2-package-minimal.log BUILD SUCCESS。首次包19个库，发现不需要Jackson2 core/databind，已拆分annotations复制执行并删除仅本任务生成的这2个旧JAR；最终包17个受审解析库。移除jar plugin只读finalName配置，使用默认制品名＋inspection classifier。无Spring宿主类/业务类/配置或数据库驱动。
+
+`python tools/dev/verify-inspection-bundle.py --bundle backend/target/p09-worker-bundle-final/target/inspection --java <JAVA21_HOME>/bin/java.exe --ffprobe backend/target/p09-video-tools/ffprobe.exe`，日志p09-c4d2d2-smoke-final.log：13用例/17库/PASS，container_isolation=not-tested。独立classpath真实JVM覆盖TEXT/JSON/CSV/PNG/WebP/PDF/三类Office/ZIP/危险双后缀和非法JSON拒绝/原生MP4，输出衍生摘要一致；verification.json记录每JAR SHA256。此前首次10用例/19库仅为中间证据，不作最终最小包结论。构建skipTests不冒充测试，Java内容/视频回归另见前序结果。调度、手册11.8、README及后端规则同步；继续d2d2b镜像与d2d3容器生命周期。当前无Docker/Podman/可用WSL，不声明真实容器隔离。
+
+C4d2d2b镜像前置协议实施：ContentInspectionWorker新增显式--hold-output模式，最多16KiB单行请求/报告；报告后保留进程与输出直到收到0x06 ACK，EOF/错误ACK返回非零，原EOF输入/一次输出模式保留。ACK只结束输出存活期，不授予READY；90秒原生watchdog仍覆盖等待阶段，实际容器执行器另设总体截止和cleanup对账。先用真实JVM管道验证后续镜像所需行为，不能把该协议验收当OS/容器隔离；暂不修改上传发布或跳过后续杀毒。
+
+C4d2d2b前置握手本地完成（2026-11-12）：`p09-c4d2d2b-protocol.log`共40项全通过（Frames3、HoldOutput3、worker6、进程3、架构17、模块2、普通端点1、预算5），覆盖报告后进程存活、原/衍生摘要绑定、正确ACK退出0、错误ACK/EOF退出2及超限/不完整/未知模式拒绝。首次`p09-c4d2d2b-package.log`被并行部署代码缺Modulith依赖阻断；当前依赖已补齐，未修改该线代码，`p09-c4d2d2b-package-recheck.log`根reactor打包成功（1分08秒）。最新制品重新运行`verify-inspection-bundle.py --bundle backend/target/p09-worker-bundle-final/target/inspection --java <JAVA21_HOME>/bin/java.exe --ffprobe backend/target/p09-video-tools/ffprobe.exe`，`p09-c4d2d2b-smoke.log`为14用例/17库/PASS（新增真实独立制品hold-output），verification.json更新JAR摘要。仅握手与制品本地完成；镜像构建/容器执行/OS隔离仍未验收，所有公开新上传仍最多SCANNING。
+
+C4d2d2b镜像准备继续细化：先实现只复制核验制品、固定基础镜像digest和原生版本/摘要的构建上下文生成器，拒绝符号链接、旧验证摘要、额外依赖和浮动镜像。生成器本地安全测试与实际上下文核对可独立验收；实际Linux镜像构建与资源隔离仍须容器环境，不据静态Dockerfile标完成。当前公开Docker Hub认证端点读取超时，尚未取得可核验基础镜像digest，不猜测摘要或默用latest。保持不安装/更改Docker或WSL，不提前接上传发布。
+
+C4d2d2b构建上下文本地完成（2026-11-12）：新增`tools/dev/inspection_artifacts.py`共用精确17库坐标/版本与worker类/元数据白名单，独立制品验证脚本复用它；`prepare-inspection-image.py`要求独立用例/完整JAR摘要与当前文件匹配、部署输入为regular/no-link，镜像只接受固定来源的digest引用；新上下文排他创建，只复制worker＋17库，复制后复核摘要，最后才写Dockerfile。拒绝旧验证、额外宿主配置/类/元数据、未审版本/重复库、链接/reparse、浮动镜像/注入、已有输出及复制时变更。Dockerfile模板要求Temurin21.0.10+7、静态ffprobe8.1.2的构建期实际版本检查，固定linux/amd64、UID/GID65532、heap/direct-memory及hold-output；镜像模板不能代替运行时只读rootfs/禁网/tmpfs/CPU/内存/PID限制。
+
+验证：`SMA_INSPECTION_CONTEXT_TEST_BUNDLE=<当前inspection绝对目录> python tools/dev/test_inspection_image.py -v`，`p09-c4d2d2b-context-final.log`14项全通过无跳过，含当前真实18个JAR与合成镜像digest的生成/摘要核对；hardlink使用实际文件，symlink/reparse拒绝分支使用属性替身，未宣称真实Windows junction验收。`p09-c4d2d2b-smoke-pinned.log`共用精确版本校验后的独立制品仍14用例/17库/PASS。测试上下文只在临时目录生成并清理，**测试digest不是实际镜像digest**；未生成可交付的真实镜像、未运行Linux容器。公开Docker Hub读取超时且本机没有Docker/Podman/可用WSL，d2d2b整体和d2d3/d4仍未完成，保持C4d进行中，不跳C5。
+
+原生制品调查：只读下载并核验Maven Central `org.bytedeco:ffmpeg:8.1.2-1.5.14:linux-x86_64`，仓库SHA1=c0dde01ef96cf51ec71e33a1e1a285e23cef4ba0、本地SHA256=6d0f000c4ddede3b669aa7c5c585e9b71f69b7f621fed7ab28ec01045dc336d0，存target/p09-video-tools。ELF DT_NEEDED表明该ffprobe依赖avdevice/音频/XCB/udev等，不是可直接复制的静态程序；没有在Windows运行或把它误称Linux通过。当前模板改为要求经审查的静态ffprobe镜像，并在真实构建时核验运行版本；其可用digest与构建仍待获取和验收，没有猜测或登记生产默认值。下一步先完成这项真实镜像前置，再推进宿主受控执行与清理对账；完整杀毒/持久发布/C4e/C5～C9/X5仍全部保留。
+
+环境边界确认（2026-11-12）：用户明确回复“暂时没有，继续其他可验证任务”，当前没有可用Linux容器测试环境。保留P09真实镜像/隔离验收待办，不安装系统Docker/WSL、不以JVM或合成digest替代；同一开发调度中先推进已满足X3前置的X4品牌公开资产安全验收。该调整不取消原P09范围，不将依赖未完成C4d的C5提前标记可开工；无需重复索要尚未准备的容器或外部OAuth/SMTP/云账号。

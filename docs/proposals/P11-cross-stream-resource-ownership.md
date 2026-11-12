@@ -15,7 +15,7 @@
 | `common_request_execution` / `common_request_mutex` 幂等账本 | 平台库 | 执行权与业务写同事务提交 | 否，变成跨库 |
 | `common_cache_revision` 失效代次 | 平台库 | 版本行更新与业务写同事务 | 否，变成跨库 |
 | `common_id_block` 主键块 | 平台库 | 预分配块，块内不需要同事务 | 是，不受影响 |
-| 各模块预算表 | 平台库 | 独立提交，不随业务回滚 | 是，本就独立 |
+| 模块持久预算（auth/openapi/identity/file/common） | 当前平台库 | 按所属预算/工作事务预占；不可把shared等同于全部REQUIRES_NEW | 是，平台自有工作保留原事务归属 |
 
 今天两项之所以成立，是因为 [PersistenceConfiguration](../../backend/src/main/java/com/sma/admin/common/internal/PersistenceConfiguration.java) 把 `com.sma.admin` 与 `com.sma.business` 两个包根扫描进同一个 SqlSessionFactory 和同一个数据源。该前提在租户平台 S6 接入业务路由时消失。
 
@@ -29,7 +29,11 @@
 
 **规则 4：代次汇聚延迟必须显式承认。** 业务库内的失效登记由所属业务资源提交，平台侧的目录汇聚是异步的。该汇聚窗口是有界陈旧，不得宣称与业务提交强一致；跨资源的权威校验仍以各自资源内的版本行为准。
 
-**规则 5：主键块与预算表不改。** `common_id_block` 按块预分配，块内无需跨库协调；各模块预算表本就独立提交、不随业务回滚，继续留在各自模块所属库。
+**规则 5：主键块与预算实现不改。** `common_id_block` 按块预分配，块内无需跨库协调；平台模块持久预算继续留在各自模块所属库。auth/openapi/common频率预算独立提交；identity与file的内部预算参与所属任务/挑战事务，由其外层协议确定提交、拒绝计数和回收行为，不能把shared范围误解为全部REQUIRES_NEW。tenant的BrandWorkBudget实际为节点内Semaphore，不存在同名持久预算表。
+
+### X1 接入契约
+
+业务模块通过`common :: request`的`BusinessLedger.open(storageGroup)`取得绑定当前可信租户的会话，执行权/回执/失效/Outbox都使用该会话并在完成后关闭。宿主的`BusinessLedgerProvider`负责解析物理业务资源，`BusinessLedgerResourceFactory`把Mapper、账本和事务固定到同一DataSource；业务模块不能实现provider或访问Common内部Mapper。X1a交付公开入口与拒绝边界：没有provider、没有绑定、在事务开始后才选资源均失败，不允许隐式回退到平台`RequestExecution`。X1b用真实双MySQL验证同资源请求执行、回滚、重放、并发互斥及平台账本隔离；X1c补独立业务框架Flyway、Outbox稳定键与字节一致性、事务外权威代次及过期/故障stale观测。X1已本地完成，S6可接入；实际目录、轮询/派发、迁移任务仍归S6/S7。阶段证据见[开发进度](../development-progress.md)。
 
 ## 3. Redis 归属
 
@@ -42,7 +46,7 @@
 
 ## 4. 预算与并发口径
 
-各模块的持久预算表（auth `SecurityRateLimit`、openapi `LoginBudget`、identity `IdentityEmailBudget`/`IdentityLoginBudget`、file `TaskBudget`、common `RequestBudget`、tenant `BrandWorkBudget`）保留各自语义，不合并实现。但必须在[接口清单](../security-endpoint-inventory.md)中统一登记以下字段：
+六处预算实现（auth `SecurityRateLimit`、openapi `LoginBudget`、identity `IdentityEmailBudget`/`IdentityLoginBudget`、file `TaskBudget`、common `RequestBudget`、tenant `BrandWorkBudget`）保留各自语义，不合并实现。前五处为持久预算，tenant BrandWorkBudget为每节点4个图片事务槽位（以当前代码核验修正原“全部持久表”描述）。必须在[接口清单](../security-endpoint-inventory.md)中统一登记以下字段：
 
 - scope：`shared`（数据库持久、跨实例累计）或 `node`（单进程内并发门禁）。
 - 存储位置：所属模块与库。

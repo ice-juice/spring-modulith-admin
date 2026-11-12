@@ -4,8 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { post } from '@/api/http'
 import ManagementView from '@/views/iam/ManagementView.vue'
+import EffectiveConfigView from './EffectiveConfigView.vue'
 const { t } = useI18n()
-const tab = ref('parameters'),
+const tab = ref('effective'),
   revision = ref(0)
 async function refresh() {
   await post('/config/parameters/refresh')
@@ -32,7 +33,9 @@ async function reset() {
     }}</el-button>
   </div>
   <el-tabs v-model="tab"
-    ><el-tab-pane :label="t('config.parameters')" name="parameters"
+    ><el-tab-pane :label="t('config.effective.tab')" name="effective"
+      ><EffectiveConfigView :key="revision" kind="parameters" /></el-tab-pane
+    ><el-tab-pane :label="t('config.effective.privateTab')" name="parameters"
       ><ManagementView :key="revision" resource-id="parameters" /></el-tab-pane
     ><el-tab-pane :label="t('config.parameterGroups')" name="groups"
       ><ManagementView resource-id="parameterGroups" /></el-tab-pane

@@ -1,6 +1,7 @@
 package com.sma.admin.identity.internal.service;
 
 import com.sma.admin.common.security.*;
+import com.sma.admin.common.deployment.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.*;
@@ -17,14 +18,19 @@ public class IdentityLoginMaintenance {
     }
     private static final Logger log=LoggerFactory.getLogger(IdentityLoginMaintenance.class);
     private final TenantWorkQuery tenants;private final IdentityLoginStore store;private final Settings settings;private long cursor;
-    public IdentityLoginMaintenance(TenantWorkQuery tenants,IdentityLoginStore store,Settings settings){this.tenants=tenants;this.store=store;this.settings=settings;}
+    private final DeploymentWork admission;
+    public IdentityLoginMaintenance(TenantWorkQuery tenants,IdentityLoginStore store,Settings settings,DeploymentWork admission){this.tenants=tenants;this.store=store;this.settings=settings;this.admission=admission;}
     @Scheduled(fixedDelayString="${sma.identity.login-maintenance.poll-millis:10000}")
     public synchronized void poll(){
+        DeploymentEvidence.requireHost();
         if(!settings.enabled())return;
         try{
-            var page=tenants.page(cursor,settings.tenantPageSize());
+            var discovery=admission.tryStart();if(discovery.isEmpty())return;
+            java.util.List<TenantWorkQuery.Entry> page;
+            try(var permit=discovery.orElseThrow()){page=tenants.page(cursor,settings.tenantPageSize());}
             for(var entry:page){
-                try{ActorContext.withinJob(entry.tenantId(),"identity-login-maintenance",store::maintain);}
+                var accepted=admission.tryStart();if(accepted.isEmpty())return;
+                try(var permit=accepted.orElseThrow()){ActorContext.withinJob(entry.tenantId(),"identity-login-maintenance",store::maintain);}
                 catch(RuntimeException unavailable){log.warn("Identity login maintenance unavailable for tenant {}",entry.tenantId());}
                 cursor=entry.tenantId();
             }

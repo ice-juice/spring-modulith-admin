@@ -19,6 +19,10 @@ public class CacheRegistrationOwnership {
         var owner=owner(provider);
         if(!descriptor.owner().equals(owner.id()))throw new IllegalArgumentException("Cache warmup loader must belong to the registered region's module");
     }
+    public void validateBusiness(Object provider,CacheDescriptor descriptor){
+        if(!owner(provider).business())throw new IllegalArgumentException("Business cache catalog requires a business module");
+        validate(provider,descriptor);
+    }
     public void validateAdapter(Object provider,CacheDescriptor descriptor){
         if(!descriptor.owner().equals(owner(provider).id()))throw new IllegalArgumentException("Resource adapter must belong to its region's module");
     }

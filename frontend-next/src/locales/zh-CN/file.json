@@ -18,5 +18,7 @@
   "preview": "预览",
   "remove": "移除附件",
   "tooLarge": "文件大小不能超过 20 MiB",
-  "selectExisting": "选择已有文件"
+  "selectExisting": "选择已有文件",
+  "resumeOriginal": "继续上传原文件",
+  "originalUnavailable": "原文件已离开当前页面，不能直接续传。可继续查询原任务；完成后从文件库选择文件。"
 }

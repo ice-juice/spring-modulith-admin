@@ -11,6 +11,7 @@ import java.util.concurrent.*;
 import java.util.regex.Pattern;
 import jakarta.annotation.PreDestroy;
 import com.sma.admin.common.BizException;
+import com.sma.admin.common.deployment.*;
 import com.sma.admin.identity.IdentityErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,12 +20,13 @@ import tools.jackson.databind.json.JsonMapper;
 
 /** Fixed Google endpoints, no redirects/cookies, bounded requests, response bytes and total duration. */
 @Component
-public class GoogleHttpTransport {
+public class GoogleHttpTransport implements DeploymentActivity,DeploymentTransport,AutoCloseable {
     private static final URI JWKS=URI.create("https://www.googleapis.com/oauth2/v3/certs");
     private static final URI TOKEN=URI.create("https://oauth2.googleapis.com/token");
     private static final Pattern MAX_AGE=Pattern.compile("(?:^|,)\\s*max-age=(?:\")?(\\d+)(?:\")?(?:\\s*,|$)");
     private final HttpClient client;private final URI jwks;private final URI token;private final Duration deadline;
     private final JsonMapper json;private final ExecutorService workers;
+    private final DeploymentTaskTracker activity=new DeploymentTaskTracker(4);
     public record JwksDocument(String body,Duration lifetime) {}
     @Autowired public GoogleHttpTransport(JsonMapper json){
         this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).followRedirects(HttpClient.Redirect.NEVER).build(),JWKS,TOKEN,Duration.ofSeconds(12),json);
@@ -33,7 +35,20 @@ public class GoogleHttpTransport {
     GoogleHttpTransport(HttpClient client,URI jwks,URI token,Duration deadline,JsonMapper json){
         this.client=client;this.jwks=jwks;this.token=token;this.deadline=deadline;this.json=json;
         if(client.followRedirects()!=HttpClient.Redirect.NEVER || client.cookieHandler().isPresent())throw new IllegalArgumentException("Unsafe Google HTTP client");
-        workers=new ThreadPoolExecutor(4,4,0,TimeUnit.SECONDS,new SynchronousQueue<>(),Thread.ofPlatform().daemon().name("sma-google-http-",0).factory(),new ThreadPoolExecutor.AbortPolicy());
+        workers=new TransportExecutor(client);
+    }
+    @Override public String id(){return "identity.google-http";}
+    @Override public DeploymentActivity.Snapshot snapshot(){return activity.snapshot();}
+    @Override public void shutdownTransport(){DeploymentEvidence.requireHost();activity.stopAccepting();workers.shutdown();}
+    @Override public boolean transportTerminated(){return workers.isTerminated()&&activity.snapshot().quiescent()&&client.isTerminated();}
+    private static final class TransportExecutor extends ThreadPoolExecutor {
+        private final HttpClient client;
+        TransportExecutor(HttpClient client){
+            super(4,4,0,TimeUnit.SECONDS,new SynchronousQueue<>(),Thread.ofPlatform().daemon().inheritInheritableThreadLocals(false)
+                    .name("sma-google-http-",0).factory(),new ThreadPoolExecutor.AbortPolicy());this.client=client;
+        }
+        // Do not close the client while an already-accepted call still needs it.
+        @Override protected void terminated(){try{client.shutdown();}finally{super.terminated();}}
     }
     public JwksDocument fetchKeys(){
         var response=call(HttpRequest.newBuilder(jwks).timeout(deadline).header("Accept","application/json").GET().build());
@@ -59,11 +74,12 @@ public class GoogleHttpTransport {
     private HttpResponse<byte[]> call(HttpRequest request){
         if(TransactionSynchronizationManager.isActualTransactionActive())throw new IllegalStateException("Google network I/O must not hold a database transaction");
         Future<HttpResponse<byte[]>> pending;
-        try{pending=workers.submit(()->client.send(request,info->new LimitedBody(65536)));}
+        try{pending=activity.submit(workers,()->client.send(request,info->new LimitedBody(65536)));}
         catch(RejectedExecutionException busy){throw unavailable();}
         try{return pending.get(deadline.toMillis(),TimeUnit.MILLISECONDS);}
         catch(InterruptedException interrupted){pending.cancel(true);Thread.currentThread().interrupt();throw unavailable();}
         catch(ExecutionException|TimeoutException failure){pending.cancel(true);throw unavailable();}
+        catch(CancellationException cancelled){throw unavailable();}
     }
     private void requireJson(HttpResponse<?> response){
         String type=response.headers().firstValue("Content-Type").orElse("").split(";",2)[0].trim();
@@ -81,7 +97,7 @@ public class GoogleHttpTransport {
     }
     private static String encode(String value){return URLEncoder.encode(value,StandardCharsets.UTF_8);}
     private BizException unavailable(){return new BizException(IdentityErrorCode.PROVIDER_UNAVAILABLE);}
-    @PreDestroy public void close(){workers.shutdownNow();client.shutdownNow();}
+    @Override @PreDestroy public void close(){activity.close();workers.shutdownNow();client.shutdownNow();}
 
     private static final class LimitedBody implements HttpResponse.BodySubscriber<byte[]> {
         private final int maximum;private final ByteArrayOutputStream bytes=new ByteArrayOutputStream();

@@ -1,5 +1,6 @@
 {
   "operation": {
+    "coordination": "Submissions are paused because this browser cannot safely coordinate tabs. Use a browser with Web Locks over HTTPS or a local address.",
     "previousFinished": "The earlier operation completed. You can now continue with this action.",
     "busy": "This item has an operation in progress or awaiting confirmation. Check its result first.",
     "identity": "Your session or permissions changed. Reload and check the original result.",
@@ -356,5 +357,51 @@
     "support": "Contact support",
     "privacy": "Privacy policy",
     "agreement": "User agreement"
+  },
+  "operationPanel": {
+    "title": "Operation status",
+    "description": "Review unconfirmed operations for your current identity. Closing this panel or reloading does not cancel or resend submitted work. Account security and screen locking use their own controls.",
+    "empty": "No operations awaiting confirmation.",
+    "items": "Unconfirmed operations",
+    "reference": "Operation reference and target",
+    "key": "Original operation key",
+    "operation": "Operation type",
+    "target": "Target identifier",
+    "check": "Check this operation",
+    "checking": "Checking…",
+    "lookupFailed": "No valid receipt is available yet. The original operation is retained. Check again later.",
+    "nativeHint": "Check the original task on its business page. Current lists or statistics do not prove a past operation completed. Without an authoritative receipt, its result remains unknown.",
+    "states": {
+      "PREPARING": "Awaiting confirmation",
+      "SENDING": "Submitting",
+      "SLOW": "Still processing",
+      "PENDING": "Awaiting result",
+      "UNKNOWN": "Result unknown"
+    },
+    "results": {
+      "SUCCEEDED": "The original operation is confirmed successful. Return to the business page and reload its data.",
+      "FAILED_FINAL": "The original operation is confirmed failed and will not execute again.",
+      "RUNNING": "The original operation is still running.",
+      "UNKNOWN": "The result is still unknown. Keep the original reference."
+    },
+    "areas": {
+      "iam": "Users and permissions",
+      "config": "Configuration",
+      "message": "Messages and tasks",
+      "file": "Files",
+      "workspace": "Personal workspace",
+      "tenant": "Tenant management",
+      "monitor": "System monitoring",
+      "rule": "Rules",
+      "extension": "Extensions",
+      "openapi": "API applications",
+      "auth": "Account and sessions",
+      "other": "Business operation"
+    },
+    "openBusiness": "Open business page",
+    "navigationFailed": "Unable to open the business page. Use the menu and keep the original operation reference.",
+    "review": "Review pending operations",
+    "leaveHint": "{count} operation(s) await confirmation. Leaving or reloading discards unsaved input and selected files, but does not cancel submitted work. Check the original references in Operation status.",
+    "unavailableHint": "Operation recovery records are unavailable. Check browser storage; existing operations still need confirmation."
   }
 }

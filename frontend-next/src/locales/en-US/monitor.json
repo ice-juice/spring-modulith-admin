@@ -1,5 +1,6 @@
 {
   "sql": "SQL execution statistics",
+  "nativeCommandUnknown": "The original operation is unconfirmed. Further commands for the same target are blocked. Current statistics or event state do not prove completion; refreshing will not release this restriction.",
   "statement": "Mapper statement ID",
   "command": "Command",
   "calls": "Calls",
@@ -79,6 +80,10 @@
   "tableList": "Database tables",
   "tableFields": "Columns",
   "cacheGovernance": {
+    "selectedNode": "View node",
+    "receivingNode": "Receiving node",
+    "nodeChanged": "Process changed; select again",
+    "nodeSelectionHint": "Statistics belong to the selected process; shared cache counts are not added across nodes.",
     "tabs": {
       "directory": "Cache directory",
       "overview": "Overview",

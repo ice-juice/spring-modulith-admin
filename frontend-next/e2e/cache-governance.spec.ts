@@ -13,6 +13,93 @@ async function setup(page: import('@playwright/test').Page) {
   return { base, cache }
 }
 
+test('node selection pins directory and preview while shared task receipts remain queryable', async ({ page }) => {
+  const { cache } = await setup(page)
+  cache.members[1] = { nodeId: 'node-b', processId: 'process-b', epoch: '2', stateAtCapture: 'ONLINE', leaseUntil: '2099-01-01T00:00:00Z' }
+  cache.directories.set('node-b', [cacheRegion('config.dictionary-options', { name: 'B节点字典' })])
+  await page.getByRole('button', { name: '刷新', exact: true }).click()
+  await page.getByLabel('查看节点', { exact: true }).selectOption('node-b:process-b')
+  await expect(page.locator('main tbody').getByText('B节点字典', { exact: true })).toBeVisible()
+  expect(cache.requests.filter(value => value.path.endsWith('/directory')).at(-1)).toMatchObject({ node: 'node-b', process: 'process-b' })
+  await page.locator('main tbody').getByRole('button', { name: '清理', exact: true }).click()
+  await expect(page.getByLabel('查看节点', { exact: true })).toBeDisabled()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByLabel('操作原因', { exact: true }).fill('node-bound preview')
+  await dialog.getByRole('button', { name: '预览目标', exact: true }).click()
+  await expect.poll(() => cache.requests.find(value => value.path.endsWith('/preview'))).toMatchObject({ node: 'node-b', process: 'process-b' })
+  cache.loseSubmit()
+  await dialog.getByRole('button', { name: '确认提交', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: '缓存任务详情' })).toBeVisible()
+  expect(cache.writes.filter(value => value.path.endsWith('/submit'))).toHaveLength(1)
+  expect(cache.requests.filter(value => value.path.includes('/tasks/') && !value.path.endsWith('/preview')).every(value => !value.node && !value.process)).toBe(true)
+})
+
+test('late node responses cannot replace a newer selection and a restarted process never silently rebinds', async ({ page }) => {
+  const { cache } = await setup(page)
+  cache.members[1] = { nodeId: 'node-b', processId: 'process-b', epoch: '2', stateAtCapture: 'ONLINE', leaseUntil: '2099-01-01T00:00:00Z' }
+  cache.directories.set('node-a', [cacheRegion('config.dictionary-options', { name: 'A节点字典' })])
+  cache.directories.set('node-b', [cacheRegion('config.dictionary-options', { name: 'B节点字典' })])
+  await page.getByRole('button', { name: '刷新', exact: true }).click()
+  let release!: () => void
+  const held = new Promise<void>(resolve => { release = resolve })
+  let seen = false
+  await page.route('**/api/monitor/caches/directory', async route => {
+    if (route.request().headers()['x-sma-cache-node'] === 'node-b') { seen = true; await held }
+    await route.fallback()
+  })
+  await page.getByLabel('查看节点', { exact: true }).selectOption('node-b:process-b')
+  await expect.poll(() => seen).toBe(true)
+  await page.getByLabel('查看节点', { exact: true }).selectOption('node-a:process-a')
+  await expect(page.locator('main tbody').getByText('A节点字典', { exact: true })).toBeVisible()
+  release()
+  await expect.poll(() => cache.requests.filter(value => value.path.endsWith('/directory') && value.node === 'node-b').length).toBe(1)
+  await expect(page.locator('main tbody').getByText('B节点字典', { exact: true })).toHaveCount(0)
+  cache.members[0]!.processId = 'process-a-restarted'
+  await page.getByRole('button', { name: '刷新', exact: true }).click()
+  await expect(page.getByText('节点进程已更换，请重新选择', { exact: true })).toBeVisible()
+  await expect(page.locator('main tbody').getByText('A节点字典', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('查看节点', { exact: true })).toHaveValue('node-a:process-a')
+  expect(cache.requests.filter(value => value.path.endsWith('/directory')).at(-1)?.process).toBe('process-a')
+  await page.getByLabel('查看节点', { exact: true }).selectOption('node-a:process-a-restarted')
+  await expect(page.locator('main tbody').getByText('A节点字典', { exact: true })).toBeVisible()
+})
+
+test('a pinned node becoming unavailable removes old statistics and does not fall back', async ({ page }) => {
+  const { cache } = await setup(page)
+  await page.getByLabel('查看节点', { exact: true }).selectOption('node-a:process-a')
+  await expect(page.locator('main tbody').getByText('字典选项', { exact: true })).toBeVisible()
+  cache.members[0]!.stateAtCapture = 'OFFLINE'
+  await page.getByRole('button', { name: '刷新', exact: true }).click()
+  await expect(page.getByText('选定节点不可达，请核对路由', { exact: true })).toBeVisible()
+  await expect(page.locator('main tbody').getByText('字典选项', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('查看节点', { exact: true })).toHaveValue('node-a:process-a')
+  expect(cache.requests.filter(value => value.path.endsWith('/directory')).at(-1)?.node).toBe('node-a')
+  expect(cache.writes).toHaveLength(0)
+})
+
+test('policy requests retain the selected process and original key while the editor locks node refresh', async ({ page }, testInfo) => {
+  const { cache } = await setup(page)
+  await page.getByLabel('查看节点', { exact: true }).selectOption('node-a:process-a')
+  await expect(page.locator('main .data-table[aria-busy=false]')).toBeVisible()
+  await page.getByRole('tab', { name: '缓存策略', exact: true }).click()
+  await expect(page.locator('main').getByRole('status').filter({ hasText: 'process-a' })).toContainText('node-a')
+  await page.getByRole('button', { name: '编辑策略', exact: true }).click()
+  const editor = page.getByRole('dialog', { name: '编辑策略' })
+  await expect(page.getByRole('button', { name: '刷新', exact: true, includeHidden: true }).first()).toBeDisabled()
+  await editor.getByLabel('操作原因', { exact: true }).fill('node-bound policy')
+  await editor.getByLabel('有效期（毫秒）', { exact: true }).fill('10000')
+  await editor.getByRole('button', { name: '保存', exact: true }).click()
+  await expect(editor).not.toBeVisible()
+  const write = cache.writes.find(value => value.method === 'PUT')
+  expect(write?.key).toBeTruthy()
+  expect(cache.requests.find(value => value.method === 'PUT')).toMatchObject({ node: 'node-a', process: 'process-a' })
+  expect(cache.requests.filter(value => value.path.endsWith('/policy')).every(value => value.node === 'node-a' && value.process === 'process-a')).toBe(true)
+  await page.setViewportSize({ width: 390, height: 900 })
+  await expect(page.locator('main').getByRole('status').filter({ hasText: 'process-a' })).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)
+  await page.screenshot({ path: testInfo.outputPath('selected-node-policy-mobile.png') })
+})
+
 test('reload preserves a queued task and cancellation remains available without resubmitting it', async ({ page }) => {
   const { cache } = await setup(page)
   await page.locator('main tbody').getByRole('button', { name: '清理', exact: true }).first().click()

@@ -26,6 +26,8 @@
   "reconcile": "查询原动作",
   "resumeHint": "上传尚未完成，可按原上传编号重传相同分片。",
   "resume": "继续原上传",
+  "originalFiles": "重新选择原文件",
+  "uploadNeedsOriginal": "只有仍可续传的任务可以继续，请选择名称、大小和内容完全一致的原文件。",
   "uploadProgress": "已上传 {progress}%",
   "sections": "扩展管理功能",
   "group": "JAR 分组",

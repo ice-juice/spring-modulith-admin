@@ -15,6 +15,7 @@ import EntitySelect from '@/components/business/EntitySelect.vue'
 import type { AppLocale } from '@/locales'
 const { t } = useI18n(), preferences = usePreferences()
 const action = useSubmission(), syncing = ref(false), busy = computed(() => action.busy.value || action.unresolved.value || syncing.value), zoneOpen = ref(false), zone = ref(preferences.timeZone)
+action.bind('config.preferences.self')
 const zones = ['UTC', ...Intl.supportedValuesOf('timeZone')].map(value => ({ value, label: value }))
 const themes = [{ id: 'light', icon: Sun }, { id: 'dark', icon: Moon }, { id: 'system', icon: Monitor }]
 const activeTheme = computed(() => themes.find(theme => theme.id === preferences.theme) || themes[2]!)
@@ -22,7 +23,8 @@ const locales: { id: AppLocale; label: string }[] = [{ id: 'zh-CN', label: 'ç®€ä
 async function persist(previous: ReturnType<typeof preferences.snapshot>) {
   const auth = useAuth()
   if (!auth.user) return true
-  const result = await action.run({ operation: 'preferences.save', resource: 'config.preferences.self', protocol: 'LOCAL' }, () => { const input = preferences.snapshot(); return options => put('/config/preferences', input, options) })
+  const input = preferences.snapshot()
+  const result = await action.run({ operation: 'preferences.save', resource: 'config.preferences.self', protocol: 'LOCAL' }, () => options => put('/config/preferences', input, options))
   if (result.kind === 'stale' || result.kind === 'cancelled') return false
   if (result.kind === 'success' || result.kind === 'completed') { await synchronize(); return true }
   // Revert the local preview only. UNKNOWN remains registered and may already have committed on the server.

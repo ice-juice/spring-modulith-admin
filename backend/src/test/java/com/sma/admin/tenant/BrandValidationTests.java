@@ -28,6 +28,21 @@ class BrandValidationTests {
         assertThatThrownBy(() -> validation.validate(replace(content,"login1",content.links(),Map.of(BrandContent.Field.ICP_RECORD,BrandContent.OverrideMode.INHERIT)))).isInstanceOf(BizException.class);
         assertThatCode(() -> validation.validate(replace(content,"login1",content.links(),Map.of(BrandContent.Field.ICP_RECORD,BrandContent.OverrideMode.HIDE)))).doesNotThrowAnyException();
     }
+    @Test void everyPublicDestinationUsesTheSameSyntaxPolicyIncludingLegalLinks() {
+        for(int field=0;field<8;field++) {
+            for(String unsafe:new String[]{"javascript:alert(1)","data:image/svg+xml,x","file:///etc/passwd","//evil.example/path",
+                    "https://user:pass@evil.example/","https://good.example/%0d%0aInjected:x","https://good.example/\\evil","https://good.example:65536/"}) {
+                var content=link(field,unsafe);assertThatThrownBy(()->validation.validate(content)).isInstanceOf(BizException.class);
+            }
+            var valid=link(field,"https://example.com/docs?q=1#help");assertThatCode(()->validation.validate(valid)).doesNotThrowAnyException();
+        }
+    }
+    private BrandContent link(int field,String value) {
+        var base=BrandContent.defaults("Tenant");String[] urls={"","","","","","","",""};urls[field]=value;
+        var legal=new BrandContent.Legal("Owner",2020,urls[0],"ICP record",urls[1],"Police record",urls[2]);
+        var links=new BrandContent.Links(urls[3],urls[4],urls[5],urls[6],urls[7]);
+        return new BrandContent(1,base.identity(),base.login(),legal,links,base.appearance(),Map.of(),Map.of());
+    }
     private BrandContent replace(BrandContent c,String template,BrandContent.Links links,Map<BrandContent.Field,BrandContent.OverrideMode> overrides) {
         return new BrandContent(1,c.identity(),new BrandContent.Login(template,c.login().title(),c.login().description(),false),c.legal(),links,c.appearance(),c.assets(),overrides);
     }

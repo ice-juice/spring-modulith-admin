@@ -39,7 +39,8 @@ async function synchronize() {
 }
 async function save() {
   if (busy.value || !ready.value) return
-  const result = await action.run({ operation: 'preferences.save', resource: 'config.preferences.self', protocol: 'LOCAL' }, () => { const input = { ...form }; return options => put('/config/preferences', input, options) })
+  const input = { ...form }
+  const result = await action.run({ operation: 'preferences.save', resource: 'config.preferences.self', protocol: 'LOCAL' }, () => options => put('/config/preferences', input, options))
   if (result.kind === 'success' || result.kind === 'completed') await synchronize()
 }
 async function reset() {

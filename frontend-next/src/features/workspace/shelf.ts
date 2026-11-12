@@ -34,13 +34,13 @@ export const useShelf = defineStore('personal-shelf', () => {
     } catch (cause) { if (current(g, token) && sequence === readSequence) error.value = (cause as Error).message; return false }
     finally { if (current(g, token) && sequence === readSequence) loading.value = false }
   }
-  async function change(operation: string, prepare: () => (options: RequestOptions) => Promise<unknown>) {
+  async function change(operation: string, prepare: (version: string) => (options: RequestOptions) => Promise<unknown>) {
     if (!auth.user || auth.user.locked) return false
-    const g = generation, token = getToken()
+    const g = generation, token = getToken(), version = ready.value ? board.value.version : undefined
     error.value = ''; readSequence++
     const result = await submission.run({ operation: 'shelf.' + operation, resource: 'workspace.shelf.board', protocol: 'LOCAL' }, async () => {
       if (!ready.value && !await load()) return
-      return prepare()
+      return prepare(version ?? board.value.version)
     })
     if (!current(g, token)) return false
     // Even a normal response is reread: the common completion receipt is not a Board.
@@ -58,10 +58,10 @@ export const useShelf = defineStore('personal-shelf', () => {
   }
   async function show() { open.value = true; await load() }
   function add(menuId: string, alias = '') { return change('bookmark-add', () => options => post('/workspace/shelf/bookmarks', { menuId, alias }, options)) }
-  function rename(id: string, alias: string) { return change('bookmark-edit', () => { const version = board.value.version; return options => put('/workspace/shelf/bookmarks/' + id, { version, alias }, options) }) }
-  function removeBookmark(id: string) { return change('bookmark-remove', () => { const version = board.value.version; return options => remove('/workspace/shelf/bookmarks/' + id, { ...options, params: { version } }) }) }
-  function reorder(ids: string[]) { const snapshot = [...ids]; return change('bookmark-order', () => { const version = board.value.version; return options => put('/workspace/shelf/bookmarks/order', { version, ids: snapshot }, options) }) }
-  function mode(value: ShelfBoard['mode']) { return change('mode', () => { const version = board.value.version; return options => put('/workspace/shelf/mode', { version, mode: value }, options) }) }
+  function rename(id: string, alias: string) { return change('bookmark-edit', version => options => put('/workspace/shelf/bookmarks/' + id, { version, alias }, options)) }
+  function removeBookmark(id: string) { return change('bookmark-remove', version => options => remove('/workspace/shelf/bookmarks/' + id, { ...options, params: { version } })) }
+  function reorder(ids: string[]) { const snapshot = [...ids]; return change('bookmark-order', version => options => put('/workspace/shelf/bookmarks/order', { version, ids: snapshot }, options)) }
+  function mode(value: ShelfBoard['mode']) { return change('mode', version => options => put('/workspace/shelf/mode', { version, mode: value }, options)) }
   function target(path: string) { return board.value.targets.find(t => t.path === path.split(/[?#]/)[0] && safeLocalPath(t.path)) }
   function label(item: Bookmark) { return item.alias || targetLabel(item.target) }
   function targetLabel(item: ShelfTarget | null) { return !item ? i18n.global.t('common.shelf.unavailable') : item.id === '0' ? i18n.global.t('common.home') : item.title }

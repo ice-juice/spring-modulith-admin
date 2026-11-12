@@ -190,7 +190,9 @@ sma:
 
 相同工作键和不同输入字节拒绝；SUCCEEDED 重放已有结果，不重新执行；RUNNING/UNKNOWN 不自动重跑。异常或外部效果不确定时保留引用及原向量，不能“重新点击”切换到新版本重做。新增 `/api/extension/work/{id}/reconcile` 及新版“运行与工作”查询界面：必须具有 `extension:work:reconcile`，仍要求工作归属和入口权限。稳定业务模块实现 `ExtensionWorkReconciler`，按原工作ID、输入hash、claim和版本核验权威业务记录。返回终态前必须以业务事务/fencing保证迟到执行不能再产生效果；返回 PENDING 不改变账本。只允许收敛到 SUCCEEDED 或 CANCELLED，未注册适配器直接拒绝，没有由请求指定结果、任意重试或强清引用的入口。该机制不承诺 exactly-once，业务适配器的隔离/幂等实现仍需实测。
 
-内部 EVENT/TASK 通过稳定宿主实现 `ExtensionJobPolicy`，由可信租户上下文调用 `invokeJob`；拒绝附带人类 HTTP 会话的伪造后台调用。通用事件消费者/调度产品仍需接入具体稳定业务适配器。
+内部 EVENT/TASK 通过稳定宿主实现 `ExtensionJobPolicy`，由无HTTP/认证身份/外层事务的可信host传入已持久任务的租户归属调用 `invokeJob`。宿主在 `resolve` 前检查部署准入，再为策略恢复可信租户；不要先切成SYSTEM_JOB身份调用，不得从客户端直接接受tenantId。拒绝准入不解析对象、不领取工作；在途同步执行和结果提交完成后归还许可，原UNKNOWN不自动重跑。通用事件消费者/调度产品仍需接入具体稳定业务适配器。
+
+P08 c2b7是当前开发期SNAPSHOT的后台入口准入收紧，Java API、SDK、工作表和签名格式不变。旧适配器若在HTTP、已认证job或外层事务内调用，需要由业务接入维护者调整：按原业务协议先持久保存执行意图，提交后由稳定host worker使用原对象ID/workKey调用；不能只清空身份或把持久任务改成易丢失的内存异步。当前回归覆盖原journal的版本固定/单次claim/UNKNOWN和默认宿主，未验证外部旧业务制品的完整升级矩阵；该组合应在接入方放量前验收，不宣称已有长期兼容窗口。回退旧宿主会失去本轮准入保障，不能继续当作受控排空节点使用；停止新接流并核对原在途/UNKNOWN后，才可切换到已验证的部署组合，不清空引用或改键重做。生命周期与验收边界见[插件规则](../agent-rules/extension-hot-reload.md#运行验收边界)。
 
 OpenAPI 新入口 `POST /open/extensions/{deployment}/{plugin}/{entry}` 沿用现有 OpenAPI token/签名/nonce 验证链，正文上限 64 KiB；可带 `Idempotency-Key` 使用持久工作。业务模块必须提供 `ExtensionApplicationPolicy`，依据服务端已认证的 appId、tenant、portal 返回该插件的权限集合；没有策略/无权限则拒绝，不能用人类角色给机器提权。回复 `data` 包含 workId（字符串）、state、releaseRevision（字符串）、bundleId、json（Base64 JSON字节）、failure；无状态 workId/修订信息为空。有状态回复固定原向量。新公开契约位于 common::extension，SDK v1 和原人类调用语义不变，宿主/OpenAPI需同批升级。
 

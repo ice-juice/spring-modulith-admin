@@ -29,10 +29,15 @@ class LocalizedErrors implements ErrorResponseWriter {
 
 	private final JsonMapper json;
 
-	LocalizedErrors(MessageSource messages, LocaleContextResolver localeResolver, JsonMapper json) {
+    private final com.sma.admin.common.internal.security.RequestRejectionSignals signals;
+
+    @org.springframework.beans.factory.annotation.Autowired
+	LocalizedErrors(MessageSource messages, LocaleContextResolver localeResolver, JsonMapper json,
+            com.sma.admin.common.internal.security.RequestRejectionSignals signals) {
 		this.messages = messages;
 		this.localeResolver = localeResolver;
 		this.json = json;
+        this.signals=signals;
 	}
 
 	String message(ErrorCode code, Object[] args, Locale locale) {
@@ -40,8 +45,13 @@ class LocalizedErrors implements ErrorResponseWriter {
 	}
 
 	<T> ApiResponse<T> body(ErrorCode code, Object[] args, Locale locale, T data) {
+        return body(code,args,locale,data,200);
+    }
+    <T> ApiResponse<T> body(ErrorCode code,Object[] args,Locale locale,T data,int responseStatus){
+        signals.response(code,responseStatus);
 		return ApiResponse.fail(code.status(), code.key(), message(code, args, locale), data);
 	}
+    void unmapped(boolean noHandler){signals.unmapped(noHandler);}
 
 	@Override
 	public void write(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode) throws IOException {
@@ -49,7 +59,12 @@ class LocalizedErrors implements ErrorResponseWriter {
 		response.setStatus(errorCode.status());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding("UTF-8");
-		json.writeValue(response.getOutputStream(), body(errorCode, new Object[0], locale, null));
+		json.writeValue(response.getOutputStream(), body(errorCode, new Object[0], locale, null,errorCode.status()));
 	}
+
+    @Override public void writeObserved(HttpServletRequest request,HttpServletResponse response,ErrorCode code,
+            com.sma.admin.common.security.SecuritySignal.Fact fact)throws IOException{
+        signals.observed(fact,code.status());write(request,response,code);
+    }
 
 }

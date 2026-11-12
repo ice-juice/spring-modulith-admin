@@ -12,7 +12,7 @@ import com.sma.admin.audit.internal.persistence.*;
 public class LoginLogListener {
  private final LoginHistoryMapper mapper;private final IpLocationService locations;
  public LoginLogListener(LoginHistoryMapper mapper,IpLocationService locations){this.mapper=mapper;this.locations=locations;}
- @ApplicationModuleListener
+ @org.springframework.scheduling.annotation.Async("deploymentEventExecutor") @ApplicationModuleListener
  public void on(LoginEvent event){
   TenantScope.within(event.tenantId(),()->{
    var location=locations.locate(event.ip());var device=UserAgentParser.parse(event.userAgent());

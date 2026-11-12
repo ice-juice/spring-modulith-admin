@@ -123,13 +123,33 @@ class ReleaseWorkflowTests {
         execute(ActionIntent.Action.GROUP_CREATE,0,0,List.of(),new GroupInput("General",true));
         execute(ActionIntent.Action.PLUGIN_CREATE,1,0,List.of(),new PluginInput("Example"));
     }
+    @Test void uploadLookupIsReadOnlyAndRejectsAnotherSessionEvenForTheSameAdministrator() throws Exception {
+        byte[] bytes="original bytes".getBytes(StandardCharsets.UTF_8);
+        var receipt=execute(ActionIntent.Action.UPLOAD,1,1,List.of(new ActionIntent.FileIntent("sample.jar",Hashes.sha256(bytes),bytes.length)),Map.of());
+        var before=catalog.uploadStatus(session,receipt.resourceId());
+        assertThat(catalog.uploadStatus(session,receipt.resourceId())).isEqualTo(before);
+        clock.advance(30);String another=identities.login("operator",LOGIN,otp(),"127.0.0.1").token();
+        assertThatThrownBy(()->catalog.uploadStatus(another,receipt.resourceId())).hasMessage("forbidden");
+        clock.advance(901);
+        var expired=catalog.uploadStatus(session,receipt.resourceId());
+        assertThat(expired.state()).isEqualTo("RECEIVING");assertThat(expired.resumable()).isFalse();
+        assertThat(expired.artifactIds()).isEmpty();
+    }
     @Test void singleUserUploadValidationPrepareAndActivationRunRealJar() throws Exception {
         byte[] jar=jar();String hash=Hashes.sha256(jar);
         var receipt=execute(ActionIntent.Action.UPLOAD,1,1,List.of(new ActionIntent.FileIntent("example.jar",hash,jar.length)),Map.of());
         String upload=receipt.resourceId();catalog.uploadChunk(session,upload,0,0,jar);
+        var pendingUpload=catalog.uploadStatus(session,upload);
+        assertThat(pendingUpload.state()).isEqualTo("RECEIVING");assertThat(pendingUpload.resumable()).isTrue();
+        assertThat(pendingUpload.files()).containsExactly(new ActionIntent.FileIntent("example.jar",hash,jar.length));
+        assertThat(pendingUpload.artifactIds()).isEmpty();
         byte[] changed=jar.clone();changed[0]^=1;
         assertThatThrownBy(() -> catalog.uploadChunk(session,upload,0,0,changed)).hasMessage("chunk-content-conflict");
         var artifact=catalog.completeUpload(session,upload).getFirst();
+        var completed=catalog.uploadStatus(session,upload);
+        assertThat(completed.state()).isEqualTo("COMPLETE");assertThat(completed.resumable()).isFalse();
+        assertThat(completed.artifactIds()).containsExactly(artifact.id());
+        assertThat(new String(ProtocolJson.write(completed),StandardCharsets.UTF_8)).doesNotContain("sessionId","actor",session);
         assertThat(catalog.completeUpload(session,upload)).hasSize(1);
         execute(ActionIntent.Action.VALIDATE,1,1,List.of(),artifact.id());
         assertThatThrownBy(() -> validation.claim(NODE,"production")).hasMessage("unauthenticated");

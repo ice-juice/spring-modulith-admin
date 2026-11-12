@@ -54,7 +54,7 @@ class SharedConfigurationHttpTests {
     }
 
     @Test void draftAndPublicationUseLocalOwnedReceiptsAndReplayNeverPublishesTwice() throws Exception {
-        var operator = actor(991, 1, PERMISSIONS); var before = detail("config.s5.draft");
+        var operator = actor(991, 1, PERMISSIONS); var before = detail("config.s5.http");
         String path = "/api/config/shared-configurations/" + before.id();
         String draft = json.writeValueAsString(Map.of("expectedVersion", Long.toString(before.draftVersion()), "content", Map.of("schemaVersion", 1, "label", Map.of("text", "HTTP label"), "value", "HTTP draft")));
         assertThat(send(put(path + "/parameter-draft").content(draft), operator).getStatus()).isEqualTo(400);

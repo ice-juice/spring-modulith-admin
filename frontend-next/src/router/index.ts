@@ -26,6 +26,7 @@ const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL
     { path: 'preferences', component: () => import('@/features/config/PreferencesPage.vue'), meta: { module: 'config', titleKey: 'common.preferences' } },
     { path: 'config/dictionaries', component: () => import('@/features/config/DictionaryPage.vue'), meta: { contentLayout: 'table', module: 'config', titleKey: 'config.dictionary', permission: 'config:dictionary:view' } },
     { path: 'config/parameters', component: () => import('@/features/config/ParametersPage.vue'), meta: { contentLayout: 'table', module: 'config', titleKey: 'config.parameters', permission: 'config:parameter:view' } },
+    { path: 'config/shared', component: () => import('@/features/config/SharedConfigPage.vue'), meta: { contentLayout: 'table', module: 'config', titleKey: 'config.shared.title', permission: 'config:shared:view' } },
     { path: 'auth/sessions', component: () => import('@/features/auth/SessionsPage.vue'), meta: { contentLayout: 'table', module: 'auth', titleKey: 'auth.sessions', permission: 'auth:session:view' } },
     { path: 'audit/logins', component: () => import('@/features/audit/LogsPage.vue'), meta: { contentLayout: 'table', module: 'audit', titleKey: 'audit.logins', permission: 'audit:login:view', logKind: 'logins' } },
     { path: 'audit/operations', component: () => import('@/features/audit/LogsPage.vue'), meta: { contentLayout: 'table', module: 'audit', titleKey: 'audit.operations', permission: 'audit:operation:view', logKind: 'operations' } },

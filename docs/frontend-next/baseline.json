@@ -28,12 +28,8 @@
       "sha256": "18f348793779fb1ddc521b11dbc1c5221cad0fbb05f048668d76e3425ceffdac"
     },
     {
-      "path": "frontend/.vscode/settings.json",
-      "sha256": "113835cbf7b00922892fc33299f5ede47d66310bc1b2c371f600b8c7d7209075"
-    },
-    {
       "path": "frontend/AGENTS.md",
-      "sha256": "13b8652b04e73a655f3dbd339865682b3b7ca36c876e69f3d72ba657c1f85ebb"
+      "sha256": "8178b3991088de67a0237c95f7964a585dee8a2cea03deda98d9c1d4a995ddbc"
     },
     {
       "path": "frontend/README.md",
@@ -221,11 +217,11 @@
     },
     {
       "path": "frontend/src/locales/en-US/audit.json",
-      "sha256": "b21a033c4fdfbf4390d5e4e47da1b1bb0524e5642851154d60efa6a6d101a68b"
+      "sha256": "5ef1186689bb8437bd6c33032d96ae3a07211aa49f19c326b2419590ac87aa94"
     },
     {
       "path": "frontend/src/locales/en-US/auth.json",
-      "sha256": "d29d821f9ca9cc8f5d6454b404f75876b048c1ecee8af44bc286c36919b7f078"
+      "sha256": "0b21d430dff6fd4c91b786f1b949bc13edc860a7512809e53c9caba773ade278"
     },
     {
       "path": "frontend/src/locales/en-US/common.json",
@@ -233,7 +229,7 @@
     },
     {
       "path": "frontend/src/locales/en-US/config.json",
-      "sha256": "0c376bc0f4fe149061d4954ee710c46d910775611e711f7335df8211ea4f7992"
+      "sha256": "ad6700e21ff2b318915c82e0b32a022e857b93f438b24d4726c90d3d9352dcda"
     },
     {
       "path": "frontend/src/locales/en-US/file.json",
@@ -241,7 +237,7 @@
     },
     {
       "path": "frontend/src/locales/en-US/iam.json",
-      "sha256": "4d412d190863f4763f62bbe47e96d63978eff31fe1703ec7be1552188b1863ad"
+      "sha256": "c5b215aa11e97389fa994a8b4d7a96fc2b06e37a79320f2f868eed5cd1edb052"
     },
     {
       "path": "frontend/src/locales/en-US/message.json",
@@ -265,11 +261,11 @@
     },
     {
       "path": "frontend/src/locales/zh-CN/audit.json",
-      "sha256": "645f1c40921f8354e63dcc733ee51d80716fe4d470380a7d70efab7bb719eba8"
+      "sha256": "4b6aa2d5b69882e9a214b429f720a11655b35e3b22816ff7715906bcc59dfe25"
     },
     {
       "path": "frontend/src/locales/zh-CN/auth.json",
-      "sha256": "fcd859dc4637223cd93ba258777813026c61f4ffc99dd5db1092923475cd2c02"
+      "sha256": "b9abdcbed34c7ab6e023b2f7ac85c6ffec25ba4496e6d7be3e7dd3f7f598c6bf"
     },
     {
       "path": "frontend/src/locales/zh-CN/common.json",
@@ -277,7 +273,7 @@
     },
     {
       "path": "frontend/src/locales/zh-CN/config.json",
-      "sha256": "9af627ba6ca8b3083ed6cf7c1c7e3ab8221e85b7842a82648f2502421790d8ef"
+      "sha256": "7b750fe272ac687a2678edf41ab19b00a799f0fd14fb08e0f45ba65da6019afa"
     },
     {
       "path": "frontend/src/locales/zh-CN/file.json",
@@ -285,7 +281,7 @@
     },
     {
       "path": "frontend/src/locales/zh-CN/iam.json",
-      "sha256": "1dfec4574a98a838970901ed75a1874f3e1d3c2e8df039e00bb9878fe918ca1a"
+      "sha256": "8fa922592560b3f86b7cca16703aa2d299dba10d88566633a57282df141f65bd"
     },
     {
       "path": "frontend/src/locales/zh-CN/message.json",
@@ -365,7 +361,7 @@
     },
     {
       "path": "frontend/src/views/LoginView.vue",
-      "sha256": "83aaa492759794fd37a148d0bfe6396de4ef415f3a5c60d8d4ca2138880931f0"
+      "sha256": "04b761900e13baf67a858332d47024ab8ef89550ddd0c52f1f20ffa9cd90a7c8"
     },
     {
       "path": "frontend/src/views/StatusView.vue",
@@ -405,11 +401,11 @@
     },
     {
       "path": "frontend/src/views/config/DictionaryView.vue",
-      "sha256": "33e06f2ec72aa8c063cb9d36324ac986f14952e2eb88636808a31f74e816d227"
+      "sha256": "dd35c469651a20186c87454dcbe3d8b4501aa590f6d0b8c23f05f5926162640f"
     },
     {
       "path": "frontend/src/views/config/ParametersView.vue",
-      "sha256": "3276d62e1d0052a3a41da0b8f12ae72af5ac6620a449bd386ffdf19a4ef26207"
+      "sha256": "efa99d6e63f27534b593be1a179c5cd994ec22fceacd34547134d49a60fb1295"
     },
     {
       "path": "frontend/src/views/config/PreferencesView.vue",
@@ -468,22 +464,6 @@
       "sha256": "e03ec1bd39c76cf893c4960437b5304a3dbe261801cf1fd16e6514584a013b8b"
     },
     {
-      "path": "frontend/target/browser-audit-build.log",
-      "sha256": "c5369fb86f53ebd309603cd324d4624002bc34a37cee51f1f5766beec8c5ea8c"
-    },
-    {
-      "path": "frontend/target/ui-390-check.html",
-      "sha256": "83b1bffe789b74a139774d80d6512ba0cb96245ddcffe448d9be60c62621f3d4"
-    },
-    {
-      "path": "frontend/target/ui-route-check.html",
-      "sha256": "f4ca810f872bf34e351b4c7d6bb1e5494d27b8b2d434e03b3b4fda8afce56421"
-    },
-    {
-      "path": "frontend/target/ui-viewport-check.html",
-      "sha256": "557cb56475bcd92ffe9f1b389519249ac8e142c30282996d26c34e16da07a7f9"
-    },
-    {
       "path": "frontend/tsconfig.app.json",
       "sha256": "92496d0db20bb707be8b697a9dc316c7ded1011f8a9998a472c89f3e612822f2"
     },
@@ -496,12 +476,8 @@
       "sha256": "f3d48b85104c3b01aa68ee8758762eb6e90cb09677251f6b7b4b53360e37bde1"
     },
     {
-      "path": "frontend/verify-frontend.log",
-      "sha256": "4217e27dc91744f94122e6d382502d25c7c57a03590d74d3e21a68df2de51617"
-    },
-    {
       "path": "frontend/vite.config.ts",
-      "sha256": "c35ac776233280466a1348eb7d369a6d2aed58985f62046093c862914ac259cf"
+      "sha256": "90a2c2e7e3f702fc9280ea2f5d775cb81e5efe7d25664d1b018e53fa7c0275ea"
     },
     {
       "path": "frontend/vitest.config.ts",
@@ -513,7 +489,7 @@
     },
     {
       "path": "frontend/src/views/auth/TotpView.vue",
-      "sha256": "346178a5028e1e85690eca854c95610da5cdc459e2c3c4a02e9d1a128a4a41c4"
+      "sha256": "0dc48bee3609c01596bde00c042b01cf00d69c03f1175bc5f72b453be036249b"
     }
   ]
 }

@@ -13,7 +13,7 @@ public class UserSessionListener {
     private final org.springframework.context.ApplicationEventPublisher events;
     private final SecurityMaintenance security;
     public UserSessionListener(SessionMapper mapper,org.springframework.context.ApplicationEventPublisher events,SecurityMaintenance security) { this.mapper = mapper;this.events=events;this.security=security; }
-    @ApplicationModuleListener
+    @org.springframework.scheduling.annotation.Async("deploymentEventExecutor") @ApplicationModuleListener
     public void on(UserChangedEvent event) {
         if (event.action().equals("create")) return;
         TenantScope.within(event.tenantId(), () -> {

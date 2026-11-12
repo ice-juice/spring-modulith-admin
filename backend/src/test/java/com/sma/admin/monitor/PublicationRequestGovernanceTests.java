@@ -31,7 +31,7 @@ public class PublicationRequestGovernanceTests {
         private final Map<UUID,AtomicInteger> calls=new ConcurrentHashMap<>();
         public void allowSuccess(){fail.set(false);}
         public int attempts(UUID id){var value=calls.get(id);return value==null?0:value.get();}
-        @ApplicationModuleListener public void handle(ProbeEvent event) {
+        @org.springframework.scheduling.annotation.Async("deploymentEventExecutor") @ApplicationModuleListener public void handle(ProbeEvent event) {
             calls.computeIfAbsent(event.id(),id->new AtomicInteger()).incrementAndGet();
             if(fail.get())throw new IllegalStateException("Intentional retry fixture");
         }

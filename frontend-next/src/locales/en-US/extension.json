@@ -26,6 +26,8 @@
   "reconcile": "Check original action",
   "resumeHint": "Upload is incomplete. Resume with the same upload identifier and exact chunks.",
   "resume": "Resume upload",
+  "originalFiles": "Select the original files again",
+  "uploadNeedsOriginal": "The upload must still be resumable. Select the original files with identical names, sizes and contents.",
   "uploadProgress": "Uploaded {progress}%",
   "sections": "Extension management",
   "group": "JAR group",

@@ -46,8 +46,14 @@ class CacheWarmupExecutionTests {
     @Autowired PermissionService permissions;
     @Autowired MonitorPermissionCatalog monitorCatalog;
     @Autowired ConfigPermissionCatalog configCatalog;
+    @Autowired ConfigurationCatalogRegistry definitions;
     @Autowired MockMvcTester mvc;
     record Fixture(SmaPrincipal actor,long roleId) {}
+    /** P10 registered dictionaries are warmed even when a tenant has no legacy row (two locales each). */
+    long shared(){return definitions.entries().stream().filter(entry->entry.kind()==ConfigurationCatalogRegistry.Kind.DICTIONARY).count()*2;}
+    void finish(SmaPrincipal actor,String id){
+        for(int i=0;i<20&&Users.as(actor,()->tasks.get(id).state())==CacheTasks.State.RUNNING;i++){expire(actor,id);assertThat(run(actor,claim(actor))).isTrue();}
+    }
     long tenantBase(){return 97800;}
 
     @Test void fourPagesReallyFillBothLocalesAndDoNotExhaustTheCrashRetryBudget(){
@@ -58,11 +64,11 @@ class CacheWarmupExecutionTests {
             assertThat(view.items().getFirst().warmup().checkpointedReads()).isEqualTo(16);
             assertThat(row(id).getLeaseUntil()).isAfter(rows.now());assertThat(item(id).getAttempts()).isZero();return null;
         });
-        for(int i=0;i<3;i++){expire(actor,id);assertThat(run(actor,claim(actor))).isTrue();}
+        finish(actor,id);
         Users.as(actor,()->{
             var view=tasks.get(id);assertThat(view.state()).isEqualTo(CacheTasks.State.SUCCEEDED);var progress=view.items().getFirst().warmup();
-            assertThat(progress.checkpointedReads()).isEqualTo(52);assertThat(progress.processId()).isEqualTo(identity.processId());
-            assertThat(cache.snapshot(REGION).size()).isEqualTo(52);
+            assertThat(progress.checkpointedReads()).isEqualTo(52+shared());assertThat(progress.processId()).isEqualTo(identity.processId());
+            assertThat(cache.snapshot(REGION).size()).isEqualTo(52+shared());
             assertThat(cache.get(REGION,"6:type_0:zh-CN",DictionaryService.OptionSnapshot.class,()->{throw new AssertionError("not warmed");})).isNotNull();
             assertThat(cache.get(REGION,"6:type_0:en-US",DictionaryService.OptionSnapshot.class,()->{throw new AssertionError("not warmed");})).isNotNull();
             assertThat(confirmations.task(id).coverage()).isEqualTo("NOT_APPLICABLE_PREWARM");return null;
@@ -74,8 +80,8 @@ class CacheWarmupExecutionTests {
         doAnswer(call->{assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();call.callRealMethod();if(failOnce.getAndSet(false))throw new IllegalStateException("lost read response");return null;}).when(loader).load(anyString());
         var lease=claim(actor);assertThatThrownBy(()->run(actor,lease)).isInstanceOf(IllegalStateException.class);
         Users.as(actor,()->{assertThat(tasks.get(id).items().getFirst().warmup().checkpointedReads()).isZero();return null;});
-        expire(actor,id);var replacement=claim(actor);assertThat(run(actor,lease)).isFalse();assertThat(run(actor,replacement)).isTrue();
-        Users.as(actor,()->{assertThat(tasks.get(id).state()).isEqualTo(CacheTasks.State.SUCCEEDED);assertThat(tasks.get(id).items().getFirst().warmup().checkpointedReads()).isEqualTo(2);return null;});
+        expire(actor,id);var replacement=claim(actor);assertThat(run(actor,lease)).isFalse();assertThat(run(actor,replacement)).isTrue();finish(actor,id);
+        Users.as(actor,()->{assertThat(tasks.get(id).state()).isEqualTo(CacheTasks.State.SUCCEEDED);assertThat(tasks.get(id).items().getFirst().warmup().checkpointedReads()).isEqualTo(2+shared());return null;});
     }
     @Test void cancellationDuringLoadingStopsBeforeTheNextKey(){
         var actor=fixture(3,2).actor();String id=submit(actor);var cancelOnce=new AtomicBoolean(true);

@@ -2,6 +2,66 @@ import { expect, test } from '@playwright/test'
 import { fullApi } from './full-api'
 import AxeBuilder from '@axe-core/playwright'
 
+for (const lost of ['chunk', 'completion'] as const) test(`plugin upload recovers a lost ${lost} response with the original task after reload`, async ({ page }) => {
+  const fixture = await fullApi(page); fixture.me.permissions.push('extension:console:view')
+  let commands = 0, grants = 0, chunks = 0, completes = 0, key = '', complete = false, fail = true
+  let intents: unknown[] = []
+  await page.route('**/api/extension/consoles/requests', route => {
+    const request = route.request(), path = request.headers()['x-release-path']!
+    const ok = (data: unknown) => route.fulfill({ json: { code: 0, data } })
+    if (path === '/console/access') return ok({ userId: 'operator', securityAdmin: true, scopes: [], environments: ['production'] })
+    if (path === '/console/identity') return ok({ enrolled: true })
+    if (path === '/groups') return ok([{ id: 'general', name: 'General', revision: 1, enabled: true }])
+    if (path === '/groups/general/plugins') return ok([{ id: 'echo', groupId: 'general', name: 'Echo', revision: 1 }])
+    if (path === '/policy') return ok({ revision: 1, jarBytes: 100, batchBytes: 150, batchFiles: 2, sourceBytes: 30, sourceBatchBytes: 40 })
+    if (path.startsWith('/console/artifacts?')) return ok({ items: [], total: 0 })
+    if (path === '/challenges') { intents = request.postDataJSON().files; return ok({ id: 'challenge-upload', expiresAt: '2030-01-01T00:00:00Z' }) }
+    if (path === '/authorizations') { grants++; return ok({ token: 'private-grant' }) }
+    const receipt = { id: 'receipt-original', resourceId: 'upload-original', state: 'ACCEPTED', createdAt: '2026-11-12T00:00:00Z' }
+    if (path === '/commands') { commands++; key = request.postDataJSON().idempotencyKey; return ok(receipt) }
+    if (path.startsWith('/console/actions/')) { expect(path).toBe('/console/actions/' + key); return ok(receipt) }
+    if (path === '/uploads/upload-original') return ok({ id: 'upload-original', state: complete ? 'COMPLETE' : 'RECEIVING', expiresAt: '2030-01-01T00:00:00Z', resumable: !complete, files: intents, artifactIds: complete ? ['artifact-original'] : [] })
+    if (path === '/uploads/upload-original/files/0/chunks/0') {
+      chunks++; expect(request.postDataBuffer()?.toString()).toBe('original')
+      if (lost === 'chunk' && fail) return route.fulfill({ status: 503, json: { code: 503 } })
+      return ok({})
+    }
+    if (path === '/uploads/upload-original/complete') {
+      completes++; complete = true
+      if (lost === 'completion' && fail) return route.fulfill({ status: 503, json: { code: 503 } })
+      return ok([])
+    }
+    throw new Error('Unexpected request ' + path)
+  })
+  await page.addInitScript(() => localStorage.setItem('sma.access-token', 'host-fixture-token'))
+  await page.goto('/extension/manage'); await page.getByRole('button', { name: '上传制品', exact: true }).click()
+  await page.locator('#release-files').setInputFiles({ name: 'echo.jar', mimeType: 'application/java-archive', buffer: Buffer.from('original') })
+  await page.getByRole('button', { name: '核对并验证', exact: true }).click()
+  await page.getByLabel('操作密码', { exact: true }).fill('private-operation')
+  await page.getByLabel('二步验证码', { exact: true }).fill('123456')
+  await page.getByRole('button', { name: '验证并执行', exact: true }).click()
+  await expect(page.getByRole('button', { name: '查询原动作', exact: true })).toBeVisible()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  const saved = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('sma.operation.v1.')).map(key => localStorage.getItem(key)).join(''))
+  expect(saved).toContain(key); expect(saved).not.toMatch(/private-operation|private-grant|123456|echo.jar/)
+  await page.reload(); await expect(page.getByText(key, { exact: true })).toBeVisible()
+  expect(chunks).toBe(1); expect(commands).toBe(1); expect(grants).toBe(1)
+  await page.getByRole('button', { name: '查询原动作', exact: true }).click()
+  if (lost === 'chunk') {
+    await page.getByLabel('重新选择原文件', { exact: true }).setInputFiles({ name: 'echo.jar', mimeType: 'application/java-archive', buffer: Buffer.from('modified') })
+    await page.getByRole('button', { name: '继续原上传', exact: true }).click()
+    await expect(page.getByRole('button', { name: '继续原上传', exact: true })).toHaveCount(0)
+    expect(chunks).toBe(1); expect(completes).toBe(0)
+    await page.getByRole('button', { name: '查询原动作', exact: true }).click()
+    await page.getByLabel('重新选择原文件', { exact: true }).setInputFiles({ name: 'echo.jar', mimeType: 'application/java-archive', buffer: Buffer.from('original') })
+    fail = false
+    await page.getByRole('button', { name: '继续原上传', exact: true }).evaluate(button => { for (let i = 0; i < 20; i++) (button as HTMLButtonElement).click() })
+  }
+  await expect(page.getByRole('button', { name: '查询原动作', exact: true })).toHaveCount(0)
+  await expect(page.getByText('receipt-original', { exact: true })).toBeVisible()
+  expect(commands).toBe(1); expect(grants).toBe(1); expect(completes).toBe(1); expect(chunks).toBe(lost === 'chunk' ? 2 : 1)
+})
+
 test('an unknown console command survives reload and queries its original key without reauthorizing', async ({ page }) => {
   const fixture = await fullApi(page)
   fixture.me.permissions.push('extension:console:view')
@@ -151,7 +211,7 @@ test('release console enters with host login and verifies each sensitive action'
       {id:'extension-console',parentId:'extension-root',name:'扩展管理',type:'MENU',permission:'extension:console:view',path:'/extension/manage',openMode:'ROUTE',children:[]},
     ]},
   ],navigation:[],features:{},locale:'zh-CN',timeZone:'Asia/Shanghai'}}}))
-  let commands=0, uploaded=0, challenge:Record<string,unknown>|undefined
+  let commands=0, uploaded=0, completed=false, challenge:Record<string,unknown>|undefined
   await page.route('**/release/v1/**',()=>{ throw new Error('Browser must not contact the release service directly') })
   await page.route('**/api/extension/consoles/requests',async route=>{
     const request=route.request(),path=request.headers()['x-release-path']!
@@ -167,7 +227,8 @@ test('release console enters with host login and verifies each sensitive action'
     if(path==='/authorizations'){expect(request.postDataJSON().operationPassword).toBe('fixture-operation');return ok({token:'grant-one'})}
     if(path==='/commands'){commands++;const body=request.postDataJSON();expect(body.intent).toEqual(challenge);if(body.intent.action==='GROUP_CREATE')expect(JSON.parse(Buffer.from(body.parameters,'base64').toString('utf8'))).toEqual({name:'新分组',enabled:true});else {expect(body.intent.files).toHaveLength(1);expect(body.intent.files[0].name).toBe('fixture.jar');expect(body.intent.files[0].sha256).toHaveLength(64)}return ok({id:'receipt-'+commands,state:'ACCEPTED',resourceId:body.intent.action==='UPLOAD'?'upload-one':'new-group',createdAt:'2026-11-11T00:00:00Z'})}
     if(path==='/uploads/upload-one/files/0/chunks/0'){uploaded++;expect(request.postDataBuffer()?.toString()).toBe('fixed test bytes');return ok({})}
-    if(path==='/uploads/upload-one/complete')return ok([])
+    if(path==='/uploads/upload-one')return ok({id:'upload-one',state:completed?'COMPLETE':'RECEIVING',expiresAt:'2030-01-01T00:00:00Z',resumable:!completed,files:challenge?.files,artifactIds:completed?['artifact-uploaded']:[]})
+    if(path==='/uploads/upload-one/complete'){completed=true;return ok([])}
     throw new Error('Unhandled release endpoint '+path)
   })
   await page.addInitScript(()=>localStorage.setItem('sma.access-token','host-fixture-token'))

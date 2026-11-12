@@ -11,15 +11,27 @@
 - 双前端只消费typed entry，portal取已验证响应，不取URL。入口失败清除旧品牌并禁用登录/验证码；按请求代次丢弃旧响应，范围变更使旧身份失效。同身份语言/主题切换不清空登录表单。开发代理保留Host/Origin，不能默认改写为localhost。验证branding单测、playwright.tenant.config.ts及隔离e2e-real/tenant-entry.spec.ts；mock/代理探针与真实后端联调分开记录。
 - BrandContent为schemaVersion明确的类型化数据，login1/2/3不是任意组件路径。BrandDraftService限定可信tenant/portal且校验权限/expectedVersion，保存不得修改publishedRevisionId；禁止从草稿直接输出匿名品牌。验证BrandValidationTests、BrandDraftTests；实际发布/素材/模板页面按后续专项独立验收。
 - 品牌发布与回退必须锁定头版本并固定操作ID/意图/操作者；权限撤销或另一操作者不得重放。历史只插入，回退新建修订；图片快照/引用/指针与发布同库提交。素材只能走file的ImagePublication授权契约，普通附件不开放匿名读取；引用检查用当前读，草稿/历史使用中禁止删除。进程持图事务和解码均有界，事务完成才释放持图预算。验证BrandPublicationTests、BrandHttpTests、BrandWorkBudgetTests、PublicImageEncoderTests及BrandMigrationTests，交付状态查进度。
+- P11 X4公开素材检查适用于tenant唯一品牌实现与file的ImagePublication：PNG/JPEG/GIF仅经固定JDK读写器重编码，不能先让全局SPI探测再检查格式名；可寻址缓存与最终PNG均须有界。匿名投影、原件/管理入口、跨租户/portal/Host注入和引用授权用BrandPublicSecurityTests真实数据库/HTTP验收，不能以模板截图或纯DTO测试替代。静态快照不是P09完整扫描或通用文件READY凭据；GIF首帧公开不声称原动画已完整检查。新增格式先补受审解析/资源/权限测试，不用MIME/后缀绕过。
 - 平台共享定义和租户覆盖分别管理；禁止用 tenant_id=0 或跳过租户插件实现共享。覆盖范围按参数/字典定义声明，不能统一让用户/租户覆盖安全规则。
 - 业务数据源只能由宿主登记/创建。平台/业务 Mapper 和事务资源分别绑定，事务前固定路由，事务内不得切换；独立库仍保留租户/数据范围校验。缺绑定/不可用时拒绝，禁止默认库回退。
+- S6a的`tenant_storage_resource`和`tenant_storage_binding`是已审查的全局平台目录例外，分别只保存物理资源非机密描述/secretRef与ownerTenantId＋storageGroup指针；不得扩展为业务载荷或密码表。Tenant V6仅追加，平台内部登记需部署运维身份且目标命中启动白名单；初始绑定PENDING不能提供业务连接，HTTP动作权限、池与激活分别按S6d/S6b/S7验收。验证StorageDirectoryMysqlTests、PlatformPersistenceIsolationTests、ArchitectureRulesTests和模块边界。
 - 数据库连接上的 DataSourceIdentity 由实际物理池绑定，资源 ID/修订不得来自 HTTP、Mapper 包名或 JDBC URL 推测。routing facade 不能冒充物理资源；旧连接保留旧修订，unknown 独立展示。统计不得额外借连接或读取 SQL/参数/凭据。
 - 连接池/Redis 客户端按物理资源修订复用并设预算；不得逐租户永久创建无限池。单个资源故障不能耗尽宿主全部回源/线程。
-- 跨库操作不假定普通 @Transactional 原子性；Outbox、缓存失效登记和幂等执行权/互斥记录必须与业务写入同资源提交。禁止通过平台库先提交失效或先占执行权后宣称业务事务可靠。平台库只保留目录、跨库对账与运维视图；`common_id_block` 按块预分配不受影响，各模块预算表本就独立提交。详见 [P11 跨专项资源归属](../proposals/P11-cross-stream-resource-ownership.md)。
+- S6b的MySQL池按资源ID＋修订懒建，连接标记、框架账本Mapper和本地事务由Common工厂固定；ACTIVE/v1绑定和可信租户同时满足才可打开，PENDING不得因已存在业务库而绕过。租约在会话关闭后释放，节点/主机/单池预算与旧修订排空必须保留。部署`StorageCredentialResolver`只解析受控secretRef，缺失即拒绝，密码不得进入平台目录或API。验证StoragePoolRegistryTests、StorageLedgerProviderMysqlTests与原DataSourceIdentity/SqlDataSourceTelemetryTests。
+- S6c的静态业务Mapper只经独立业务工厂和BusinessLedger会话运行，executeLocal/query固定实际物理源；会话外、异源事务和嵌套切源拒绝。业务写、框架账本、失效同资源提交，SQL统计取实际物理连接的资源ID/修订。验证BusinessMapperRoutingMysqlTests（三个精确专用库）、平台账本/缓存代次/SQL回归；S7之前PENDING绑定不能借此激活。
+- S6d资源目录HTTP叠加部署平台操作者身份与tenant:storage:view/register/bind显式权限，读响应不回显secretRef，写仅REGISTERED/PENDING；新入口更新受审端点基线。根reactor验证StorageDirectoryHttpTests、StoragePoolRegistryTests、真实三库与架构/模块门禁。不能用HTTP登记或人工改状态代替S7迁移激活任务。
+- S7a/S7b业务库迁移只读取受控目标/部署凭据，物理库命名锁、独立Flyway历史和实际框架表核对通过后，平台短事务才能以原fence/绑定版本将PENDING激活；失败保留NEEDS_REVIEW，同键续跑先核对原意图。S7c-1本节点会话计数/停写不能替代跨节点排空证明；S7c-2前禁止切库。验证StorageMigrationMysqlTests、StorageProvisionMysqlTests、StorageSessionTrackerTests及根架构/模块。
+- S7c-2新会话登记及停写共用绑定行锁，持久会话租约在物理会话成功关闭后删除，失败保留待核对；节点证明绑定清单/进程/epoch，缺成员或替换必须拒绝。备份与两库复制证明仅由部署物理核对SPI提供，READY仍保持DRAINING；版本化切换归S7c-3。验证StorageSwitchMysqlTests、StorageSessionTrackerTests和根架构/模块。
+- S7c-3的最终提交重新核对READY后的物理证明、持久会话为零及当前受控节点身份，切换绑定版本与SWITCHED同平台事务；切后回退必须新建反向迁移任务。V9/V10只追加迁移；双库探针仅验收核对协议，不替代生产全业务复制和备份。验证StorageSwitchMysqlTests及X5真实多进程联合验收。
+- S7d-1业务库Outbox投递使用物理资源内V2持久fence/租约和可信行租户；事务外投递失败或结果未知保留并可原键重投，消费者自行幂等，不能从平台库先确认。宿主轮询只遍历已打开资源，代次汇聚按资源修订/租户失败标stale。验证BusinessOutboxDeliveryMysqlTests和架构/模块。
+- S7d-2平台任务HTTP叠加部署平台操作者身份与显式provision/switch/view权限，NATIVE原生状态回执先查后重试，不生成Common LOCAL完成回执；缺物理凭据/复制证明时保留待核对状态。验证StorageDirectoryHttpTests、SecurityEndpointInventoryTests和架构/模块。
+- 跨库操作不假定普通 @Transactional 原子性；Outbox、缓存失效登记和幂等执行权/互斥记录必须与业务写入同资源提交。禁止通过平台库先提交失效或先占执行权后宣称业务事务可靠。平台库只保留目录、跨库对账与运维视图；`common_id_block` 按块预分配不受影响，平台模块预算保留各自工作事务语义，不能把shared预算等同于全部独立提交。详见 [P11 跨专项资源归属](../proposals/P11-cross-stream-resource-ownership.md)。
 - 部署级 Redis 连接工厂归 P08，provider/地址/拓扑/命名空间为重启生效配置；本模块的资源登记只决定业务可重建缓存绑定到哪个已登记物理资源并设预算，不改变区域语义、键布局与失效协议。租户级改绑只对新解析生效，须冷启动或限速预热。PROTECTED 状态不随业务资源迁移。
 - Flyway 只执行该资源归属的迁移，共享物理库只迁移一次。切库走持久迁移任务和停写排空；目标接受新写后禁止仅改配置回退。
 
 验证入口：根 `tools/dev/verify-backend.ps1 -Standard`，阶段至少覆盖 DataSourceIdentityTests、SqlDataSourceTelemetryTests、SqlTelemetryTests、ModularityTests、ArchitectureRulesTests；后续入口/分库/品牌/Redis 专项按进度追加。真实数据库测试必须使用独立 `sma_test_p10_*` 库与输出目录，前端在对应目录执行 verify 和隔离浏览器验收。单一连接/Mock 测试不代表真实双库或集群验收。
+
+P11 X1分库前置适用于宿主业务账本：业务只通过`common :: request`的BusinessLedger在事务前打开绑定租户/业务组的会话，宿主负责BusinessLedgerProvider及BusinessLedgerResourceFactory；缺绑定必须拒绝，禁止平台库兜底。X1a～X1c已验证公开接入、平台回归、独立业务库框架迁移与真实双MySQL同库事务；S6可开工。`db/business-ledger`只迁业务资源，不参加平台默认Flyway；Outbox写入同业务事务，代次汇聚报告过期/故障stale，S6/S7再装资源轮询与派发，不宣称跨库强一致。验证入口为BusinessLedgerBoundaryTests、BusinessLedgerMysqlTests、RequestExecutionTests、CacheRevisionIntegrationTests和模块/架构门禁，真实双库使用专用`sma_test_p11_*`库与独立输出。
 
 S4管理消费：新版入口features/tenant/BrandPage；预览为同源独立frame，只接收受检origin/source和有界视觉消息，不发认证/草稿API或写本地偏好。服务端previews为QUERY、响应no-store、通过ImagePublication重编码且不建引用/修订；草稿LOCAL与发布/回退NATIVE原生operationId保持区别。操作查询只返回原操作者且当前动作权限仍有效的回执；NOT_OBSERVED不是失败证明。发生未知结果时只核对，不生成新键自动重放。
 
@@ -38,3 +50,13 @@ S5c-2原ParameterQuery运行接线中：注册定义按规范key读取，安全�
 S5c-3有效参数HTTP在/api/config/effective-parameters，以key定位可信当前租户的定义；只能查看当前有效层，不能借它读平台草稿/其他租户覆盖。覆盖/恢复继承需config:parameter:update与双版本，LOCAL重放重验原动作权限；value必须显式出现，null与继承分开。旧private接口拒绝已登记键及绑定行。目录最多50条，先筛代码元数据再读正文；新增管理入口不得放开匿名public旧路径。
 
 Config V8已完成旧结构保留数据升级，后续只追加。presentation_overridden只区分显示来源，不能当成值覆盖：旧行名称/翻译保留，新值覆盖不复制显示覆盖；管理呈现读取已发布文案。验证DefinedParameterHttpTests、原参数/共享HTTP、普通SecurityEndpointInventoryTests和ParameterLayerLockMysqlTests（使用已升级到当前版本的专用库）；ParameterPresentationSchemaUpgradeTests只接受保留的V7前置库并只升级一次。完整前端及S5交付仍以进度为准。
+
+S5d配置字典已追加Config V9/V10。平台`config_dictionary_code`只保存精确代码摘要与SHARED/PRIVATE归属，不保存租户、原文、标签或父级；共享发布与私有声明参加调用方事务，共享代码不可被私有项占用，私有代码也不能后续变成共享。租户字典覆盖/私有项在TenantEntity表中保存，平台草稿与租户层隔离；已发布代码可停用、改名或调序，不得删除或改父级。内置定义由静态目录提供，新租户继承，不为每个租户复制行；旧树、翻译、历史ID按可信租户目录迁移。旧非builtin私有项撞上共享代码时即使父级相同也停止迁移。管理写入必须携带平台与租户双版本及LOCAL原键，旧私有字典HTTP拒绝已登记定义。验证DictionaryCodeRegistryTests、DefinedDictionaryTests/StartupTests/HttpTests、原DictionaryTests、CacheWarmupExecutionTests与普通端点策略；V8→V9、V9→V10升级测试各只用保留的前置专用库运行一次。S5双前端与最终交付状态仍查专项进度。
+
+P08部署一致性适配TenantPolicyEvidence只读本模块已绑定的platform/domain-verification/brand-defaults配置；平台部署操作者及品牌具体默认内容必须参与摘要，不能只比revision名字。不访问Tenant表、不授予平台身份、不变更品牌或域名流程；密钥/原配置不作为SPI输出。新增上述record字段同步配置白名单、DeploymentFieldInventoryTests及TenantPolicyEvidenceTests；宿主集合通过P08的DeploymentEvidenceAssemblyTests验证，完整流量资格按P08进度，不把本地摘要当作多实例已开放。
+
+P08多实例同时首次启动时，TenantDirectoryBootstrap必须原子占位并锁定配置的平台租户，再以当前锁定读核对域名；禁止select-then-insert竞争、借旧RR快照重复插入或捕获重复键后默认成功。ON DUPLICATE KEY只能无改值占位，不能覆盖名称/状态/安全代次或恢复软删除；目标ID不存在、代码冲突、域名已有其他归属必须拒绝。仅显式loopback bootstrap可用，生产域名验证不放宽。回归TenantDirectoryBootstrapTests（新专用库/关闭自动bootstrap的唯一集成上下文，其他单元可共跑）、SQL/平台隔离/模块门禁及P08双JVM首次并发启动；不改已发布迁移或增加免租户表。
+
+非默认平台租户首次引导只适用于空平台目录；IAM管理员、权限目录、Config内置种子必须通过common公开的PlatformTenantQuery在启动任务中显式绑定平台租户，不得依赖TenantScope的后台默认ID=1。现有平台库变更ID需单独迁移，不能通过改配置重指向。回归NonDefaultPlatformBootstrapTests时须单独设置SMA_P10_NONDEFAULT_BOOTSTRAP=true并使用精确专用可清空库；普通根reactor不共享此非默认上下文。
+
+P08 M3c2b6的部署摘流接线归P08，租户池/Outbox/切换协议仍归本模块：业务Outbox停止新领取，已开始消费者及池租约完成后释放许可；定时闲置回收需准入，在途会话release/close不受新准入阻断。StorageDrainWorker只确认已有DRAINING任务，为技术协调例外，摘流时仍运行且严格host，不借例外启动业务消费或提交切库。具体强制契约和验证入口统一见[后端规则](../../backend/AGENTS.md)，P08专项真实数据库仅用其新建`sma_test_p08_storage_drain_20261112`/13306；不得清理或复用并行P10/P11库。业务库切换与Outbox一致性的跨节点联合证据仍归X5，不以本地部署准入替代。

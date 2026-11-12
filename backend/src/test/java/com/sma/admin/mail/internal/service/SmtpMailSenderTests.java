@@ -55,7 +55,12 @@ class SmtpMailSenderTests {
     private MailWorkService.Outcome send(Peer peer,String host,String tls,Duration deadline)throws Exception{
         var settings=settings(peer.port(),host,deadline);
         var sender=new SmtpMailSender(settings,new SmtpNetworkPolicy(settings),secrets,new MailWorkProperties(0,0,null));
-        try{return ActorContext.withinJob(951,"smtp-test",()->sender.send(prepared(peer.port(),host,tls)));}finally{sender.close();}
+        var complete=new CountDownLatch(1);
+        try{
+            var outcome=ActorContext.withinJob(951,"smtp-test",()->sender.send(prepared(peer.port(),host,tls),complete::countDown));
+            assertThat(complete.await(3,TimeUnit.SECONDS)).as("actual TLS transport exited").isTrue();
+            return outcome;
+        }finally{sender.close();}
     }
     @Test void implicitTlsAndStartTlsVerifyCertificatesAndDeliverUtf8WithStableId()throws Exception{
         for(boolean implicit:List.of(false,true))try(var peer=new Peer(implicit,"ACCEPT")){
@@ -85,6 +90,7 @@ class SmtpMailSenderTests {
         try(var peer=new Peer(false,"HANG")){
             long start=System.nanoTime();assertThat(send(peer,"localhost","STARTTLS",Duration.ofSeconds(1))).isEqualTo(MailWorkService.Outcome.UNKNOWN);
             assertThat(Duration.ofNanos(System.nanoTime()-start)).isLessThan(Duration.ofSeconds(4));
+            assertThat(peer.disconnected.await(3,TimeUnit.SECONDS)).as("peer observed socket closure").isTrue();
         }
     }
     @Test void untrustedCertificateIsRejectedAndNoCredentialsAreSent()throws Exception{
@@ -99,11 +105,12 @@ class SmtpMailSenderTests {
     private static final class Peer implements AutoCloseable {
         final ServerSocket listener;final ExecutorService executor=Executors.newSingleThreadExecutor();
         final CompletableFuture<String> message=new CompletableFuture<>();final AtomicBoolean authenticated=new AtomicBoolean(),tlsActive=new AtomicBoolean();
+        final CountDownLatch disconnected=new CountDownLatch(1);
         volatile Socket client;final String behavior;final boolean implicit;
         Peer(boolean implicit,String behavior)throws Exception{
             this.behavior=behavior;this.implicit=implicit;
             listener=implicit?trusted.getServerSocketFactory().createServerSocket(0,1,InetAddress.getByName("127.0.0.1")):new ServerSocket(0,1,InetAddress.getByName("127.0.0.1"));
-            executor.submit(()->{try{serve();}catch(Exception expectedDisconnect){/* rejection and cancellation deliberately disconnect */}});
+            executor.submit(()->{try{serve();}catch(Exception expectedDisconnect){/* rejection and cancellation deliberately disconnect */}finally{disconnected.countDown();}});
         }
         int port(){return listener.getLocalPort();}
         void serve()throws Exception{

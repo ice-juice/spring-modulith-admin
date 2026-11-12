@@ -34,6 +34,7 @@ class PluginRuntimeTests {
     private final Map<String,Long> checkpoints=new ConcurrentHashMap<>();
     private final List<InvocationObservation> observations=new java.util.ArrayList<>();
     private boolean telemetryUnavailable;
+    private java.util.concurrent.CountDownLatch capabilityEntered,capabilityRelease;
     private static final InvocationIdentity USER = new InvocationIdentity(1, "42", InvocationIdentity.Kind.USER);
     @BeforeEach void setup() throws Exception {
         signing = KeyPairGenerator.getInstance("Ed25519").generateKeyPair(); clock = new MutableClock();
@@ -43,7 +44,10 @@ class PluginRuntimeTests {
         var trust = Map.of("signing", new DocumentSignatures.TrustedKey(signing.getPublic(), Set.of(SignedClaims.Purpose.ARTIFACT, SignedClaims.Purpose.PREPARE, SignedClaims.Purpose.RELEASE, SignedClaims.Purpose.LEASE, SignedClaims.Purpose.REVOCATIONS), clock.instant().minusSeconds(60), clock.instant().plus(Duration.ofDays(2))));
         return new PluginRuntime("security", "host", "production", "node", clock, ResourcePolicy.defaults(), trust, new RuntimeHost() {
             @Override public void authorize(String plugin, ArtifactManifest.Entry entry, InvocationIdentity identity) { Checks.require(identity.equals(USER), "forbidden"); }
-            @Override public byte[] capability(String p, String v, String invocation, InvocationIdentity identity, String c, byte[] j) { return j; }
+            @Override public byte[] capability(String p, String v, String invocation, InvocationIdentity identity, String c, byte[] j) throws Exception {
+                if(capabilityEntered!=null){capabilityEntered.countDown();if(!capabilityRelease.await(5,java.util.concurrent.TimeUnit.SECONDS))throw new IllegalStateException("Capability not released");}
+                return j;
+            }
             @Override public void metric(String p, String v, String m, long n) {}
             @Override public long durableReferences(String hash) { return durable.getOrDefault(hash, 0L); }
             @Override public void observe(InvocationObservation observation){if(telemetryUnavailable)throw new IllegalStateException("audit unavailable");observations.add(observation);}
@@ -129,6 +133,22 @@ class PluginRuntimeTests {
         runtime.applyRevocations(sign(SignedClaims.Purpose.REVOCATIONS,new RevocationList(Set.of()),900));
         assertThatThrownBy(() -> call(selection)).hasMessage("execution-lease-unavailable");
     }
+    @Test void leaseExpiryDoesNotCancelPinnedExecutionOrAllowAnotherInvocation()throws Exception{
+        var artifact=build("1.0.0","held",true);install(release(1,0,artifact,null,0),List.of(artifact));
+        var selection=runtime.select("demo",USER);
+        capabilityEntered=new java.util.concurrent.CountDownLatch(1);capabilityRelease=new java.util.concurrent.CountDownLatch(1);
+        try(var executor=java.util.concurrent.Executors.newSingleThreadExecutor()){
+            var current=executor.submit(()->call(selection));
+            try{
+                assertThat(capabilityEntered.await(3,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+                assertThat(runtime.statuses().getFirst().inFlight()).isOne();clock.advance(901);
+                assertThatThrownBy(()->call(selection)).hasMessage("execution-lease-unavailable");
+                runtime.reap();assertThat(runtime.statuses().getFirst().inFlight()).isOne();
+            }finally{capabilityRelease.countDown();}
+            assertThat(current.get(3,java.util.concurrent.TimeUnit.SECONDS)).isEqualTo("{}");
+            assertThat(runtime.statuses().getFirst().inFlight()).isZero();runtime.close();assertThat(runtime.statuses()).isEmpty();
+        }finally{capabilityRelease.countDown();}
+    }
     private String call(PluginRuntime.Selection selection) throws Exception {
         return new String(runtime.invoke(selection, "example", "execute", USER, null, "{}".getBytes(StandardCharsets.UTF_8), clock.instant().plusSeconds(30)).json(), StandardCharsets.UTF_8);
     }
@@ -152,11 +172,16 @@ class PluginRuntimeTests {
         return DocumentSignatures.sign(new SignedClaims(1, purpose, "signing", "security", "host", "production", java.util.UUID.randomUUID().toString(), clock.instant(), clock.instant().plusSeconds(seconds), ProtocolJson.write(body)), signing.getPrivate());
     }
     private Built build(String version, String output) throws Exception {
+        return build(version,output,false);
+    }
+    private Built build(String version,String output,boolean capability)throws Exception{
         Path dir = Files.createDirectories(temporary.resolve(version)); Path source = dir.resolve("Example.java");
-        Files.writeString(source, "package example; import com.sma.extension.api.*; public class Example implements BusinessPlugin { public PluginResult execute(PluginCall c) { return new PluginResult(\"\\\""+output+"\\\"\".getBytes(java.nio.charset.StandardCharsets.UTF_8)); } }");
+        Files.writeString(source, capability
+                ? "package example; import com.sma.extension.api.*; public class Example implements BusinessPlugin { private PluginContext context; public void initialize(PluginContext c){context=c;} public PluginResult execute(PluginCall c)throws Exception{return new PluginResult(context.capabilities().invoke(\"fixture.hold\",c.input()));}}"
+                : "package example; import com.sma.extension.api.*; public class Example implements BusinessPlugin { public PluginResult execute(PluginCall c) { return new PluginResult(\"\\\""+output+"\\\"\".getBytes(java.nio.charset.StandardCharsets.UTF_8)); } }");
         String sdk = Path.of(BusinessPlugin.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
         assertThat(ToolProvider.getSystemJavaCompiler().run(null, null, null, "--release", "21", "-proc:none", "-classpath", sdk, "-d", dir.toString(), source.toString())).isZero();
-        var manifest = new ArtifactManifest(1, "example", version, 1, "example.Example", List.of(new ArtifactManifest.Entry("execute", ArtifactManifest.EntryKind.SERVICE, "v1", "extension:invoke:example", Set.of("USER"), false)), List.of(), Set.of(), Set.of());
+        var manifest = new ArtifactManifest(1, "example", version, 1, "example.Example", List.of(new ArtifactManifest.Entry("execute", ArtifactManifest.EntryKind.SERVICE, "v1", "extension:invoke:example", Set.of("USER"), false)), List.of(), capability?Set.of("fixture.hold"):Set.of(), Set.of());
         var bytes = new ByteArrayOutputStream();
         try (var jar = new JarOutputStream(bytes)) {
             jar.putNextEntry(new JarEntry(ArtifactManifest.PATH)); jar.write(ProtocolJson.write(manifest)); jar.closeEntry();

@@ -31,14 +31,33 @@ class IdentifierBindingTests {
     @Autowired FileService files;
     @Autowired JdbcTemplate jdbc;
     @Autowired PlatformTransactionManager transactions;
+    @Autowired @org.springframework.beans.factory.annotation.Qualifier("sqlSessionFactory")
+    org.apache.ibatis.session.SqlSessionFactory platformMappers;
+    @Autowired @org.springframework.beans.factory.annotation.Qualifier("businessSqlSessionFactory")
+    org.apache.ibatis.session.SqlSessionFactory businessMappers;
+    @Autowired com.sma.admin.common.request.BusinessLedgerResourceFactory resources;
+    @Autowired javax.sql.DataSource dataSource;
     private SmaPrincipal actor(long tenant){return new SmaPrincipal(101,"id-owner",tenant,"admin",null,true,DataAccess.unrestricted(),Set.of(),"UTC");}
     @Test void publicAllocationLegacyToolkitAndEntityAssignmentUseTheSameDurableAuthority(){
         assertThat(generator).isInstanceOf(DatabaseIdentifierGenerator.class);
+        for(var factory:List.of(platformMappers,businessMappers))
+            assertThat(com.baomidou.mybatisplus.core.toolkit.GlobalConfigUtils.getGlobalConfig(factory.getConfiguration()).getIdentifierGenerator())
+                    .isSameAs(generator);
         Users.as(actor(98471),()->{
             long publicId=identifiers.nextId(),toolkitId=IdWorker.getId();
             long entityId=roles.save(null,new RoleService.Input(0L,"ID binding","id-binding",0,true,DataScope.ALL,Set.of(),null)).id();
             assertThat(List.of(publicId,toolkitId,entityId)).doesNotHaveDuplicates().allSatisfy(id->assertThat(id).isPositive().isLessThan(blocks.selectById(1L).getNextId()));
             assertThat(roleRows.selectById(entityId)).isNotNull();return null;
+        });
+    }
+    @Test void openingPhysicalBusinessFactoryDoesNotReplaceHostIdAuthority() throws Exception {
+        // Assembly does not run migrations or write to this source. Exercise the real lazy factory path.
+        resources.preparePhysical("identifier-assembly",1,dataSource.unwrap(com.zaxxer.hikari.HikariDataSource.class));
+        long next=IdWorker.getId();
+        assertThat(next).isPositive().isLessThan(blocks.selectById(1L).getNextId());
+        Users.as(actor(98474),()->{
+            long id=roles.save(null,new RoleService.Input(0L,"After physical factory","after-physical",0,true,DataScope.ALL,Set.of(),null)).id();
+            assertThat(id).isLessThan(blocks.selectById(1L).getNextId());return null;
         });
     }
     @Test void rollingBackAnEntityWriteNeverReturnsItsIdentifierToTheAllocator(){

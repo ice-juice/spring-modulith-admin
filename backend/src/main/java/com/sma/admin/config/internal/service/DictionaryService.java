@@ -85,10 +85,10 @@ public class DictionaryService implements DictionaryQuery {
         types.deleteById(id); names.replace("dictionary-type",id,Map.of()); changed(row.getTypeKey());
     }
     @Transactional public void deleteItem(long id) {
-        lock.lock(CurrentUser.tenantId()); var row=requireItem(id);
+        lock.lock(CurrentUser.tenantId()); var row=requireItem(id); var type=requireType(row.getTypeId());
         if(row.getBuiltin()) throw new BizException(ConfigErrorCode.BUILTIN);
         if(items.selectCount(new LambdaQueryWrapper<DictionaryItemEntity>().eq(DictionaryItemEntity::getParentId,id))>0) throw new BizException(ConfigErrorCode.HAS_CHILDREN);
-        items.deleteById(id); names.replace("dictionary-item",id,Map.of()); changed(requireType(row.getTypeId()).getTypeKey());
+        items.deleteById(id); names.replace("dictionary-item",id,Map.of()); changed(type.getTypeKey());
     }
     public record OptionSnapshot(List<DictionaryOption> options) {
         public OptionSnapshot { options=List.copyOf(options); }

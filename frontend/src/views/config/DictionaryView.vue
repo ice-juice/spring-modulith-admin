@@ -5,13 +5,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { get, post } from '@/api/http'
 import ManagementView from '@/views/iam/ManagementView.vue'
+import EffectiveConfigView from './EffectiveConfigView.vue'
 import type { Row } from '@/features/iam/resources'
 const { t, locale } = useI18n()
 const route = useRoute(),
   router = useRouter()
 const types = ref<Row[]>([])
 const selected = ref('')
-const tab = ref('items')
+const tab = ref('effective')
 const current = computed(() => types.value.find((type) => type.id === selected.value))
 const filters = computed(() => ({ typeId: selected.value }))
 const preset = computed(() => ({ typeId: selected.value }))
@@ -21,7 +22,7 @@ async function loadTypes() {
   selected.value = types.value.some((type) => type.id === requested)
     ? requested
     : types.value[0]?.id || ''
-  if (!selected.value) tab.value = 'types'
+  if (typeof route.query.typeId === 'string' && selected.value) tab.value = 'items'
 }
 async function initialize() {
   await post('/config/dictionaries/initialize')
@@ -49,6 +50,9 @@ watch(locale, loadTypes, { immediate: true })
     }}</el-button>
   </div>
   <el-tabs v-model="tab">
+    <el-tab-pane :label="t('config.effective.tab')" name="effective"
+      ><EffectiveConfigView kind="dictionaries"
+    /></el-tab-pane>
     <el-tab-pane :label="t('config.dictionaryItems')" name="items"
       ><ManagementView
         v-if="selected"

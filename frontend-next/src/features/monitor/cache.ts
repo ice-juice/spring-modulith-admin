@@ -1,4 +1,4 @@
-import { get, http, post, put, type ApiResponse, type RequestOptions } from '@/api/http'
+import { createApi, get, http, post, type RequestOptions } from '@/api/http'
 
 export type CacheAction = 'CLEAR' | 'PAUSE' | 'RESUME' | 'RESET_STATS' | 'PREWARM'
 export type CacheOperation = CacheAction | 'EDIT_POLICY'
@@ -128,19 +128,21 @@ export interface CachePolicyInput {
   maxEntries: string; maxBytes: string; maxEntryBytes: number
 }
 const base = '/monitor/caches'
+export interface CacheNodeSelection { nodeId: string; processId: string }
+const nodeApi = (node?: CacheNodeSelection | null) => createApi(http, node ? { 'X-SMA-Cache-Node': node.nodeId, 'X-SMA-Cache-Process': node.processId } : undefined)
 export const cacheApi = {
-  directory: () => get<CacheRegion[]>(base + '/directory'),
-  nodes: () => get<CacheNodes>(base + '/nodes'),
+  directory: (node?: CacheNodeSelection | null) => nodeApi(node).get<CacheRegion[]>(base + '/directory'),
+  nodes: (node?: CacheNodeSelection | null) => nodeApi(node).get<CacheNodes>(base + '/nodes'),
   tasks: () => get<CacheTask[]>(base + '/tasks', { limit: 100 }),
   task: (id: string) => get<CacheTask>(base + '/tasks/' + encodeURIComponent(id)),
   confirmation: (id: string) => get<CacheConfirmation>(base + '/tasks/' + encodeURIComponent(id) + '/confirmation'),
-  preview: (action: CacheAction, regions: string[], reason: string) => post<CacheTask>(base + '/tasks/preview', { action, regions, reason }),
-  submit: async (id: string, key: string) => (await http.post<ApiResponse<CacheTask>>(base + '/tasks/' + encodeURIComponent(id) + '/submit', undefined, { headers: { 'Idempotency-Key': key } })).data.data,
+  preview: (action: CacheAction, regions: string[], reason: string, node?: CacheNodeSelection | null) => nodeApi(node).post<CacheTask>(base + '/tasks/preview', { action, regions, reason }),
+  submit: (id: string, key: string) => post<CacheTask>(base + '/tasks/' + encodeURIComponent(id) + '/submit', undefined, { idempotencyKey: key }),
   cancel: (id: string, options?: RequestOptions) => post<CacheTask>(base + '/tasks/' + encodeURIComponent(id) + '/cancel', undefined, options),
-  policy: (id: string) => get<CachePolicyState>(base + '/' + encodeURIComponent(id) + '/policy'),
+  policy: (id: string, node?: CacheNodeSelection | null) => nodeApi(node).get<CachePolicyState>(base + '/' + encodeURIComponent(id) + '/policy'),
   history: (id: string) => get<CacheHistory[]>(base + '/' + encodeURIComponent(id) + '/history', { limit: 50 }),
-  savePolicy: (id: string, input: CachePolicyInput, options?: RequestOptions) => put<CachePolicyState>(base + '/' + encodeURIComponent(id) + '/policy', input, options),
-  resetPolicy: (id: string, expectedVersion: string, reason: string, options?: RequestOptions) => post<CachePolicyState>(base + '/' + encodeURIComponent(id) + '/policy/reset', { expectedVersion, reason }, options),
+  savePolicy: (id: string, input: CachePolicyInput, options?: RequestOptions, node?: CacheNodeSelection | null) => nodeApi(node).put<CachePolicyState>(base + '/' + encodeURIComponent(id) + '/policy', input, options),
+  resetPolicy: (id: string, expectedVersion: string, reason: string, options?: RequestOptions, node?: CacheNodeSelection | null) => nodeApi(node).post<CachePolicyState>(base + '/' + encodeURIComponent(id) + '/policy/reset', { expectedVersion, reason }, options),
 }
 
 /** Keep all counters exact; -1/invalid remain unknown instead of silently becoming zero. */

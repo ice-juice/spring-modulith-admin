@@ -15,8 +15,8 @@
 | S4 | 缓存目录/策略/任务/预热/暂停/统计/审计与 UI | S3 | 后端拒绝路径、幂等任务/部分失败；前端 verify、E2E；旧版兼容 | 完成（分轮证据见下） |
 | S5 | 二开门禁、运行时/文件/保护状态适配 | S4 | 隔离业务夹具、禁止依赖、规则在途保护、节点资源边界 | 完成（S5a/b/c，分轮证据见下） |
 | M1 | 共享票据、OpenAPI 限流、会话并发加固 | S5 | 双实例跨节点认证、验证码/TOTP/票据一次消费、撤销/锁屏竞争 | 完成（M1a/b/c/d、主键及受理容量前置，真实双JVM14组通过） |
-| M2 | 跨节点推送、可靠补查、共享文件与后台任务 | M1 | A事件/B连接、广播丢失恢复、A上传/B下载、任务重复/认领 | 进行中（M2a/b/c完成，M2d） |
-| M3 | 节点查看/定向管理、LB/代理信任、密钥/ID/健康/优雅下线和回退 | M2 | 关闭粘性双实例、节点路由/故障注入、滚动升级及一致配置预检 | 待实施 |
+| M2 | 跨节点推送、可靠补查、共享文件与后台任务 | M1 | A事件/B连接、广播丢失恢复、A上传/B下载、任务重复/认领 | 完成（M2a/b/c＋本机17组双JVM；多主机/LB另见M3） |
+| M3 | 节点查看/定向管理、LB/代理信任、密钥/ID/健康/优雅下线和回退 | M2 | 关闭粘性双实例、节点路由/故障注入、滚动升级及一致配置预检 | 进行中（M3a/b/c1及c2a/b1～b8完成；b9清单/公共观察/本地文件、共享见证及Google/Console传输已分项通过，其余传输/隐式执行待收口；整机排空/LB未完成，multi仍关闭） |
 | S6 | 拓扑压测、运维手册、最终完整验收 | M3 | Redis standalone/Sentinel/Cluster；根 reactor 标准入口；新旧前端；全需求证据审计 | 待实施 |
 
 ## 2026-11-11 启动记录
@@ -564,8 +564,446 @@ Auth会话维护与OpenAPI nonce维护移除seen集合，旧内部seen()只保�
 
 实际宿主回归 **23/23通过，0跳过，BUILD SUCCESS（05:35，05:49）**，日志`backend/target/p08-m2c-integration.log`。旧文件读写、原生上传回执7项/HTTP2项、确认回滚清理、个人资料头像、品牌发布、缓存目录及普通安全清单通过；新SPI和配置Bean装配成功，不创建未触发的探针目录。M2c完成，无新增迁移；尚未接M3集群就绪判定，也未做生产多主机挂载验收。
 
-### M2d真实双实例联调（实施中）
+### M2d真实双实例联调（完成，本机）
 
 扩展既有隔离runner，在原14组M1互通后增加：同一收件人分别连接A/B，A发私信两个连接都收到；单独关闭B提示分发，A仍收到、B不收到但REST可读，恢复B后读取持久最新提示及完整未读；A经原上传协议写入，B下载字节一致且另一已认证用户被拒绝。复用原授权/回执，不实现新消息或上传旁路。客户端补充断连且无法取票期间30秒REST轮询的专项。仍用single模式测试协议，不代表M3配置一致性或无粘性LB已通过。
 
 客户端消息store专项 **6/6通过**，包含新增“断连且取票不可用时仍每30秒读取授权REST状态”；脚本语法和对应ESLint通过。真实runner设置`SMA_CLUSTER_M2=1`，使用`p08-m2c-integration/target`已验证JAR；新增显式共享资源声明/已有managed别名，记录每次启动和退出的进程证据。关闭B分发是明确的配置故障注入，不称为网络分区；同机目录共享不称为多主机挂载。环境初始化截止放宽到15分钟以覆盖本机慢DDL，功能断言和业务超时不放宽。结果待记录。
+
+按总排期继续（基线提交ab8f46a）：上一轮`p08-cluster-m2d.log`已结束，退出1，`cluster-1794433532014/result.json`明确passed=false、cleanupComplete=true，未完成任何业务断言。原因是P10内置参数已经通过定义/平台默认/租户覆盖解析，旧SQL假定config_parameter必有一行而失败；不改生产参数初始化或分层规则。runner改为先用真实验证码接口生成挑战（只在本轮隔离库固定该条答案），正常登录后用`/api/config/effective-parameters/{key}/override`及双版本设置验证码/单终端验收参数，并在B读回；不再直写配置表。
+
+当前提交工作区直接执行根标准入口，输出`target/p08-m2d-current/target`、日志`backend/target/p08-m2d-current.log`，验证有效参数HTTP、共享提示/真实WS、原文件上传HTTP、缓存目录、安全普通清单及模块门禁，再使用该轮JAR完整重跑M2d。遵守总排期失败不前进，M3仍待实施；M2d完成时同时更新总排期与本文，P08整体交付仍需X5联合验收。
+
+本轮首个根构建在extension-security测试编译阶段失败：并行ReleaseWorkflowTests同方法两处pending重名。现有并行工作已将上传变量改为pendingUpload，但部署PREPARING断言也误跟随为上传变量；仅将该断言指回部署pending，不改生产实现。复验日志`p08-m2d-current-recheck.log`使用独立输出，增加`ReleaseWorkflowTests#singleUserUploadValidationPrepareAndActivationRunRealJar`验证该处修正。前轮未启动后端数据库测试，不能记录为通过。runner及新增参数API路径语法/ESLint通过。
+
+插件该方法复验1/1通过，当前消息store复验6/6通过。数据库轮编译期间X3预算登记新增BUDGET策略行，普通清单快照因此失败，未开启自动审查接受。X3已按其进度完成显式登记审查后，本任务另用`p08-m2d-policy-recheck.log`复跑普通SecurityEndpointInventoryTests，**1/1、0跳过、BUILD SUCCESS（07:21，01:49）**；首轮失败保留，数据库轮其余测试仍待完成。
+
+当前数据库整合结束：backend 19项中18通过、1为上述旧清单快照失败，0跳过；有效参数HTTP4、原文件上传HTTP2、共享提示存储5、真实WS1、模块2、缓存目录4均通过。结合普通清单1/1复验构成分轮证据，不把19项首轮改称全绿。两轮编译class逐文件比较：P08相关Common/Auth/Message/File/参数代码一致，差异仅并行DefinedDictionaryService及其新读实现；双实例使用普通清单轮生成的当前JAR，SHA256由runner记录。恢复完整`SMA_CLUSTER_M2=1`验收，等待真实消息与文件互通结果。
+
+`p08-cluster-m2d-parameters.log`（cluster-1794439614126）在A迁移完成后的Redis初始化失败，Lettuce明确报告200ms连接初始化超时；没有执行认证/消息断言。Redis16379进程仍运行，独立PING=PONG；不重启该Redis、不修改默认200ms。runner增加显式`SMA_CLUSTER_REDIS_TIMEOUT`部署覆盖（默认仍200ms）并在结果文件记录，下一轮本机功能验证使用受支持1s。该范围不能作为200ms默认或生产容量通过证据；S6仍需按实际预算/负载验证连接与故障恢复。
+
+最终真实联调`p08-cluster-m2d-redis1s.log` **17组全部通过，退出0**；`cluster-1794440238625/result.json`记录passed=true、cleanupComplete=true、m2Included=true、redisTimeout=1s及实际各次进程启停/JAR和脚本哈希。新参数API双节点读回、原14组认证/Redis/并发/重启场景继续通过；新增A事件被A/B两个真实Chrome WS分别接收、B分发关闭期间A可推/B无推但REST未读为2、B恢复后读取持久最新提示，A原生上传/B字节一致且已认证无权限用户403/404拒绝均通过。所有本轮进程/库/账号/临时密钥已清理，没有修改用户服务。
+
+M2完成并与总排期同步，进入M3。此轮仅同机两个独立JVM和共享本地目录，分发故障为配置注入；不扩大为网络分区、生产多主机共享挂载、200ms默认预算或无粘性LB验收。P08整体交付还受X5联合验收约束，S6未完成。
+
+### M3实施拆分（依赖顺序）
+
+| 子项 | 内容 | 验收 | 状态 |
+| --- | --- | --- | --- |
+| M3a1 | 缓存管理HTTP选定node＋process；错路由/旧进程明确拒绝，不转发任意地址 | 选择协议、鉴权、旧进程/错节点、请求副作用前拒绝；原HTTP兼容 | 完成（27专项＋HTTP分轮30通过/1环境跳过） |
+| M3a2 | 缓存管理页面节点选择，目录/策略/预览绑定所选进程，任务回执仍按原持久协议 | 切换/迟到响应/未决操作、双语/浏览器、实际两个端口选节点 | 完成（179前端单元＋16生产浏览器＋19组真实双JVM） |
+| M3b | 部署身份与配置/密钥一致性、共享文件双向见证、受控迁移入口 | 不一致/缺钥/缺挂载/重复节点拒绝，迁移不启动任意业务worker | 完成（41当前专项＋40组真实双JVM，同主机范围） |
+| M3c | readiness/liveness、优雅摘流、可信代理、LB示例与受控滚动/回退 | 健康B不因A离线退出，重启进程重新证明，原会话延续 | 进行中（c1/c2a/b1已验收；其他worker/WS/本机排空与c3代理未完成） |
+| M3d | 无粘性真实LB完整矩阵、节点定向读取/原生任务、故障与滚动 | 实际LB＋两后端证据，全部前置满足后开放multi | 待实施 |
+
+节点选择只接受已登记node ID与精确process UUID，不接受URL或连接信息；由部署LB按固定白名单映射节点，接收端再次验证本机身份，不能在错节点返回本地数据冒充所选节点。选择不是授权，仍要求缓存查看/具体动作/区域权限。无选择的既有调用保留接收进程语义；定向目标不可达不得静默回退随机节点。M3a只补协议，不提前开放multi。路径限Common缓存公开契约/Monitor HTTP、frontend-next缓存页及部署/测试文档。
+
+M3a1当前实现：`X-SMA-Cache-Node`与`X-SMA-Cache-Process`成对选择，node须在部署expected名单，process须为规范UUID。Monitor仅对`/api/monitor/caches`及子路径加MVC拦截，在Controller/任务/请求预算副作用前校验；非法或重复头400、错节点503、旧进程409，错误不返回实际本机身份。先要求当前后台人类与monitor:cache:view，原动作/区域权限仍单独生效；未选择且仅有旧动作权限的调用保持旧规则，不新增隐式查看权。合法查看响应返回实际node/process并no-store。错误只表明本次未进入处理器，已有操作仍须查询原回执，不据此释放UNKNOWN。先验证四项选择单元与架构，再跑四项真实HTTP＋原缓存任务/治理回归；M3a2前端尚未开始。
+
+M3a1无数据库专项 **27/27通过，0跳过，BUILD SUCCESS（07:52，01:11）**，日志`backend/target/p08-m3a1-unit.log`。四项精确选择/缺字段/未知节点或URL/旧进程/权限测试、架构17项、模块2项、双语3项和普通安全清单1项通过。开始实际HTTP及既有任务/控制回归，验证拒绝时没有任务或请求预算副作用；未完成前不进入M3a2。
+
+M3a1实际回归 **31项、30通过/1条件跳过、0失败/错误，BUILD SUCCESS（07:59，05:56）**，日志`backend/target/p08-m3a1-http.log`。新增HTTP4项全部通过，精确响应process、重复/缺字段拒绝、错节点/旧进程在任务/预算写入前拒绝、匿名/缺查看权不泄漏身份及原动作权限仍生效；原生资源9项、缓存任务HTTP5项、Monitor3项与9项节点确认通过。该轮未设置SMA_CACHE_REDIS_TEST_PORT，CacheConfirmationTests的Redis参数化用例1项跳过；不宣称它在本轮通过（M2d Redis另有实际证据）。M3a1完成，进入M3a2，完整M3/multi仍未完成。
+
+M3a2当前实现：缓存目录增加接入节点/具体节点选择，选定时固定node＋process，不跟随名册刷新偷偷换进程；目录/概览/策略/预览携带固定头，任务提交/回执仍使用原持久任务定位且不依赖选定节点。切换使旧读失效并清空旧目录；路由/旧进程错误不回退随机节点、不显示旧统计。策略编辑或预览弹窗期间锁住节点选择/主刷新，写入捕获节点快照并保留原幂等键。共用createApi只新增可选、拷贝后的静态头，不替代认证、响应元数据/回执或重试协议。HTTP/缓存单元14项和应用类型检查通过；正在补三项真实浏览器的节点绑定预览、迟到响应与重启、离线不回退，完整前端验收及真实两端口定向仍待执行。
+
+前端完整`npm run verify` **通过**（48文件179项单元、应用/测试类型、Lint、双语、Vite构建及发布预算），日志`.e2e-runtime/p08-m3a2-verify.log`。新增开发浏览器首轮3项中2通过/1测试在网络请求到达前断言记录为空，改expect.poll后单项1/1通过；生产包16项中15通过/1对弹窗隐藏背景控件的测试查询方式错误，改includeHidden检查实际disabled后单项1/1通过（`p08-m3a2-production-recheck.log`），未修改产品逻辑。分轮记录，不宣传首次16项全绿；将以独立输出补保留生产截图。实际双JVM选择脚本设置SMA_CLUSTER_ROUTING=1，读取响应真实node/process并精确选择A/B、错节点预览不增任务、A重启拒绝旧进程；使用M3a1真实HTTP轮JAR运行，结果待记录。
+
+M3a2最终证据：生产包首个完整重跑16/16通过（`p08-m3a2-production-final.log`）。视觉检查后将选定node/process提示移至所有标签共用页头，保证策略页仍显示目标；最终完整verify因并行配置页面三处原始分页斜线Lint失败，仅替换为既有common.pageOf，不改配置逻辑。随后`.e2e-runtime/p08-m3a2-verify-latest.log` **完整通过（48文件179单元）**；最终生产包 **16/16通过，35.2秒**（`p08-m3a2-production-latest.log`）。独立产物`test-results-cache-m3a-latest`保存中英/明暗/1440和390宽截图、键盘与Axe检查；已查看窄屏目录与选节点策略图，页面无横向溢出，策略目标可见，表内横向滚动保留。
+
+实际双JVM `p08-cluster-m3a-selection.log` **19组通过、退出0**；`cluster-1794442227862/result.json`记录passed=true、cleanupComplete=true、routingIncluded=true、m2Included=true、redisTimeout=1s及产物哈希。新增精确A/B统计process核对、携B选择到A的预览503且任务列表未变、A重启后旧process409且不定向的共享回执仍可读；原17组M1/M2认证/Redis/消息暂停恢复/文件/重启继续通过。清理所有本轮进程/库/账号/临时密钥，未替换用户服务。M3a1/a2完成，总排期同步；实际LB转发/白名单、密钥配置预检和多主机挂载仍未验收，下一项M3b，multi门禁继续关闭。
+
+### M3b依赖拆分与验收计划
+
+1. **M3b1受控迁移（完成，见末尾证据）**：宿主main在创建业务上下文之前识别显式迁移命令，使用仅含数据源和Flyway的隔离上下文；无组件扫描、Web、调度器、权限初始化、事件重投或业务启动监听器。沿用Modulith真实模块发现、根历史表和模块历史表/基线0，固定制品内迁移。提供migrate及validate命令，正常服务可显式配置仅校验；默认单机启动行为保持兼容。校验必须拒绝待执行、缺失、失败、未来或校验和不符的迁移，不通过baseline/repair掩盖问题。真实专用MySQL验证空库拒绝且无写、逐模块迁移/重复执行、已有历史兼容、无业务Bean，以及实际制品命令退出；随后同步两份进度。
+2. **M3b2配置/密钥证据**：模块自有公开SPI生成带域隔离的配置/密钥证据，包含有效及保留解密键；不公开原密钥/连接串，不跨模块internal。复用现有节点/进程租约，追加精确归属的部署证据存储，缺失或不一致拒绝资格。测试错误键、同ID不同材料、旧进程与重复node。
+3. **M3b3共享存储双向见证**：消费M2c的SharedStorageWitness，绑定部署清单、资源、双方进程及新鲜挑战；没有互证不能宣称共享，重启重新证明，有效节点不得因peer离线被无限拖死。测试相同/不同目录、丢失挂载、过期见证、慢I/O、重启与双JVM；此后才能进入M3c。
+
+拟改路径限宿主启动入口、Common内部部署协调/公开deployment SPI、各密钥所属模块适配、File既有见证消费及相关测试和部署文档。不会建立第二套上传协议或节点名册；P11保护状态不随业务Redis迁移。M3b完成前不推进M3c，不开放multi；首次号段迁移仍须停旧写入器，DDL失败保留现场核对，不能自动repair或回滚旧算法。
+
+M3b1实现/首轮验证记录：第一次根构建因Modulith core仅runtime可见而编译失败，补显式compile依赖（原制品已有该依赖）；第二轮23项中22通过/1模块环失败，改为common::deployment宿主引导契约，由宿主传应用类型，Common不引用宿主根类；第三轮模块门禁通过，但配置测试发现Boot的Flyway默认target=latest被误拒绝，已修正只拒绝非latest目标。失败日志分别为p08-m3b1-unit.log、p08-m3b1-unit-recheck.log、p08-m3b1-boundary.log；本项仍未完成。当前p08-m3b1-mysql.log在独立输出重编译并跑专用MySQL及全部边界复验，未进入M3b2。
+
+M3b1补充边界：拒绝池catalog/schema/connection-init-sql覆盖，服务validate拒绝关闭Flyway或全局lazy初始化；保留正常默认单机路径。补充测试首轮p08-m3b1-final-unit.log因测试Class泛型断言编译失败，改为类型名断言后，当前根标准入口p08-m3b1-sealed-unit.log **31/31通过，0跳过，BUILD SUCCESS（08:46，02:01）**：命令/配置7、架构17、缓存边界2、模块2、普通安全清单1、SQL结构2。真实MySQL第一轮仍在清理阶段，最终增强断言尚须复跑；实际制品runner已增加SMA_CLUSTER_SCHEMA_MIGRATION=1，在自己的新库验证命令退出及无业务初始化，撤销服务账号DDL权后以validate运行原19组跨实例矩阵。M3b1未标完成，下一项仍不启动。
+
+首轮MySQL与结构整合p08-m3b1-mysql.log **25/25通过，0跳过，BUILD SUCCESS**（其中受控迁移2项，约588秒），验证全模块迁移/重复执行/旧Modulith历史兼容及拒绝路径。补充更精确的Bean隔离与错误类型断言后，p08-m3b1-mysql-final.log被并行BrandPublicSecurityTests的content辅助方法重名阻断在测试编译，未执行数据库测试；当前并行源码已改名brandContent，本任务未改该文件。使用独立输出p08-m3b1-mysql-latest重编译复验这2项。实际JAR已通过空库无写拒绝、完整迁移不建管理员、校验及重复迁移保持逐行历史，正在启动validate服务节点。
+
+实际制品联调p08-cluster-m3b1-schema.log **23组通过、退出0**；cluster-1794444435380/result.json记录passed=true、cleanupComplete=true、schemaMigrationIncluded=true、redisTimeout=1s，JAR SHA256为2e635946b56e088a38c56e9793cc5d414b4332d38e54017a97f1fa68635d24fb。新增4组覆盖空库validate拒绝且零表、独立migrate退出且iam_user为0、validate及重复migrate保持逐行历史、两服务节点撤销CREATE/ALTER/DROP/INDEX后validate启动且服务日志未调用DbMigrate；原19组跨节点身份/权限/票据/Redis/消息/文件/重启全部保留。运行快照的结果标签笼统写without DDL privileges，当前runner仅把该标签收紧为四项实际权限，未改测试行为；不声称所有数据库特权皆移除。所有本轮JVM/临时库/账号/密钥已清理，用户服务未替换。增强MySQL专项仍在完成，M3b1继续保持进行中。
+
+M3b1最终验收：增强MySQL专项p08-m3b1-mysql-latest.log **2/2通过、0跳过、BUILD SUCCESS（09:05，10:37）**。精确断言只存在迁移入口自有Bean、无业务runner/调度器/Web；空库validate零表、全模块迁移及重复运行/原Modulith历史兼容、pending/checksum/future精确异常、已删除模块历史拒绝均通过，并清空本专项可清空库。结合最新31项门禁和23组真实制品构成分轮证据，不把历史失败轮改称首次全绿。runner脚本语法/ESLint通过，受影响路径git diff --check通过；18101/18102/5197已无监听。README、后端规则、部署/缓存运行说明与总排期同批同步，M3b1完成。下一项M3b2配置/密钥证据，M3b3共享见证、M3c/d、S6及X5未完成，multi仍关闭；未部署用户服务。
+
+收尾一致性核对：真实制品所用sealed-unit输出与最终mysql-latest输出的9个本项部署/启动class逐文件SHA256一致；不把两轮之间其他并行模块的变化纳入本项运行证据。最终runner语法及ESLint、受影响文档/已跟踪代码diff检查通过。
+
+### M3b2配置与密钥证据（完成）
+
+| 子项 | 验收与证据 | 状态 |
+| --- | --- | --- |
+| M3b2a | 宿主SPI、四类实际运行密钥；41专项、34安全消费者及装配1项分轮通过 | 完成 |
+| M3b2b | 8个配置域及12域总集合；39专项、字段清单1、37宿主消费者及最终12域宿主3项分轮通过 | 完成 |
+| M3b2c | 持久挑战/一致性基线、既有租约/epoch绑定、故障隔离及独立JVM矩阵 | 完成（c1/c2分轮＋c3真实双JVM34组，清理完成） |
+
+细化设计见[部署一致性证据](proposals/P08-deployment-evidence.md)。按依赖拆分：M3b2a宿主SPI/有界摘要/真实归属注册及四类实际运行密钥适配（当前实施）；M3b2b模块配置白名单与真实宿主集合验收；M3b2c追加持久证据并绑定现有清单/租约/epoch、独立JVM不一致拒绝。每项验证通过再推进，b2整体尚未完成。初始完整密钥环和活动键严格一致，密钥轮换须协调窗口；OpenAPI预检只读、不自动生成。共享文件实际互证仍在b3，multi门禁不变。
+
+M3b2a第一轮根标准入口p08-m3b2a-unit.log **41/41通过，0跳过，BUILD SUCCESS（09:19，01:16）**：8项新证据/实际密钥对象测试、Auth加解密5、租户凭据7、请求HMAC2、架构17、模块2。新增common::deployment源SPI、定长挑战/有界规范编码、按真实模块归属注册；四类源从现有运行对象取证，保留旧键，集合缺域或源异常只报告不可用。OpenAPI探针不创建目录/文件且不认可本进程临时生成的钥，原single加解密协议不变。正在补真实宿主Bean集合及原请求账本/Auth持久/机器认证预算回归；M3b2a未标完成，b2b不提前启动。
+
+M3b2a宿主首轮p08-m3b2a-host.log共35项，34通过/1错误，0跳过。原请求账本13、Auth持久4、OpenAPI共享预算8/认证6、应用冒烟2及普通清单1通过；新增装配测试在Spring测试线程的模拟HTTP请求下调用collect，被正确的宿主门禁拒绝。仅把该测试改为无继承ThreadLocal的独立宿主线程，仍断言tenant job拒绝，不放宽生产检查；单项复验待记录，a仍未完成。
+
+M3b2a完成：p08-m3b2a-host-recheck.log真实宿主装配 **1/1通过、0跳过、BUILD SUCCESS**（宿主用例447秒）。实际AOP/Bean集合四个必需源齐备，独立宿主线程取得稳定完整摘要，tenant job仍拒绝。组合证据为41项密码学/结构门禁、首轮34项安全消费者通过及装配单项复验，不把首轮35项写为全绿。README、后端规则、部署/缓存运行说明与总排期同步；进入M3b2b配置白名单，持久比较、租约绑定、共享存储和multi仍未交付。
+
+M3b2b实施：新增7个配置域（Common宿主/缓存、Auth、Message、Identity、File、Mail），与4个密钥域共同强制齐备。仅读取类型化白名单，缓存先逐区域按真实有效策略/注册格式摘要再合并；Redis拓扑规范排序、逻辑DB/TLS/预算参与，ACL凭据不参与。认证/应用身份/文件/邮件共享预算及浏览器来源/代理清单参与；本地路径、节点ID/端口、密钥路径和后台worker启停角色不作为配置一致性字段。文件资源只比较登记ID/共享声明，物理共享留给b3。正在验证逐字段变化、集合顺序、实际宿主11域以及原受影响模块。
+
+M3b2b第一轮p08-m3b2b-unit.log **37/37通过、0跳过、BUILD SUCCESS（09:45，01:34）**。8项新白名单测试逐项变更Identity全部27项及File上传/认证/邮件预算，验证变化必影响摘要；缓存namespace/区域schema/能力/实际策略、Redis逻辑DB/TLS差异拒绝，等价配置/种子顺序与不同ACL凭据不误报；本地路径不进入文件声明，收集不创建目录。原密钥/证据/缓存边界和模块架构继续通过。下一步真实宿主11域装配及受影响模块回归；b2b仍未完成。
+
+白名单复核补入Tenant域：平台部署操作者名单若各节点不同会造成随机403，入口验证及品牌默认值也应一致，因此增加tenant.platform-policy；只读取Tenant自己已绑定的公开配置，不改平台授权、域名或品牌持久流程。当前总计12个必需域（4密钥＋8配置），默认品牌revision相同但内容不同时也必须改变摘要。前一轮宿主仍按11域编译产物验证，不能充作12域完成证据；追加Tenant纯配置专项和最终12域装配复验。
+
+M3b2b最终验收：p08-m3b2b-host.log原11域宿主及文件3/应用会话8/邮件Outbox15/缓存目录4/Monitor3等 **37/37通过，0跳过，BUILD SUCCESS（09:55，07:35）**。补Tenant域后p08-m3b2b-complete-unit.log **39/39通过（09:57，01:31）**；p08-m3b2b-inventory.log新增配置字段清单 **1/1通过（10:04，01:42）**，已登记类型新增字段即要求显式纳入/排除审查。最终p08-m3b2b-final-host.log **3/3通过、0跳过、BUILD SUCCESS（10:08，08:23）**：实际12域必需集合齐备，反向注册顺序不影响总摘要，宿主可收集且tenant job拒绝，默认single启动/健康和匿名保护继续通过。b2b完成，组合证据分轮记录，未运行新的无粘性LB或多JVM配置拒绝场景；这些在b2c/M3d。README、规则、部署/二开手册、方案索引和总排期同批同步；下一项b2c，M3b2整体及multi仍未完成，未部署用户服务。
+
+### M3b2c实施拆分
+
+当前c1：追加Common V14到既有group/lease表，固定首节点建立不可覆写基线，随机挑战按清单换代，报告绑定node/process/epoch并最多15秒有效；无新租户豁免。先做旧V13结构升级/空库、真实MySQL错误节点不影响健康节点、竞争/过期/重启/宿主身份边界。通过后c2独立有界worker与状态/启动联接，再c3实际双JVM矩阵；各项通过同步两份进度，不把内部存储完成当作流量门禁完成。细化见部署证据方案。
+
+M3b2c1迁移/结构首轮p08-m3b2c1-migration.log **23/23通过，0跳过，BUILD SUCCESS（10:22，04:38）**。Common V13真实旧group/lease记录保留升级V14，新证据为空不继承资格；重复迁移零执行，空库V1～V14全部执行及validate通过。平台免租户表集合未增加，架构/模块/SQL门禁通过。V14从此仅追加修正迁移；开始6项真实存储协议及原节点/确认回归，c1尚未完成。
+
+M3b2c1完成：p08-m3b2c1-store.log **27/27通过、0跳过、BUILD SUCCESS**，包括新存储6项、原节点清单8、节点runtime2、确认10（显式配置Redis16379，参数化真实Redis不跳过）、普通安全清单1。实际MySQL验证指定首节点引导、错误peer/源不可用不影响健康节点、基线不可覆盖、心跳不续证、旧进程/epoch/挑战拒绝、清单递增换代及并发唯一基线；HTTP/job/外层事务调用拒绝。结合V14迁移/结构23项，c1完成并开始c2；尚无后台自动证据续报或接流门禁，multi仍关闭。
+
+M3b2c2实施：新增默认关闭的sma.deployment.evidence.enabled，仅允许enabled节点租约、至少两节点清单及eager schema-mode=validate。独立单线程/零队列每秒尝试取当前租约→事务外收集→持久报告，迟于5秒的收集不报告；本地MATCH按单调时钟最多10秒且随当前租约/epoch失效。deploymentEvidence健康贡献者只输出安全状态，未证实即DOWN；它尚未组合共享存储/摘流，也不冒充M3c的最终readiness。默认single无新worker/健康项。开始线程/超时/状态/配置及模块门禁，真实宿主接线随后验收。
+
+M3b2c2首轮p08-m3b2c2-unit.log **26/26通过，0跳过，BUILD SUCCESS**：证据runtime4、原节点runtime2、架构17、普通安全清单1、模块2。证明单调过期、lease/epoch失配拒绝、慢源只执行一次/无排队/不提交迟到证据、异常脱敏、HTTP调用拒绝、默认不装worker及validate/lazy限制。补充禁用租约/单节点拒绝用例并与真实宿主HTTP联接同轮执行，日志p08-m3b2c2-http；c2仍未标完成。
+
+M3b2c2完成：最终p08-m3b2c2-http.log **6/6通过、0跳过、BUILD SUCCESS（10:43，07:54）**。真实宿主先独立迁移再validate启动，实际定时线程取得12域证据并写入基线；MockMvc真实过滤链/健康汇总初始200 UP，注入错误/缺失报告503 DOWN，恢复真实收集后200 UP，节点租约仍OWNED。该轮另含最新5项运行时测试（补单节点/禁用租约拒绝），结合前轮26项架构/模块/普通清单构成分轮证据。它是单JVM真实宿主＋模拟错误证据注入，不能称为两JVM错误密钥验收；c3尚未实施。关闭测试上下文和worker，未替换用户服务。README、部署/规则和两份进度同步；完整M3b2仍未完成，后续c3、共享存储b3、M3c/d/S6/X5保留，multi仍关闭。
+
+### M3b2c3独立JVM验收（进行中）
+
+复用run-cluster-e2e隔离库/账号/端口及真实Chrome，追加SMA_CLUSTER_EVIDENCE=1（要求受控迁移开关）。部署级生成共享测试租户凭据环与保留请求旧键；显式把deploymentEvidence加入该测试的readiness组。B依次使用同ID异值HMAC、缺失租户密钥、遗漏旧HMAC键、不同会话TTL及OpenAPI缺文件；核对其持久报告和readiness 503，A仍UP且原会话可用，基线不变。恢复B配置后重获MATCH并原会话可用；A退出期间B仍资格有效，A新进程重新证明。保留原M1/M2/节点定向矩阵。所有进程/库/密钥限本轮，失败不重发业务写；结果不能扩展为LB或共享存储资格，multi不变。
+
+M3b2c3当前制品根标准入口p08-m3b2c3-current.log **38/38通过、0跳过、BUILD SUCCESS（10:48，01:48）**；runtime/密钥/配置/字段清单、架构/模块/普通端点基线通过。runner语法和ESLint通过，已开始p08-cluster-m3b2c3-evidence.log。八类B差异为HMAC活动同ID异值、遗漏旧键、Auth环同ID异值、租户凭据同ID异值/缺失、会话TTL、OpenAPI同ID异值/缺文件；恢复B及停A超过30秒后再启动A验收重新证明。所有拒绝看readiness＋精确新process/epoch持久证据，不用旧行或仅进程存在冒充通过。未得最终结果前b2c3保持进行中。
+
+M3b2c3功能断言已完成：本次原23组＋双实例初始资格、8类B差异、恢复B、A退出超30秒/B持续资格/A重启共34组通过，正在等待runner资源清理与最终result.json。错误节点按新process/epoch报告MISMATCH或UNAVAILABLE且readiness 503，A仍MATCH/原会话有效，基线全程不变；缺OpenAPI探针文件未生成。恢复B和A均重新证明，旧会话保留。最终清理前不标完成。
+
+M3b2c3最终验收：p08-cluster-m3b2c3-evidence.log **34组通过、退出0**；cluster-1794451764894/result.json记录passed=true、cleanupComplete=true、evidenceIncluded=true、redisTimeout=1s，JAR SHA256=403db2a3587857332441d08b243bcde758d5b25e671bb3e8237459631128698e。八类错误B依次使用新process，epoch4～11；活动HMAC/遗漏旧HMAC/Auth环/租户环/会话TTL/OpenAPI材料不同均MISMATCH，租户缺钥/OpenAPI缺文件为UNAVAILABLE，readiness均503且A仍MATCH/原会话正常。基线始终不变；OpenAPI缺文件未生成；恢复B新epoch重新MATCH并保留原会话，A退出超过32秒后B仍资格有效，A重启重新证明不改基线。原23组受控迁移/身份/缓存/消息/文件/定向操作全部保留。临时进程/库/账号及7个受控密钥路径已清理，18101/18102/5197无监听，未改用户服务。M3b2整体完成并双写总排期；证据仅同主机独立JVM、Redis显式1s、readiness按测试部署显式包含证据贡献者，不是200ms/真实LB/共享挂载资格。下一项M3b3，然后M3c/d、S6及X5；multi保持关闭。
+
+### M3b3共享存储资格（完成，本机独立JVM）
+
+按依赖拆分：a真实归属存储注册、进程/epoch绑定的一次写入探针与单向校验；b持久报价/双向确认及失效/恢复围栏；c有界worker/健康与实际双JVM错误挂载/重启矩阵。当前a实施。先验证真实文件同目录/不同目录、资源和身份混用拒绝、未知写只核对不重建、自身探针丢失/宿主身份/超时及原FileClusterStorage门禁，再推进b。细化见共享文件见证方案；multi仍关闭。
+
+M3b3a首轮p08-m3b3a-probe.log **38/38通过、0跳过、BUILD SUCCESS（11:16，02:28）**：新探针6项、原FileClusterStorage实际文件6项（含Windows junction）、证据4、架构17/缓存边界2/普通清单1/模块2。验证同目录两资源各自随机/互读、不同或缺失根拒绝、旧process/epoch/清单及缺资源拒绝、未知写只verify、不重建丢失自身探针、声明变更/重复/跨模块/容量/宿主身份/累计超时拒绝。补充畸形UUID错误脱敏和真实宿主默认未声明共享不授予资格；最新专项及默认File/宿主回归尚待记录，a不标完成。
+
+M3b3a完成：最新p08-m3b3a-host.log **19/19通过、0跳过、BUILD SUCCESS（11:25，08:14）**，包括探针7/原文件见证6/原File3/真实宿主装配1/冒烟2。默认未声明共享的目录不授予共享资格，但原单机文件与健康继续可用；畸形UUID统一错误无输入泄漏。结合首轮38项结构/实际文件证据，本子项完成。进入b持久锚点/报价/双向确认；探针没有自动worker，也不构成最终资格，multi仍关闭。
+
+M3b3b实施设计：追加V15只扩展既有group/lease技术字段。group固定manifest绑定的存储锚点报价（只清单首节点初建、同代次不可换）；每节点保存不可变process/epoch报价、递增本地generation、一次最多31个peer读确认、15秒观察和certified状态。首次需锚点全部可读＋当前peer相互确认同generation；自身故障或观察过期推进generation并废旧确认。已证实节点持续自检时不因peer离线失去资格，错误新peer不改原证书。报告重新验证当前配置MATCH/租约及双方generation，I/O在事务外。先迁移及真实MySQL协议，后c运行时/真实文件双JVM。
+
+M3b3b首轮结构p08-m3b3b-compile.log **22/22通过、0跳过、BUILD SUCCESS（11:30，01:26）**，新存储编译及架构17/平台隔离1/SQL2/模块2通过。已补V14→V15保留配置证据/空库验证及6项真实MySQL双向协议（单向不授证、固定锚点、资源集合、故障代次、证据断档、peer离线、进程替换与宿主边界）；开始迁移专项，存储协议尚待执行，b未完成。
+
+M3b3b迁移p08-m3b3b-migration.log **1/1通过、0跳过、BUILD SUCCESS（11:34，02:32）**：V14→V15保留原配置摘要/节点epoch及状态，新存储证据NULL；重复迁移零执行；空库15个Common迁移和validate通过。V15从此只追加修正。开始7项存储协议和原配置证据/节点回归，b尚未完成。
+
+M3b3b完成：p08-m3b3b-store.log **23/23通过、0跳过、BUILD SUCCESS（11:40，04:37）**，新存储7项、原部署配置存储6/节点清单8、平台隔离1/普通清单1。真实MySQL证明单向不可授证、固定锚点/资源集合、失败/断档废旧reverse确认、健康节点peer离线继续自检、重启不可继承及旧清单/迟到报告拒绝。组合22结构＋1迁移分轮证据，V15保持不可改；进入c有界实际I/O与健康/双JVM。当前无自动存储worker，不把内部certified当作已接流，multi仍关闭。
+
+M3b3c1运行时接线：默认关闭sma.deployment.storage.enabled，开启须已有配置证据runtime。独立单线程零队列，每轮5秒总预算、READY单调10秒并要求配置MATCH/当前epoch；自身及固定锚点每轮实际校验，peer按受信快照选择，引导/最前在线节点轮询peer，其他节点优先该peer。错误peer不会让已健康节点错误失效；自身/锚点失败或迟到结果报告本地失败，旧代次拒绝。sharedStorage健康仅给state；默认不启用，不删锚点/peer文件。开始线程边界及实际文件＋MySQL双实例对象测试，真实两个JVM和故障目录矩阵随后验收。
+
+M3b3c1首轮p08-m3b3c1-unit.log 30项中29通过/1测试错误，0跳过：慢I/O测试在释放latch前调用Mockito.verify同步方法，测试主线程被mock的synchronized监视器阻塞直至夹具超时，导致推进单调测试时钟晚于实际返回。改为AtomicInteger检查次数并先推进时钟/释放，再验证store失败报告；生产实现未改。默认错误配置测试补齐其他依赖，精确验证缺DeploymentEvidenceRuntime被拒绝。修正与真实I/O/MySQL组合复验，未通过前不推进双JVM。
+
+M3b3c1本地运行时验收完成：p08-m3b3c1-io.log **7/7通过、0跳过、BUILD SUCCESS（11:56，09:15）**，包括修正后线程/配置3、真实文件＋MySQL两节点runtime对象2、应用冒烟2。证明实际双向文件互证可取得证书，不同目录无法互证，删除B自身探针后不重建且只撤销B证书，A继续可用；原默认单机健康和认证保护通过。首轮慢I/O夹具失败保留，结合此前29项通过构成分轮证据，不称首次30项全绿。当前是同JVM的两runtime对象＋真实文件/DB，尚未验证两个独立JVM或真正OS挂载；下一项c2扩展隔离runner并显式组合sharedStorage健康，验证同/错/缺目录、探针失踪、恢复及重启，完成前M3b3整体不交付。README/部署/规则与总排期同步，multi关闭，用户服务未替换。
+
+### M3b3c2独立双JVM验收（进行中）
+
+扩展原隔离runner，SMA_CLUSTER_STORAGE=1要求配置证据/受控迁移/M2全部开启；readiness显式包含sharedStorage。两个服务先同时启动再等待互证，避免A等待未启动B的引导死锁。保留原34组，追加managed目录错误/缺失、B自身探针删除后超过资格TTL仍不重建、恢复原字节后新代次互认、重启及健康A原会话连续可用。故障只修改本轮生成路径/进程，结果不当作生产多主机挂载或LB验证。当前制品先根标准入口验证，再实际运行，完成前不标M3b3完成。
+
+M3b3c2当前制品p08-m3b3c2-current.log **41/41通过、0跳过、BUILD SUCCESS（12:00，01:32）**；探针/原File见证/runtime/配置runtime及结构/模块/普通端点通过。runner语法/ESLint通过，实际p08-cluster-m3b3c2-storage.log已启动。双节点同时启动后等待配置＋存储双健康；原34组保留，新增6组存储场景（初始互证、split/missing根、恢复根、探针丢失超过17秒、原字节恢复新互认）。当前待实际结果，不标M3b3完成。
+
+M3b3c2功能断言全部结束，正在清理：原34组完整保留，新增初始共享互证、B split/missing根、正确根恢复、丢失自身探针超过17秒不重建/仅B失效、恢复本轮原32字节后新代次互认共40组。全程配置基线及存储锚点不变、原会话保持。最终result/cleanup确认前不标完成。
+
+M3b3c2最终验收：p08-cluster-m3b3c2-storage.log **40组通过、退出0**，cluster-1794456095162/result.json记录passed=true、cleanupComplete=true、storageIncluded/evidenceIncluded=true、redisTimeout=1s及22次受控JVM启停；JAR SHA256=2cff2d801edfbbcc94f186820b6f737072eaf6ee349af3a741e50cdfbcb200e4。原34组完整通过；新增两个独立JVM实际双向文件互证、managed错误/缺失根503且A可用、缺失根不自动创建、B正确根重启新进程重新证明、探针删除超17秒不重建/仅B证书失效、恢复本轮原字节后新代次反向确认恢复READY通过。readiness包含配置与存储贡献者，原会话正常、锚点和配置基线保持不变；A退出超租约/B继续访问及A重启矩阵同时通过。测试库/账号/密钥/进程已清理，18101/18102/5197无监听，用户服务未替换。结合本轮41项根门禁，M3b3及M3b完成并同步总排期。证据限同机独立JVM＋真实本地文件、显式Redis1s；不是实际多主机挂载、200ms负载或无粘性LB证明。下一项M3c readyness/liveness/摘流/代理，再M3d/S6/X5；multi保持关闭。
+
+### M3c健康/摘流/代理实施拆分
+
+1. c1统一接流：默认关闭traffic.enabled，启用必须evidence/storage运行时与schema validate、节点租约、规范readiness/liveness组合；HTTP最前端拒绝未就绪新请求（含登录/WS/app/open），健康精确GET/HEAD继续可见。在途请求不倒退/重发，503不能替代历史UNKNOWN回执。门禁基于现有有界观察，不在每请求查DB/文件。验证配置拒绝、来源/认证前拒绝且无副作用、恢复与启动/关闭事件、真实HTTP健康分离。
+2. c2受控排空：host-only部署摘流控制、不可逆排空状态、既有WS正常关闭并取票重连、HTTP宽限/worker与租约停止顺序；同时审查业务worker首次资格/失效后的领取准入，证据/租约基础线程须能在未就绪时持续恢复，已开始工作按其原持久协议收尾。实际进程关停及原会话延续验收，禁止新增任意用户停机端点。
+3. c3可信代理与部署流程：核对客户端IP/Host/Origin信任，固定节点路由LB配置、schema/密钥/存储版本维护与滚动回退规程及验证；之后M3d真实无粘性LB才开放multi。
+c1开工范围为Common部署门禁与HTTP filter、健康/配置/测试及文档；验收中另外修复File见证并发读锁和Tenant首次引导竞争，详见下方记录。既有安全认证/租户/幂等契约不变。用户服务不重启，测试用隔离库/端口。
+
+M3c1首轮p08-m3c1-gate-unit.log **37/37通过、0跳过、BUILD SUCCESS（12:27，01:53）**：新门禁/过滤/配置8、主机策略8、字段清单1、架构17/普通端点1/模块2。默认关闭traffic.enabled；开启要求eager validate、节点清单及配置/存储证据，最前端过滤只豁免精确GET/HEAD健康路径。readiness固定四项、liveness仅本进程状态，校验实际状态聚合及503映射；停止事件不可重新接流，在途链只执行一次，不读被拒正文。traffic开关参与主机部署证明；这会改变旧清单摘要，禁止覆写既有基线。开始隔离真实HTTP验收，c1尚未完成；WS排空和真实LB仍属后续。
+
+M3c1真实HTTP首轮p08-m3c1-gate-http.log **17通过/1装配错误，0跳过，BUILD FAILURE（12:36）**：Modulith observability对ApplicationListener创建CGLIB代理，DeploymentTrafficGate的final限制导致Tomcat启动失败，尚未进入HTTP断言。已去掉final并补实际类代理状态/关闭回归；不关闭observability、不放宽门禁。此前补根健康详情禁止公开及聚合器检查的p08-m3c1-gate-current.log37/37通过，但该制品仍含final缺陷，不用于后续双JVM。修复后重新执行门禁/HTTP/结构，未通过前不推进矩阵或c2。
+
+M3c1 HTTP修复复验p08-m3c1-gate-fixed.log **39/39通过、0跳过、BUILD SUCCESS（12:47）**：真实Tomcat/过滤链、错误资格下登录/captcha/app/open/真实WebSocket握手503、liveness200、资格恢复、HEAD健康及关闭后不可重新接流通过；状态由mock运行时注入，非双JVM资格证明。保留Modulith observability，新增实际类代理回归通过。进一步校验根健康的状态映射后，最新p08-m3c1-gate-final.log **38/38通过、0跳过、BUILD SUCCESS**，制品SHA256=ec9425afaaab779fa520232a5ee8a05585f80af02225a37c3fd19658771e8b0f。使用该制品开始SMA_CLUSTER_TRAFFIC=1独立双JVM，保留原40组，并在全部配置/存储故障下直接检查业务接流与liveness；c1尚未最终标完成。
+
+前端runner语法和专项ESLint通过。完整verify首轮在OperationPanel.vue的原始叹号命中i18n检查；检查时当前并行工作已改成CircleAlert，未改动该页面，正在重新执行完整verify。首轮失败保留，不把旧日志称为通过。
+
+前端完整verify第二轮在并行新增operation-panel.spec.ts命中value.held可空类型错误；读取当前文件时已是value.held?.length || 0，仍保留该并行修正、不改其代码。复验记录到p08-m3c1-frontend-verify-current.log；不得据此前两轮失败声称完整前端通过。
+
+前端最终完整verify **退出0**：p08-m3c1-frontend-verify-current.log记录60文件/312单测通过、类型/测试类型/ESLint/i18n通过、生产构建及发布预算通过（首包160KiB gzip、38懒模块、296文件哈希）。两次先前并行页面报错均按当前已修正文件复验，未接管或覆盖其代码。双JVM本轮目录cluster-1794458905801，仍在执行，最终结果/清理之前c1不标完成。
+
+M3c1双JVM首轮cluster-1794458905801 **passed=false、cleanupComplete=true、退出1**：迁移/重验及去DDL服务启动四组通过，两端readiness曾UP且A登录成功，但随后读取fixture有效参数GET返回common.error.unavailable/503，尚未进入错误节点矩阵。原日志不足以区分门禁瞬时失效与业务层503，不能直接认定根因或加重试掩盖。正在补失败时最多12条只读健康/配置状态/存储证书快照（不含token/正文/路径/钥/摘要），以同制品在全新临时库复现；业务写保持一次发送、生产门禁不放宽。c1继续进行，c2不启动。
+
+新增固定状态DEBUG拒绝日志及有界只读失败采样，38专项再次通过（p08-m3c1-gate-diagnostic）；采样仅失败后执行，SQL各2秒/HTTP各1.5秒，最多12条，不重试业务。静态排查另发现FileClusterStorage.matches对只读verify也持排他锁：健康节点同时读同一锚点可能互相拒绝。先补独立JVM持共享读锁的确定性回归，要求并发读取通过、发布/退役仍拒绝；初始503与此缺陷是否相关尚待复验，不作已确认根因陈述。
+
+并发见证红灯已确定重现：p08-m3c1-witness-red.log **6通过/1失败，0跳过**，独立子JVM实际持有SHARED锁时，原实现第一轮只读verify即false。修复仅让verify使用共享读锁；publish已有文件核对、retire及首次写仍排他，写权限/摘要/长度/force/无链接/预算约束保留，不支持shared锁的挂载不降级冒充成功。开始File、Probe、Runtime、门禁与结构组合复验，通过后再做全新双JVM矩阵，不把单个回归等同首轮503根因已逐帧证实。
+
+并发见证修复组合p08-m3c1-witness-fixed.log **60/60通过、0跳过、BUILD SUCCESS（13:09，02:17）**：新跨JVM持锁回归及File7、Probe7、Storage runtime3、Evidence runtime5、Traffic9、配置/清单9、架构/普通端点/模块20全部通过。原文件独占锁/错误字节/无授权/超时/junction约束保留。制品SHA256=546320dfc0ce685821c276217dd848b3a08e705b00d80aa9f6c673609d437432，已启动p08-cluster-m3c1-traffic-fixed.log全新临时库矩阵；最终结果及清理前c1仍进行中。
+
+最新前端p08-m3c1-frontend-final.log完整verify **退出0，61文件/315单测及类型/i18n/构建/发布检查通过**。双JVM第二轮cluster-1794460209814在双服务同时首次启动时B因TenantDirectoryBootstrap的tenant_tenant主键1竞争退出，已结束并cleanupComplete=true，未进入业务矩阵。只读诊断确认A配置MATCH、存储未互证、readiness503/liveness200，符合门禁预期；这与上一轮参数GET503不是同一已证实原因。
+
+当前修复范围扩展到既有TenantDirectoryBootstrap/TenantRecordMapper及专用测试：平台租户使用原子INSERT ON DUPLICATE KEY无改值占位并持有行锁，按目标ID当前读取检查冲突/已删除；域名也用当前锁定读，不能因旧REPEATABLE_READ快照重复插入。保留人工名称/状态/安全代次、禁用域名和域名归属，不加表/迁移/租户豁免。新增TenantDirectoryBootstrapTests在唯一集成上下文/空目录专用库验收两真实事务并发与旧快照、幂等、禁用保留、代码冲突/软删除拒绝。该项通过前不重跑矩阵或推进c2。
+
+租户引导修复p08-m3c1-bootstrap.log **40/40通过、0跳过、BUILD SUCCESS（13:29，05:27）**：唯一集成上下文的真实MySQL旧快照/并发引导、人工名称/状态/代次/禁用域名保留、代码冲突/域名归属/软删除拒绝通过；门禁9、File7、架构/SQL/平台隔离/普通端点/模块23回归通过。制品SHA256=ce55737e951852fda2ffce444327302063bcc8dfd42016cd0d424f25d7734910，包含并发共享读锁与原子引导修复。下一轮全新临时库双JVM矩阵开始前已记录本项通过；c1最终结果仍待完整矩阵和清理。
+
+全业务双JVM矩阵cluster-1794461473552 / p08-cluster-m3c1-traffic-bootstrap.log **41组通过、退出0、passed/cleanupComplete=true**，同制品22次进程生命周期。并发首次引导、A登录B访问、原身份/缓存/消息/文件/定向任务、八类配置故障、peer退出/重启、存储错/缺根及探针丢失/恢复均通过，端口已释放。原定向负例产生一条HTTP503诊断但当时readiness/liveness均UP，脚本按预期负例通过；它不是门禁误拒。
+
+验收审查发现本轮部分配置故障请求仍处于NOT_READY启动阶段，故这41组只作为全业务/总体拒绝基线，不单凭它宣称已完成启动后的持续隔离。已增强blockedTraffic：只读轮询me，并从当前OS PID及有界日志片段确认WAITING_CONFIGURATION或WAITING_STORAGE（证明ApplicationAvailability已完成启动），再一次性检查登录/captcha/WS/app/open拒绝。11次具体状态证据写入trafficChecks。新增SMA_CLUSTER_TRAFFIC_ONLY=1用于补证，必须给SMA_CLUSTER_TRAFFIC_BASE_RESULT指向同一JAR、已通过且已清理的完整M2/路由/迁移/配置/存储/traffic结果；输出显式标注业务矩阵另见引用，不能把聚焦运行当全业务验收。准备以相同制品补完本项，c1仍不标完成。
+
+### M3c1最终验收（完成，本机独立JVM）
+
+聚焦补证p08-cluster-m3c1-post-startup.log / cluster-1794462687521/result.json **23组通过、退出0、passed=true、cleanupComplete=true**；19次受控进程生命周期，trafficChecks包含当前PID对应的**8次WAITING_CONFIGURATION、3次WAITING_STORAGE**。每次先证明ApplicationAvailability已经结束NOT_READY，再验证me/captcha/登录/WS/app/open的503及no-store；liveness保持UP，A健康peer和B恢复后的原会话正常。该结果通过文件哈希引用同制品完整41组基线cluster-1794461473552，不能把23组单独称为全业务矩阵。两轮JAR均为**ce55737e951852fda2ffce444327302063bcc8dfd42016cd0d424f25d7734910**；18101/18102/5197无监听，临时库/账号/生成密钥已按runner清理，未重启用户服务。
+
+后端分轮证据为真实HTTP/类代理39项、共享读锁/配置/门禁60项，以及当前制品真实MySQL并发引导/结构/门禁40项，全部0跳过通过；中途失败及原因保留在上文，不能相加当作不重复的完整测试数。最新前端p08-m3c1-frontend-delivery.log **完整verify退出0，61文件/315单测，类型/ESLint/i18n/生产构建和发布预算通过**。语法、runner专项ESLint及文档diff检查通过。README已收敛P08过时阶段说明，部署/运维/规则和总排期同步。
+
+交付包括：默认关闭的traffic门禁、固定健康分组/状态映射校验、前置拒绝及在途请求保留、不可逆关闭状态；并发见证共享读锁及原子租户引导修复。证据仍限同主机独立JVM/真实本地文件、Redis显式1s，不覆盖生产多主机挂载、200ms压测或无粘性LB。**下一项M3c2**：host-only主动摘流、既有WS正常关闭/取票重连、业务worker资格与领取准入、HTTP/worker/租约排空顺序和实际进程验证；同步审查启动元数据锁读的索引范围。随后c3/M3d、S6及X5，`deployment-mode=multi`继续拒绝启动。
+
+交付只读核对：本次四轮双JVM（含两次失败）的临时schema和账号各为0残留，28个生成密钥路径均不存在；无本轮JVM或18101/18102/5197监听。实际JAR与两份成功结果哈希一致，聚焦结果引用的完整result文件哈希一致。分支仍为main，改动均属基座及验收/文档；未操作用户服务或并行专项资源。
+
+### M3c2受控摘流与排空（进行中）
+
+已核对当前源码：HTTP只在ContextClosed进入不可逆拒绝，Mail/Cache等后台领取尚无共同准入，多个线程池直接shutdownNow；SocketHub通用close会发送session-ended，不能用它模拟部署排空。按[具体方案](proposals/P08-deployment-drain.md)依次做c2a共享状态/工作许可、c2b真实worker与WS、c2c本机控制/HTTP生命周期/实际进程、c2d索引与合并验收。当前c2a实施，改动限Common契约/协调与Gate及测试；不声称已有外部控制或全部worker接线，不重启用户服务。multi继续关闭。
+
+c2a核心实现：新增公开DeploymentWork.tryStart/snapshot与幂等可跨线程关闭的Permit，可信host或SYSTEM_JOB在事务外准入，HTTP/普通身份/活动事务拒绝；本地活动数最多1024，不排队。共享协调器把准入和不可逆摘流线性化，资格失败可恢复，摘流不能恢复、不能清零未完成计数。HTTP Gate复用同一状态，默认单机也须ApplicationAvailability就绪；traffic开启但Gate缺失/异常即拒绝。现有worker尚未接线，控制入口仍为内部方法；开始单元/装配/并发门禁与真实HTTP复验。
+
+c2a首轮p08-m3c2a-work-unit.log **45/45通过、0跳过、BUILD SUCCESS（14:31，02:25）**：新工作许可7、原Traffic9、配置/清单9、架构/普通端点/模块20。证明容量、并发开始/摘流、跨线程重复关闭、在途计数不清零、资格恢复与不可逆关闭、host/job/HTTP/事务边界、真实类代理及Spring条件绑定。开始p08-m3c2a-work-http.log真实HTTP与默认单机装配回归；本子项尚不标完成，不推进worker接线。
+
+**M3c2a完成**：p08-m3c2a-work-http.log **19/19通过、0跳过、BUILD SUCCESS（14:43，10:45）**，含真实Tomcat/HTTP1、默认应用2、Traffic9与Work7。真实装配中内部host摘流令readiness503/liveness200及业务拒绝，已获准许可仍计数、后续准入拒绝，关闭后不能重新开放；原默认单机健康/匿名保护继续通过。结合45项结构/条件/权限/并发证据完成核心契约，README/规则/二开手册与两份进度同步；它没有新增用户控制端点，也不意味着所有worker或WS已接线。下一项c2b，先b1缓存任务，再Mail/维护/事件/WS及独立定时器，按消费者逐项验收；multi不变。
+
+c2b1缓存任务接线首轮p08-m3c2b1-cache-unit.log **44/44通过、0跳过、BUILD SUCCESS（15:04，01:31）**：执行线程先申请目录发现许可，再对每个claim＋executeOne申请独立许可；调度不预占、回调重查、不继承ThreadLocal、拒绝不跳过租户游标、异常不重发。首轮Dispatcher8/Work7/Traffic9/结构20通过；随后补HTTP不能经tick洗成宿主任务的第9项及真实MySQL排空夹具。下一轮验证当前项仍提交APPLIED、后续项保留QUEUED/PENDING，并回归原CacheTaskExecution/Native未知与fence协议；通过前不推进Mail接线。close仍是进程销毁兜底，受控等待/有序关闭在c2c另验。
+
+**M3c2b1完成**：p08-m3c2b1-cache-mysql.log **33/33通过、0跳过、BUILD SUCCESS（15:22，11:59）**，包括新真实MySQL队列1、Dispatcher9、Work7、原任务执行7/原生资源9。真实应用装配中，第一项已领取后发起摘流，许可保持1；第一项仍提交SUCCEEDED/APPLIED和一次revision，计数归零后第二项仍QUEUED/PENDING，后续tick不再claim。原撤权、取消、竞争fence、失去提交确认、native UNKNOWN和旧进程约束继续通过；未修改任务/回执或自动重跑。当前制品SHA256=b7ab649474f54c926d6414424973f430c1405c841fe2b09aebe3f02c1743a1a7，验证进程已退出。
+
+本轮完成c2a与c2b1，合并证据分轮记录（45核心/19HTTP/44调度/33数据库，不能相加冒充无重复全量）。README/部署/后端规则/二开手册和总排期同步。**下一项c2b2 Mail领取及实际发送生命周期**，之后其他维护/事件/独立定时器与WS；本机控制、HTTP异步跟踪、有序关闭及真实双JVM进程退出仍归c2c，当前没有整机受控排空或生产LB交付，multi继续关闭。用户服务和其他专项资源未操作。
+
+### M3c2b2 Mail准入与传输生命周期（完成，本地协议与专用MySQL）
+
+依赖已完成c2a/b1。拟改mail内部Dispatcher/Cycle/SmtpMailSender，新增内部许可汇合与真实线程完成跟踪；公开MailSendApi、领域事务/fence/UNKNOWN保持。目录发现、recover和每次claim分别在事务外准入，回调执行时重查，HTTP不能转换成宿主任务。许可同时等待结果处理与SMTP线程finally退出；提交前取消/线程池拒绝释放未执行分支，已运行的取消仅请求终止，不能提前归零。超时与DATA启动互斥，防止超时返回RETRYABLE后才开始发送。
+
+验收顺序：①调度拒绝/队列后摘流/逐项领取/在途结束/提交失败不重发，SMTP饱和/开始前取消/忽略中断直到真实退出/跨线程重复完成及原TLS协议；②P08专用MySQL库的真实队列摘流、原MailOutbox和IdentityEmailDelivery回归，以及模块/架构门禁。每步记录实际命令/结果，失败不推进。SMTP只连本机合成协议夹具，不宣称供应商投递或整机排空通过。
+
+c2b2首轮p08-m3c2b2-mail-unit.log **53/53通过、0跳过、BUILD SUCCESS（15:48，01:42）**：Dispatcher9、TransportLifecycle8、Smtp5/Network4、DeploymentWork7、架构/普通端点/模块20。忽略中断的DNS调用与已取消Future保留活动许可，线程实际退出才释放；提交前取消/饱和/非法调用不泄漏，DATA与超时竞争互斥，原TLS/STARTTLS/证书/拒收/未知协议通过。补真实peer断连及新MySQL两租户在途ACCEPTED/UNKNOWN、后续留队夹具后，开始原MailOutbox/IdentityEmailDelivery与当前协议复验；本子项尚未完成，不进入下一worker。
+
+**M3c2b2完成**：p08-m3c2b2-mail-mysql.log **55/55通过、0跳过、BUILD SUCCESS（15:56，06:20）**，包含真实MySQL摘流1、原MailOutbox15、IdentityEmailDelivery6、Dispatcher9、TransportLifecycle8、Smtp5/Network4、DeploymentWork7。真实应用装配中，两租户在途任务分别提交ACCEPTED/UNKNOWN，两个后续任务仍QUEUED；已提交结果不让尚未结束的传输分支过早释放许可，完成后计数归零，后续调用不再发送。领域数据库夹具采用受控传输替身；另一本机TLS夹具确认超时UNKNOWN、实际发送线程退出与peer观察到断连，不能混称真实供应商投递。
+
+当前制品`backend/target/p08-m3c2b2-mail-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar`，SHA256=`6c2768eaf229cc013680540eef6bb125c1c7350335f0760c357276ff2478bed2`。两轮均经根`tools/dev/verify-backend.ps1 -Standard`，分别使用`-Dsma.verify.directory=target/p08-m3c2b2-mail-unit/target`、`target/p08-m3c2b2-mail-mysql/target`和同名日志；`-Dtest`对应上文列出的测试类，`-Dsurefire.failIfNoSpecifiedTests=false`仅避免其他reactor模块没有该专项时报错。MySQL仅P08专用`sma_test_p08_local`，未操作用户库/服务。验证会话已退出，原MailSendApi/数据库结构及UNKNOWN不自动重发规则不变。
+
+README、后端规则、部署说明、Mail二开手册与总排期同批同步。**下一项c2b3维护任务**，需覆盖Auth会话/密钥维护、Identity登录/邮件/重新认证、OpenAPI nonce，然后持久事件/消息信号/独立定时器/WS；不能只加调度入口检查而漏过排队回调和逐项事务。c2c本机控制/HTTP异步/有序关闭和真实双JVM退出、c3代理/M3d LB及S6/X5仍待验收，multi继续关闭。
+
+### M3c2b3 安全与身份维护准入（完成，专用MySQL）
+
+依赖已验收c2b2。路径为Auth SessionMaintenance、OpenAPI NonceMaintenance、Identity Login/EmailMaintenance及其测试；不修改数据结构、TTL/过期与身份授权算法。目录发现独立许可；每个有界清理事务、重加密事务分别准入，许可到事务提交/回滚后结束。排队不预占，执行线程不继承请求上下文；严格host入口包含直接cleanTenant，不能把匿名HTTP/其他租户job转换为宿主维护。拒绝时保留游标，资格恢复可重新扫描；Auth清理后摘流不能再开始重加密，Identity邮箱清理后不能再开始重新认证清理。
+
+验证顺序：①四维护器现有目录回归，新增启动/资格拒绝、恢复游标、排队后摘流、逐事务拒绝、在途提交及异常释放、HTTP/身份/事务边界；②P08专用MySQL真实摘流与原Session/Nonce清理、Identity登录/邮箱/重新认证持久协议，结构/模块门禁。SessionEndedEvent持久消费者属于后续c2b4，当前只证明发布事务完成，不能声称异步监听已经排空。验证后双写状态，再推进下一项。
+
+c2b3首轮p08-m3c2b3-maintenance-unit.log **46通过/1失败、0跳过，BUILD FAILURE（16:05，01:37）**。失败为IdentityEmailMaintenanceTests恢复阶段用when(store.maintain())重设返回时意外执行先前Answer，导致在测试准备期断言active=1；改用doReturn避免执行，不放宽实际维护期间断言或生产门禁。Auth/Nonce/IdentityLogin与结构/模块已通过，本轮仍保留失败记录，完整47项复验通过前不进入MySQL。
+
+c2b3修复复验p08-m3c2b3-maintenance-fixed.log **47/47通过、0跳过、BUILD SUCCESS（16:07，01:48）**：四维护器各5、DeploymentWork7、结构/普通端点/模块20。确认请求/身份/外层事务不能进入、排队回调重查、许可覆盖commit、两个领域事务间停止、恢复不跳租户及异常归还；首轮失败保留。开始专用MySQL SecurityMaintenanceDrainTests、原SessionMaintenance/Sweep/Nonce与IdentityLoginTransaction/EmailChallenge/Reauthentication回归；未完成前不标c2b3或推进持久事件。
+
+**M3c2b3完成**：p08-m3c2b3-maintenance-mysql.log **55/55通过、0跳过、BUILD SUCCESS（16:18，10:27）**。包含SecurityMaintenanceDrain1、SessionMaintenance/Sweep3、NonceMaintenance2、IdentityLoginTransaction8/EmailChallenge8/Reauthentication6、四目录维护器20及DeploymentWork7。真实MySQL事务在提交前保持两个活动许可；摘流后当前会话/nonce清理均成功提交，随后两个新执行单位拒绝、下一租户过期和有效记录均保持，当前租户仅删除已过期行，活动计数归零。原200行上限、SKIP LOCKED、并发清理一次、租户范围和身份挑战/授权过期/保留预算协议回归通过。SessionEndedEvent在本夹具使用捕获发布器，未把异步消费算入已排空。
+
+两次成功命令均为根`tools/dev/verify-backend.ps1 -Standard`，输出目录分别`-Dsma.verify.directory=target/p08-m3c2b3-maintenance-fixed/target`和`target/p08-m3c2b3-maintenance-mysql/target`，`-Dtest`对应上文测试类，并设置`-Dsurefire.failIfNoSpecifiedTests=false`供其他reactor模块使用；日志同前缀。当前制品`backend/target/p08-m3c2b3-maintenance-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar` SHA256=`698576cc02b286b80284ec9466257a9eefb8a45359470174480a93be5b06b8f6`。只使用P08专用`sma_test_p08_local`，进程已退出；无生产配置/数据结构变更，用户服务及并行专项资源未操作。
+
+README/后端规则/部署说明和总排期同批更新。**下一项c2b4持久事件**：已定位Audit Operation/Login、Auth UserSession、Message Socket四类监听器（7个方法），ApplicationModuleListener的事务在方法体之前开启，必须在事务前准入、拒绝留持久失败/待处理，实际框架重投须单独验收；不能在方法体申请后发现已有事务而放宽DeploymentWork。随后消息信号/StoragePoolRegistry/Extension独立定时器/WS及调度清单，再c2c实际进程排空、c3/M3d/S6/X5。multi仍关闭，局部维护测试不替代完整LB与登录连续访问矩阵。
+
+### M3c2b4 持久事件准入（完成，真实框架与专用MySQL）
+
+依赖c2b3完成；范围Common内部deployment Advisor/测试、监听器契约架构门禁和文档。当前7个生产ApplicationModuleListener均为单参数void同步方法体，异步由Spring代理执行、事务由框架开启。已读取本机Modulith2.1.2实际字节码，CompletionRegisteringAdvisor顺序HIGHEST_PRECEDENCE+10，先标处理中、proceed后标完成，异常标失败；因此不能在其外部直接因未就绪抛错，也不能只在方法体申请事务外许可。
+
+方案：外层+5在实际执行线程取得许可（或记录拒绝），作用域覆盖完成/失败元数据落库；内层+20位于框架完成跟踪之内、领域事务之前，未获准则抛固定无载荷异常交回Modulith标FAILED。许可只在外层finally关闭，嵌套调用用线程作用域栈恢复且拒绝在已有事务/HTTP/身份上发起消费。自动覆盖ApplicationModuleListener，不增加需人工逐个记住的注解，不改变持久listener ID。只支持当前单参数void监听契约，返回Future/内部脱离式异步必须另行设计，不能假装已排空。拒绝路径仅允许框架标记失败这类技术收尾，不执行业务事务；整机关闭仍须等待事件执行器，不能把未获准事件的技术收尾漏在c2c之外。
+
+验证顺序：①真实Spring Advisor排序/异步执行、准入/拒绝/嵌套/异常释放、7方法清单与新增监听契约；②专用MySQL＋真实事件注册/完成失败/重投，证明未获准无领域写、已准入可提交且许可覆盖框架结果记录、恢复后按原ID重投；回归Publication/治理、LoginLog/审计、Auth会话与Socket。首项通过并记录后才开始数据库项，整机multi与其他worker不在本项完成范围。
+
+c2b4首轮p08-m3c2b4-event-unit.log **33/33通过、0跳过、BUILD SUCCESS（16:28，01:31）**：DeploymentEventTests5、DeploymentEventBoundary1、DeploymentWork7和结构/普通端点/模块20。用真实Async/Completion/Transaction Advisor证明排队不占许可、拒绝进入框架FAILED且不建领域事务，许可覆盖commit/rollback/完成记录，嵌套作用域恢复及请求/job/外层事务拒绝。契约门禁枚举当前7方法，禁止非void、多参数、final/static和非REQUIRES_NEW监听。开始真实应用/MySQL验证代理排序、拒绝不写审计、同publication ID重投、领域已提交而完成记录尚未结束时仍计数；原消费者另同轮回归，当前子项仍进行中。
+
+c2b4首轮宿主p08-m3c2b4-event-mysql.log **10通过/6失败、0跳过，BUILD FAILURE**：审计、Socket及Publication重投失败，真实代理顺序断言已通过且拒绝记录FAILED成功。栈确认默认task执行器使用Micrometer ContextSnapshot包装，正常请求/重投身份传播到工作线程触发host拒绝；手工ProxyFactory单元没有此宿主传播行为。修复扩展为显式专用`@Async("deploymentEventExecutor")`：Common提供4线程/128队列、AbortPolicy、禁止继承请求ThreadLocal、无ContextSnapshot装饰、非默认候选的执行器，现有7方法与测试重投监听显式指定；架构门禁保证未来监听不漏配。不放宽host或盲目清空执行线程身份，不替换其他默认异步消费者。先复验真实线程池隔离/容量和原33项，再完整原失败矩阵＋其余6监听拒绝重投；当前未完成。
+
+执行器复验首轮p08-m3c2b4-event-executor.log在新增测试lambda结束括号处编译失败，未执行测试；修正为`});`后使用同一独立输出目录、另记p08-m3c2b4-event-executor-fixed.log，原失败日志保留。未跳过当前门禁启动数据库回归。
+
+c2b4执行器修复p08-m3c2b4-event-executor-fixed.log **34/34通过、0跳过、BUILD SUCCESS（16:41，01:35）**：真实线程池4个工作线程＋128队列，继承RequestAttributes/自定义ThreadLocal及认证身份不进入执行线程，满载明确拒绝且不在调用线程执行；原Advisor6/监听契约1/Work7/结构20通过。开始p08-m3c2b4-event-fixed-mysql：保留原所有失败消费者，增加DeploymentEventConsumersTests覆盖其余6个生产监听的拒绝无写和同ID重投；登录监听另验领域提交与框架完成记录之间的许可保持。当前仍未完成。
+
+p08-m3c2b4-event-fixed-mysql.log **编译失败、测试未执行（16:43，22秒）**：并行新增StorageSwitchState依赖的StorageDirectory.bindingForSwitch当时缺失；只读复核当前StorageDirectory第150行已具备该方法。未改动租户专项源码，使用全新p08-m3c2b4-event-current-mysql输出目录重新构建，同一完整专项集复验。原日志保留，当前子项仍进行中。
+
+p08-m3c2b4-event-current-mysql.log **14通过/4错误、0跳过，BUILD FAILURE**：专用执行器让原LoginLog/OperationLog、SessionManagement和真实Socket全部恢复。六消费者测试在断言阶段用了event-test job名，被原SocketSignalStore的message-signal/message-socket白名单拒绝；仅修正测试job名。另三个失败均在显式重投后等待完成，读取当前Modulith DefaultEventPublicationRegistry字节码确认：FailedEventPublications的batchSize=1在全局FAILED查询先LIMIT1，再执行ID过滤，队列前有其他失败记录时所选事件永远未提交。新增摘流产生多条FAILED揭露了原PublicationService缺陷，不能删测试失败记录掩盖。
+
+修复扩展到Monitor PublicationService：使用公开IncompleteEventPublications精确谓词（指定ID＋FAILED＋当前租户），仍由框架markResubmitted原子状态竞争/实际监听器分发，不复制内部协议或直接调用监听器；入口原授权/失败状态/租户与HTTP原生请求治理保持。补PublicationTests较早外租户FAILED仍保留、所选ID完成回归；框架该API读取未完成集合，沿用现有管理查询的集合扫描边界，不能宣称新增分页/全局并发上限。先前全局maxInFlight=1本身也不是跨节点互斥；单事件执行权仍由框架CAS。准备全套复验，不推进后续。
+
+p08-m3c2b4-event-retry.log **37通过/1失败、0跳过，BUILD FAILURE**。新六消费者拒绝/同ID重投通过，原LoginLog3/OperationLog1/SessionManagement1/Socket1、Publication2（含较早外租户FAILED）/HTTP治理1、Advisor6及结构22通过。唯一失败是DeploymentEventMysqlTests在registry.markCompleted的spy内部断言无事务；实际框架该方法自身由事务代理包装，领域事务已先提交，当前是完成记录的独立事务。修改该断言为事务存在，仍由主测试线程独立读取领域行确认已提交，并保持许可1、完成标记尚无、摘流后待投拒绝等实质断言。生产代码无再改；聚焦复验该项、六消费者和原重投/HTTP治理，未通过不标完成。
+
+**M3c2b4完成**：p08-m3c2b4-event-final.log **12/12通过、0跳过、BUILD SUCCESS（17:18，07:13）**：DeploymentEventMysql1、Consumers1、Advisor6、监听契约1、Publication2及HTTP治理1。真实宿主代理顺序为Async→生命周期→Modulith完成跟踪→准入→领域事务；专用sma-events线程无请求/认证身份。七个生产方法未获准均保留FAILED且无领域写，恢复后指定原publication ID完成；其他租户更早FAILED保持不动。登录审计行已由独立读连接看见，但框架完成事务刻意未结束时许可仍1；此时摘流拒绝后续事件，放行完成记录后许可归零，原事件不重发。最后修正的是测试对框架独立事务的认识，没有放宽生产准入。
+
+此前event-executor-fixed34项通过提供实际4线程/128队列隔离与容量证据；event-retry37项通过涵盖原LoginLog/OperationLog、SessionManagement、实际Tomcat/WebSocket通知及强退、结构/模块/端点与重投治理，其唯一失败已由event-final修复复验。中途生产上下文传播问题、精确重投缺陷、测试笔误及并行编译失败全部保留，不相加冒充无重复全量/首次通过。当前制品`backend/target/p08-m3c2b4-event-final/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar` SHA256=`d1786f55a67fe7f97fea08d9afd4e265115e797a524db253f9ad9e3aa241c613`。
+
+所有构建均经根`tools/dev/verify-backend.ps1 -Standard`，`-Dsma.verify.directory=target/<上述日志同前缀>/target`（executor-fixed复用event-executor目录）、`-Dtest`对应各轮列明的测试类，并保留`-Dsurefire.failIfNoSpecifiedTests=false`供其他reactor模块使用。数据库只用P08专用`sma_test_p08_local`，验证会话已退出，未改用户服务/生产库，也未接管并行租户改动。Monitor精确重投仍读未完成集合，性能边界未升级为数据库分页或全局并发互斥。
+
+README/后端规则/部署及二开缓存手册、总排期同批同步。**下一项c2b5消息信号处理**，随后StoragePoolRegistry、Extension独立定时器、WS与调度/异步清单。c2c须等待专用事件执行器连同未准入事件的框架技术收尾，再关闭数据库；当前工作数0不等于队列/HTTP/WS已排空。c3可信代理/M3d真实LB、S6/X5仍待验证，multi不开放。
+
+### M3c2b5 消息信号准入（完成，本地MySQL与Socket）
+
+P08 M3c2b5开工：SocketSignalProcessor按订阅发现、信号读取、每条实际推送/会话重验、目录发现和过期清理分别事务外准入。严格host入口，排队不预占、执行回调重查、不继承ThreadLocal；拒绝不记observed、不跳批次/维护游标，已进入的同步推送收尾。先专项拒绝/恢复/队列/在途/异常测试，再专用MySQL真实信号保留与原Socket/Store回归；SocketHub连接关闭、ping和底层缓冲发送生命周期归后续WS子项，本项不称整机排空。
+验证顺序：单元/结构先通过并记录，再真实MySQL信号读取与摘流后保留、原SocketSignalStore及真实Socket推送回归；失败不推进。数据结构/信号合并/授权仍保持，普通hint不是持久投递确认。
+
+M3c2b5首轮p08-m3c2b5-signal-unit.log **37/37通过、0跳过、BUILD SUCCESS（17:25，01:32）**：SignalProcessor10、Work7及结构20。验证排队不占许可/执行重查，读后拒绝保留当前批次，当前推送结束前计数不归零，下一条停止，清理拒绝不推进游标/截止，以及真实线程上下文隔离。开始专用MySQL信号保留与原Store/真实Socket回归，本项未完成前不推进其他worker。
+
+**P08 M3c2b5完成**：p08-m3c2b5-signal-mysql.log **24/24通过、0跳过、BUILD SUCCESS（17:32，05:55）**，SignalDrain1/Processor10/Store5/真实Socket1/Work7。真实MySQL两条已提交信号读取后停在第一条Hub调用，摘流保持许可1，释放后只完成一条、下一条及维护不启动，计数归零；原信号ID/版本与portal隔离保持。该用例Hub为受控替身，另一个真实Tomcat/WS用例验证通知/待办/私信/强退，不混称实际连接已排空。首轮37项含结构/模块门禁，分轮证据不相加冒充无重复全量。
+
+当前制品backend/target/p08-m3c2b5-signal-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=bc2d6166bf04a0e9749b40e67fca7902f6133a72584b5b7e630b7bcc1f500597；两轮根tools/dev/verify-backend.ps1 -Standard，输出目录target/p08-m3c2b5-signal-unit/target与target/p08-m3c2b5-signal-mysql/target，-Dtest对应上述类，其他reactor模块用-Dsurefire.failIfNoSpecifiedTests=false。只用P08专用sma_test_p08_local，测试进程已退出，未操作用户服务。README/后端规则/部署/方案和两份进度同步。
+
+下一项c2b6存储相关后台调度：最新源码新增StorageOutboxWorker、StorageDrainWorker，需与StoragePoolRegistry一同审查业务消费和基础排空确认的归属，不能照旧清单漏掉。随后Extension独立定时器、SocketHub ping/缓冲/连接关闭及清单门禁，c2c实际进程排空、c3/M3d/S6/X5仍未完成，multi不开放。
+
+### M3c2b6 存储相关后台调度（完成，独立业务MySQL）
+
+P08 M3c2b6开工：StorageOutboxWorker业务消费停止新领取，改独立单worker有界调度、host/回调准入；StoragePoolRegistry目录发现与逐项deliverOne/定时evictIdle事务外申请许可，覆盖消费者真实返回、结果提交及池租约释放。拒绝不推进资源游标，当前执行结束后再归还，原至少一次/UNKNOWN租约重投和fence保持。StorageDrainWorker是存储切换的技术排空确认例外，摘流时继续扫描既有DRAINING任务，不提交切库/执行业务；加强host入口与预算测试，c2c仍须等协调线程结束才销毁DB。池在途会话释放/关闭兜底不能因摘流跳过。先单元/结构验证，再独立P08物理业务库真实Outbox在途完成/后续保留及默认宿主兼容；不使用并行P10/P11现有库。
+
+M3c2b6首轮p08-m3c2b6-storage-unit.log **41/41通过、0跳过、BUILD SUCCESS（17:40，01:38）**：Outbox调度5、Drain协调2、Pool5、SessionTracker2、Work7及结构20。证明拒绝/恢复游标、8资源预算、独立执行线程、在途消费保留池租约直到返回、异常归还、定时回收资格与关闭释放区别。开始专用P08物理库sma_test_p08_storage_drain_20261112（13306，本轮新建）真实Outbox UNKNOWN/在途DONE/后续PENDING和默认宿主兼容验证；不复用并行P10/P11测试资源，未完成前不推进后续。
+
+验证命令核对：storage-mysql列表中的SpringbootModulithAdminApplicationTests不是仓库实际类名，实际为ApplicationSmokeTests；该轮不计默认HTTP冒烟证据。真实Outbox用例仍正常运行，结束后顺序补跑正确ApplicationSmokeTests，不并发清理平台库、不把未选中测试记为通过。
+
+storage-mysql首轮 **21通过/1错误、0跳过，BUILD FAILURE**：新StorageOutboxDrainMysqlTests夹具请求键p08-drain-0短于RequestCommand要求16位，入队前失败；只读确认业务Outbox仍0行。改测试键为p08-storage-drain-*并显式配置测试指纹密钥，生产协议不放宽；使用新日志复验真实Outbox与正确ApplicationSmokeTests，保留首轮失败记录。
+
+storage-fixed **23通过/1错误、0跳过**：正确ApplicationSmokeTests2/2已通过，其余单元通过；新Outbox夹具仍有单独eventKey短于16位，原请求键修复不覆盖事件键。只读确认Outbox0行、请求账本1条，保留FAILED_FINAL证据，修正事件键并为后续合成用例统一生成32位随机前缀（新测试意图），不清除失败回执、不放宽生产校验。只复验当前失败真实Outbox及相关调度/池测试，默认宿主已取得本轮证据。
+
+**P08 M3c2b6完成**：p08-m3c2b6-storage-final.log **22/22通过、0跳过、BUILD SUCCESS（18:18，11:13）**，真实Outbox1、Outbox调度5、Drain协调2、Pool5、SessionTracker2、Work7。真实物理业务库先一次消费失败保留UNKNOWN；第二条执行期间摘流保持许可1，完成后DONE，第三条PENDING。把原UNKNOWN租约调为已过期后，本机仍不再领取；直接读库核对state=UNKNOWN/DONE/PENDING、attempt和fence=1/1/0。当前任务正确恢复可信tenant，消费者不占数据库事务，finish之后计数归零。保留原FAILED_FINAL夹具回执1条、新成功入队回执3条，未删证据。
+
+分轮证据为首轮41项单元/结构和storage-fixed默认ApplicationSmokeTests2项通过，加本轮22项；中途请求键/事件键夹具失败及错误冒烟选择均保留，不称首次全绿或相加冒充无重复全量。制品backend/target/p08-m3c2b6-storage-final/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=4e08e32e02cb13d533b140fb8b496a19069ea29d665123a98bb06e8a560854cf。命令均经根tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/<各日志前缀>/target、-Dtest按各轮上述类、-Dsurefire.failIfNoSpecifiedTests=false供其他reactor模块使用。
+
+数据库仅P08的sma_test_p08_local与本轮新建sma_test_p08_storage_drain_20261112（127.0.0.1:13306），后者保留合成状态用于核对；测试进程已退出，未动用户服务/P10/P11库。README/后端与租户规则/部署/二开说明及两份进度同步。StorageDrainWorker只是原技术确认例外，未宣称真实多实例切库通过；业务会话/Outbox与切库的联合证据仍归X5。
+
+下一项c2b7插件独立定时器与运行时同步，随后WS连接/ping/缓冲发送和调度清单；c2c本机控制/HTTP异步/有序退出、c3代理/M3d LB/S6/X5仍待完成，multi继续关闭。
+
+### M3c2b7 插件同步与后台任务（完成，本地JAR与MySQL）
+
+P08 M3c2b7开工：ExtensionRuntimeService.synchronize每个控制同步周期在执行线程、事务外申请许可，覆盖信任/撤销/租约/准备/激活/回收及权限登记的整个同步调用；摘流后不开始新周期，当前周期继续收尾。PluginRuntime调用同步执行、入口检查租约，在途实例持有inFlight引用且没有宿主Future提前返回，因此停止新同步不会中断已有execute；未开始调用遇到租约过期仍按原协议拒绝。后台invokeJob严格host并在policy.resolve之前准入，许可覆盖journal领取、同步插件执行和结果提交；不修改HTTP同步调用原入口，HTTP生命周期由c2c另验。独立scheduler禁止继承ThreadLocal，销毁前禁止再启动runtime。先调度/服务单元与真实插件JAR回归，再默认宿主及原journal持久协议验证；无外部发布/部署消息，不使用用户插件服务。
+
+c2b7首轮extension-unit：真实PluginRuntimeTests9/9通过；宿主37项中35通过/2失败，空信任数组夹具被原parseTrust非空校验拒绝，未进入控制I/O。修正夹具为临时Ed25519公钥/有效期限/用途，不放宽生产信任校验，复跑相同专项后再进入数据库。真实JAR用例已证明租约过期拒绝新调用、已进入宿主能力的原调用保留inFlight并完成。
+
+M3c2b7修复后专项 p08-m3c2b7-extension-fixed.log：真实PluginRuntimeTests **9/9**、宿主单元/架构/模块/端点 **37/37通过，0跳过，BUILD SUCCESS**。有效临时公钥夹具已进入控制I/O，验证拒绝新同步/新job、在途I/O及结果提交期间许可保持、线程上下文隔离、UNKNOWN不重复执行；下一步使用P08专用平台MySQL验证原持久回执与默认宿主。本项尚未完成，不推进WS。
+
+c2b7夹具复核：ExtensionJobDrainMysqlTests原制品摘要与旧ExtensionWorkJournalTests重复；平台引用计数是全局技术状态，测试顺序可能互相干扰。当前mysql进程使用编译时的旧夹具继续完成，源码已改为专项独立摘要并把引用断言收紧为精确1；该源码必须另以相反类顺序复验后才能标完成，生产代码无变化。
+
+c2b7 p08-m3c2b7-extension-mysql.log **7/7通过，0跳过，BUILD SUCCESS（18:44，11:47）**：默认ApplicationSmokeTests2、原ExtensionWorkJournalTests4、新JobDrain1；拒绝后恢复读取原UNKNOWN/claim/版本及引用通过。此轮旧夹具按原journal先执行顺序通过，不能替代独立摘要修订；接着使用reversealphabetical顺序执行新JobDrain再原journal，验证平台引用不受顺序污染。未开始WS。
+
+**P08 M3c2b7完成（本地）**：p08-m3c2b7-extension-final.log **5/5通过，0跳过，BUILD SUCCESS（18:53，08:13）**，reversealphabetical实际先执行ExtensionJobDrainMysqlTests1，再ExtensionWorkJournalTests4。新夹具专属摘要保留原UNKNOWN、同一claim/版本与精确1条持久引用，原回执固定版本/唯一claim/权限/对账全部通过；独立SQL读取核对tenant97290为UNKNOWN1条、claim仍存在，专属摘要reference_count=1。生产逻辑无需因夹具隔离而修改。
+
+分轮证据：extension-fixed真实PluginRuntimeTests9/9、宿主单元/结构37/37；extension-mysql默认ApplicationSmokeTests2＋原journal4＋摘流1共7/7；extension-final反向顺序5/5。不相加冒充无重复全量，首轮信任夹具失败及摘要隔离修订均保留。最终制品backend/target/p08-m3c2b7-extension-final/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=9d695f4b2644eb0bf81fdf3e02718a77d58fabcf583c1f35fc8600721e12dc7c。
+
+命令均经根tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/<对应日志前缀>/target及-Dsurefire.failIfNoSpecifiedTests=false；final指定-Dtest=ExtensionJobDrainMysqlTests,ExtensionWorkJournalTests和-Dsurefire.runOrder=reversealphabetical，mysql额外ApplicationSmokeTests，fixed专项列表见原记录/日志。只用P08专用sma_test_p08_local（13306），测试进程已退出；未接触用户插件控制服务/用户进程/P10/P11库。7个范围源码摘要核对无漂移，9份文档225条本地链接检查通过，范围git diff --check通过。
+
+README、后端/插件规则、插件接入/二开缓存/部署手册及两份进度已同步。升级说明明确SNAPSHOT后台入口收紧：事务内/附身份旧调用须由业务持久意图交给可信host worker，不能清空身份绕过；外部旧业务制品兼容矩阵未验收。控制I/O受控替身、真实签名JAR和MySQL分别提供证据，不等于真实HTTPS控制服务或整机关闭。
+
+下一项c2b8：SocketHub连接准入、ping/缓冲发送生命周期、1001部署关闭与会话保留/重新取票，再补调度及异步入口完整清单。c2c本机控制/HTTP异步/有序停机、c2d组合审计、c3代理/M3d无粘性LB、S6和X5仍未完成；multi保持关闭。
+
+P08 M3c2b8开工：Common新增只读DeploymentConnections生命周期观察SPI，Message接入握手预留→连接交接→所有发送/关闭操作计数，握手失败释放、升级成功回调交接且晚到回调重查摘流；拒绝新握手不消费票据。沿用Spring有界并发发送装饰器，统计全部同步调用以覆盖其缓冲刷新线程，不能只跟踪信号发送者。独立单worker负责每连接ping准入与技术关闭，摘流停止新业务发送，等待原发送后1001关闭，不发送session-ended/不注销共享会话；计数等真实回调和I/O结束，不超时清零。拟改common/deployment公开只读契约、message SocketHub/握手适配及测试；前端沿用现有重新取票/REST刷新逻辑，补契约测试。先单元/握手/结构，再专用MySQL真实Tomcat/原票据及消息回归，再更新双进度；实际双JVM滚动停机归c2c，不以本项替代。
+
+c2b8首轮p08-m3c2b8-socket-unit.log **44通过/1夹具错误，0跳过**。Hub生命周期6、原信号10、Work7及结构20通过；握手用例重设when时调用旧throw stub，改doReturn。复核另补每轮128项轮转队列，失败关闭不得饿死后续连接；晚到升级除摘流外还重验资格，资格不足1001且不查会话。新增预算/晚到资格测试后复验当前专项，不推进数据库。
+
+c2b8 socket-fixed测试编译失败：并行安全专项SecuritySignalCaptureService增加CacheNodeIdentity参数时，测试仍为旧构造调用；未执行测试。只读确认当前SecuritySignalCaptureTests已同步双参数构造，保留并行修改，使用新输出socket-current重新构建。前端消息状态12/12通过，新增1001保留token/新票据/重连REST刷新，前端运行逻辑无改动。子项仍进行中。
+
+c2b8 socket-current **47/47通过、0跳过、BUILD SUCCESS**，Hub8/握手2/原信号10/Work7及结构20。另复核最终销毁与晚到升级竞争：原已预留握手若在worker关闭后才到连接回调，仍需主动1001关闭，不能只标记等待已停止worker；补finally关闭兜底及专门测试。先聚焦复验Hub/握手，不把前一轮制品当作这次小修已验证。前端12项及type-check:tests通过。
+
+c2b8 socket-late **11/11通过、0跳过、BUILD SUCCESS**：Hub9＋握手2，销毁后晚到升级仍1001关闭、预留交接/真实回调计数通过。进入P08专用MySQL真实Tomcat 1001且共享会话保留、拒绝新握手不消费票据、原推送/强退及票据一次消费回归；本子项未完成前不推进调度清单/整机停机。
+
+c2b8前端完整npm run verify通过：62文件/318项测试，类型、测试类型、lint、i18n、路由/基线、Vite构建和release预算均通过，日志backend/target/p08-m3c2b8-frontend-verify.log；本轮前端仅新增测试，保留并行安全身份修改。后端真实MySQL验证仍进行中，不用模拟WebSocket测试替代真实关闭/共享会话证据。
+
+**P08 M3c2b8完成（本地Tomcat/MySQL）**：p08-m3c2b8-socket-mysql.log **14/14通过，0跳过，BUILD SUCCESS（19:28，11:25）**：SocketDeploymentMysql1、SignalDrain1、Store5、Ticket6、原Socket1。真实JDK客户端收到1001，Hub等待实际afterConnectionClosed后计数归零，无session-ended；原登录仍能resolve并发行新票据，摘流节点拒绝新握手且未消耗该票据，随后原协议一次消费成功/重复拒绝。原通知/待办/私信/强退及共享票据竞争、过期/会话绑定全部回归。此轮是单机单宿主真实连接，新票据在服务层核验，不称另一真实节点已重连或实际进程滚动停机。
+
+分轮证据：socket-current **47/47**含Hub8/握手2/信号10/Work7/结构20；销毁后晚到升级小修socket-late **11/11**含Hub9/握手2；真实mysql **14/14**；frontend-next完整npm run verify **318/318**及类型/lint/i18n/构建/release通过，messages.test.ts12项含新增1001保留token/退避/新票据/REST刷新。保留首轮Mockito夹具错误及并行安全构造器编译失败，不相加冒充一次完整后端回归。
+
+最终JAR：backend/target/p08-m3c2b8-socket-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar，SHA256=9fbf1b3d669b8191489738e25226ed74f282d327349c05331fbe4458acbe5199。后端均经根tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/<日志前缀>/target、-Dtest按各轮上述测试类、-Dsurefire.failIfNoSpecifiedTests=false。前端日志backend/target/p08-m3c2b8-frontend-verify.log。只用P08平台库sma_test_p08_local（13306）；8个范围源码摘要未漂移，测试JVM43696和最后随机端口55955已退出；用户服务、其他专项库及并行改动保持。
+
+规则/方案/二开手册明确：DeploymentConnections为只读观察SPI，握手/连接/在途I/O分别计数；101保留预留到回调交接，关闭返回和超时都不能清零。正常ping逐连接准入，独立worker每250ms轮转最多128项；技术关闭继续运行，失败关闭保留且不会饿死后续连接。原Spring 64KiB缓冲/5秒观察限额保持，所有发送线程覆盖计数；不是客户端送达确认或严格网络时限。10000连接无阻塞轮转约20秒，实际宽限和执行器结束仍须c2c验收。
+
+下一项c2b9调度/异步完整清单及遗漏收口，尤其文件检查/安全采集/规则执行等并行新增来源；之后c2c本机控制、HTTP异步及有序停机，c2d组合审计、c3/M3d代理/LB、S6与X5。multi仍拒绝启动，本项未重启/部署用户服务。
+
+c2b8收口核对：独立SQL确认tenant98740原auth_session共1条，未删除1、未锁定1、仍未到期1（不读取token/hash）。8份文档233个本地链接有效；范围git diff --check通过，8个源码/测试文件摘要无漂移。README、后端/前端规则、部署/二开手册及双进度已同步，本地WS子项完成；全目标仍未完成。
+
+P08 M3c2b9开工，按依赖拆分：b9a先建立编译后调度/异步/线程池/HTTP异步/子进程及外部规则执行入口的精确清单门禁与人工归属台账；台账显式区分已准入业务、技术协调、父请求同步、需补踪的子线程/进程及独立worker，不用登记代替验收。b9b逐项补Google/LocalTransfer/FileCluster等Future取消后仍存活的实际执行观察，Console异步响应和TLS超时线程另核验；b9c检查检查容器/子进程与规则引擎隐式并发；b9d同制品回归和清单收口。实际有序关闭及数据库/协调资源销毁仍归c2c。
+
+本轮拟改backend架构测试/测试资源清单、docs/proposals/P08-deployment-activity-inventory.md及现有方案/双进度；b9a通过后再实施生命周期公共观察契约与逐个消费者。发现GoogleHttpTransport、LocalTransferStorage、FileClusterStorage在Future.cancel后方法可先返回，父许可/HTTP计数不能单独证明真实子线程结束；SecurityCollectionWorker已逐I/O单元准入；ContentInspectionWorker是独立进程入口，不能误作宿主定时器。并行安全/文件变更继续保留。
+
+b9a首轮inventory-discovery编译成功，发现86条入口；空审查清单使门禁按预期失败（1通过/1拒绝），未自动批准。逐项核对后剔除把AbortPolicy误当执行器的噪声，新增自定义Executor继承识别、Caffeine/HttpClient/Hikari/Lettuce资源及异步返回类型，补真实编译夹具验证组合/重复注解、虚拟线程、并行流、子进程和异步HTTP可被发现；只做源码/字节码检查，夹具不执行线程或命令。待扩展发现结果人工登记后复验，再推进生命周期修复。
+
+b9a扩展发现inventory-expanded：真实字节码检测夹具通过，空清单仍按预期拒绝（1通过/1拒绝）；审查后最终80条：Scheduled17、Async7、异步返回2、执行器20、提交18、HTTP4、规则库1、子进程1、独立线程1、资源9（含重复调用次数）。已逐类核对并登记新台账，明确Google/本地传输/见证子线程等未完成项，保留库自动线程与运行时调度核对边界。按审查结果写入固定基线，开始普通门禁及模块/架构复验，无自动批准开关。
+
+**M3c2b9a完成（静态入口审查）**：p08-m3c2b9-inventory-reviewed.log **23/23通过、0跳过、BUILD SUCCESS**（Inventory2、持久事件清单1、架构17、模块2、端点1）。80条精确基线与人工归属台账一致；真实检测夹具验证了组合/重复Scheduled、组合Async、自定义Executor、虚拟线程/并行流、异步HTTP及子进程的发现。先前两轮因空审查基线拒绝为预期引导记录，未自动批准或放宽比较。此完成仅指入口发现/审查门禁，不表示b9剩余生命周期或整机排空通过。
+
+进入b9b1公共实际任务观察：增加只读DeploymentActivity与有界DeploymentTaskTracker，登记提交/运行状态，Future取消前未启动可释放、已启动须等run finally，拒绝与shutdownNow取消队列不泄漏；不另建线程、不授予工作/租户权限、不替代父HTTP/DeploymentWork。先并发/取消/异常/关闭/容量专项和结构门禁，再接入LocalTransfer/FileCluster及Google等消费者，不提前声称消费者已修复。
+
+**M3c2b9b1完成（公共观察原语）**：p08-m3c2b9-task-tracker.log **34/34通过，0跳过，BUILD SUCCESS**（Tracker5、Work7、Inventory2及结构20）。真实执行器证明运行中Future取消/close保持running，未启动取消及拒绝释放，shutdownNow移出队列结合close不泄漏，40轮启动/取消/关闭竞争无重复执行/负计数，成功/异常及重复run保持一次释放。清单新增唯一公共Executor.execute转交点，共81条。公共原语不创建线程、不赋权，消费者尚未接入不能据此称已修复。
+
+下一b9b2先接入LocalTransferStorage：跟踪真实文件工作与资源finally，超时后的原不可变对象/未知账本保持；关闭后的Future取消保守映射原STORAGE错误而不是NotStarted。线程禁止继承调用者ThreadLocal，原maximumConcurrent/零队列/路径检查不变。验证真实文件锁、超时且忽略中断的线程仍计数、关闭/拒绝和原写入/冻结/隔离回归，通过后再处理FileCluster见证。
+
+**M3c2b9b2-1 LocalTransfer完成（真实本地文件）**：p08-m3c2b9-local-transfer.log **34通过、0失败/错误、1跳过，BUILD SUCCESS（19:46，01:36）**，新Deployment2全部通过；旧Storage7中6通过、符号链接权限夹具1跳过，Windows Junction拒绝已通过。新用例证明方法超时后线程忽略中断仍保持running1及真实FileLock，close两次不清零；释放阻塞后才归零/释放锁，原不可变证据文件仍存在；未开始拒绝关闭输入且不创建对象。子线程无继承ThreadLocal/认证身份，原校验/写入/冻结协议保持。Tracker5/Inventory2/结构19同轮通过。
+
+制品backend/target/p08-m3c2b9-local-transfer/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=b368366b77338ec858609cd04b8c467df313abace561ff9323b0e2a98e2f9dfa。未执行数据库或HTTP联调，本项不改变数据结构/公开上传入口；未来整机关闭仍需c2c。顺手补静态门禁对“子类仅在类上加Async、全部继承父方法”的遗漏检测，真实继承夹具聚焦复验后再进入FileCluster；生产运行代码无再次修改。
+
+b9继承检测补验：p08-m3c2b9-inventory-inherited.log **2/2通过，0跳过，BUILD SUCCESS**，类级Async即使只继承方法也会产生ASYNC_TYPE条目；当前基座仍81条。5个本项运行class（观察接口/快照、tracker/Task、本地传输）与已通过本地文件专项的编译字节完全一致，未因清单测试修订偷换运行证据。8份文档228个本地链接有效，范围git diff --check通过。
+
+本轮后端命令均为tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/<对应日志名>/target、-Dsurefire.failIfNoSpecifiedTests=false；inventory-reviewed指定DeploymentActivityInventoryTests,DeploymentEventBoundaryTests,ArchitectureRulesTests,ModularityTests,SecurityEndpointInventoryTests；task-tracker指定DeploymentTaskTrackerTests,DeploymentActivityInventoryTests,DeploymentWorkTests,ArchitectureRulesTests,ModularityTests,SecurityEndpointInventoryTests；local-transfer指定LocalTransferDeploymentTests,LocalTransferStorageTests,DeploymentTaskTrackerTests,DeploymentActivityInventoryTests,ArchitectureRulesTests,ModularityTests；inventory-inherited仅DeploymentActivityInventoryTests。所有验证会话已结束，仅临时测试文件，无数据库/用户进程改动；原symlink跳过不冒充已测。
+
+下一项b9b2-2 FileClusterStorage真实见证子线程，之后Google/Console/TLS的库活动和规则/独立检查边界；b9整体、c2c有序停机、c2d/c3/M3d/S6/X5未完成。公共观察不自动阻止业务工作，不替代父准入；multi继续关闭。
+
+P08 M3c2b9b2-2开工：FileClusterStorage使用DeploymentTaskTracker观察内层见证线程，组件id=file.shared-witness；发布/核验/退役原协议保持，2线程零队列和原探针预算不变，工作线程禁止继承ThreadLocal。Future取消/组件关闭不能清除运行计数；取消保守映射原unavailable，不返回成功或重建不确定探针。只将内部execute开放为包内测试接缝并保留host入口校验，不构成二开API。先真实线程/文件锁超时及原独立JVM共享读锁/路径/摘要测试，再共享Probe/Runtime及专用MySQL互证回归；不改变SharedStorageRuntime/Store状态协议或用户挂载。
+
+b9b2-2见证单元p08-m3c2b9-witness-unit.log **46/46通过、0跳过，BUILD SUCCESS（19:52，01:46）**：受控内部I/O夹具在方法超时后仍持真实FileLock/running1，close重复不清零；未开始取消/执行器饱和无探针落盘，正常和异常均实际归还，线程无继承身份。原独立JVM共享读锁/发布退役排他、摘要/目录链接拒绝及SharedStorageProbe/Runtime、入口清单/结构通过。下一步使用P08专用MySQL执行真实双runtime＋文件/持久互证及默认宿主兼容，不把单元计数通过当作完整互证已复验。
+
+**M3c2b9b2-2 FileClusterStorage完成（本地）**：p08-m3c2b9-witness-mysql.log **4/4通过、0跳过、BUILD SUCCESS（20:03，09:47）**，ApplicationSmokeTests2＋SharedStorageRuntimeIntegrationTests2。真实文件与MySQL双runtime维持互证，丢失一侧probe后该侧UNAVAILABLE且持久代次推进/撤销资格，健康peer继续READY，原文件不重建；独立目录不能取得双向资格。此用例同JVM双runtime，不称独立双JVM滚动停机或生产NFS/SMB验收。
+
+结合witness-unit **46/46通过、0跳过**：新Deployment3、原Storage7（含独立JVM共享读锁及Windows Junction）、Tracker5、Probe7、Runtime3、Inventory2及结构19。阻塞夹具调用内部实际执行接缝并持真实FileLock，方法超时/close后仍计running1，实际退出后才归零；原公开见证读写/锁/摘要另由原Storage专项验证，边界分别记录。无迁移/用户配置变更，技术见证继续服务摘流收尾，观察计数不授予资格。
+
+最终制品backend/target/p08-m3c2b9-witness-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=843c617047e8f70fc1ee9566c35e60ba71122e7dd3de0272ccd7544ca99b0083。两轮均根tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/p08-m3c2b9-witness-unit/target或target/p08-m3c2b9-witness-mysql/target，-Dtest按上述测试类，-Dsurefire.failIfNoSpecifiedTests=false。仅P08专用sma_test_p08_local（13306），测试JVM9080已退出；3个范围源码/清单摘要未漂移，未动用户服务/其他专项库。
+
+README、部署/二开手册、后端规则、活动台账与两份进度同步。下一b9b3逐个核验Google/Console/TLS实际传输与库资源；随后规则/独立检查进程边界及b9收口。c2c整机控制/HTTP异步/有序关闭、c2d/c3/M3d/S6/X5仍未完成，multi保持关闭。
+
+b9b2-2最终核对：7份文档225个本地链接有效，范围git diff --check通过；FileClusterStorage在单元与MySQL两轮编译字节一致。当前总目标继续进行，不把共享见证这一子项完成等同于完整multi可用。
+
+P08 M3c2b9b3-1 Google传输开工：GoogleHttpTransport接入DeploymentTaskTracker，仍4线程零队列/12秒总等待/64KiB响应预算与固定Google端点；取消后实际任务仍计数，禁止继承调用者ThreadLocal。新增common::deployment的DeploymentTransport受控关闭契约：host停止新提交，执行器等待已接受任务，线程池真正terminated后才调用HttpClient.shutdown；transportTerminated同时核对线程池、任务和JDK客户端真实终止，不把任务0等同于库资源结束。PreDestroy仅保留强制取消兜底，不能假称优雅关闭。
+
+公共tracker新增stopAccepting（只拒绝新提交，不取消已有任务），先与原取消/竞争单元验证，再Google受控忽略中断夹具、真实本地HTTP成功/慢正文取消/断连/优雅终止及原Google协议/IDToken回归；通过后再进原Identity真实MySQL HTTP/登录操作专项。控制契约无用户HTTP入口，内部关闭要求host/无事务，无外部Google账号调用；Console/TLS/NodeControl后续单独验收，当前不放开multi。
+
+b9b3关闭契约前置p08-m3c2b9-transport-contract.log **34/34通过、0跳过、BUILD SUCCESS（20:09，01:51）**：Tracker6证明stopAccepting保留原队列/结果并拒绝新提交，原取消/竞争及Work7/Inventory2/结构19通过。DeploymentTransport契约只定义host关闭及真实终止观察，尚无消费者不能称传输已完成。进入Google接线及真实本地协议专项。
+
+b9b3-1 Google专项p08-m3c2b9-google-unit.log **43/43通过、0跳过、BUILD SUCCESS**：HttpTransport5含真实请求优雅完成/客户端终止，Deployment3含忽略中断任务仍计数、host关闭拒绝与事务前置、真实慢正文取消后peer断连及JDK isTerminated；IdToken7、Tracker6、Inventory2及结构20。生产无跳转/无Cookie/4并发/64KiB/固定端点/原错误码保持。清单为82条（专属TransportExecutor构造链），新增库关闭不计作资格或请求成功。
+
+进入P08专用MySQL的原IdentityLoginTransaction、IdentityGoogleOperation、IdentityApplicationHttp与默认ApplicationSmoke回归，验证原单次兑换/未知不重换/租户与HTTP契约及真实装配；这些集成使用原受控Google签名/传输夹具，不访问供应商。本项数据库通过前不推进Console/TLS。
+
+Google关闭契约补充（仅Javadoc/文档，无运行行为修改）：宿主必须先停止新父请求/工作准入并等待已准入父流程完成，再调用shutdownTransport；同一父流程可能先兑换再取公钥，不能在其两次调用之间提前关闭传输。父方法超时后存活的子任务由tracker/客户端继续观察收尾；完整父HTTP/worker顺序仍归c2c。当前MySQL验证继续原编译代码，不因注释修改重启。
+
+**M3c2b9b3-1 Google传输完成（本地）**：p08-m3c2b9-google-mysql.log **27/27通过、0跳过、BUILD SUCCESS（20:22，09:03）**，ApplicationSmoke2、IdentityApplicationHttp9、IdentityGoogleOperation8、IdentityLoginTransaction8。原state/proof/PKCE/租户/Origin/登录与重认证区分、单次兑换竞争、未知VERIFYING不重换、失败会话提交与配置变化保留原行为；真实MySQL和应用HTTP链通过，Google签名/传输为原受控夹具，无供应商账号访问。
+
+分轮证据：transport-contract **34/34**验证stopAccepting保留已接受队列；google-unit **43/43**（Transport5、Deployment3、IdToken7、Tracker6、Inventory2及结构20）验证真实本地请求完成后才关闭客户端、慢正文取消后peer真实断连/JDK终止、忽略中断的替身任务仍计数、host关闭/事务门禁、4并发和原64KiB/无跳转/Cookie约束。不能将工作计数0当作客户端已关闭，transportTerminated同时核对真实库终止；PreDestroy仅强制取消兜底，不是完整滚动停机。
+
+最终制品backend/target/p08-m3c2b9-google-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=7d92cea5f4cfc304318025214932b3ee8de74105b1a7241558ed36d95a83387b。所有命令经根tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/<对应日志前缀>/target、-Dsurefire.failIfNoSpecifiedTests=false，-Dtest按上述各轮类（统一后缀Tests）。google-mysql精确列表IdentityLoginTransactionTests,IdentityGoogleOperationTests,IdentityApplicationHttpTests,ApplicationSmokeTests；google-unit精确列表GoogleTransportDeploymentTests,GoogleHttpTransportTests,GoogleIdTokenTests,DeploymentTaskTrackerTests,DeploymentActivityInventoryTests,ArchitectureRulesTests,ModularityTests,SecurityEndpointInventoryTests。
+
+数据库仅P08的sma_test_p08_local（13306），测试JVM43060已退出；单元与MySQL两轮4个关键运行class字节一致。期间仅对DeploymentTransport补父流程关闭顺序Javadoc并记录，无行为漂移或重启验证。清单82条已人工审查/普通门禁验证，未自动批准。README/后端规则/部署及二开手册/活动台账与双进度同步，用户服务和其他专项库未改。
+
+下一b9b3-2 Console代理传输，再TLS/NodeControl库资源及规则/独立检查边界；c2c父HTTP/worker与辅助传输的实际关闭顺序、c2d/c3/M3d/S6/X5仍未完成，multi继续关闭。
+
+Google子项收口核对：7份文档227个本地链接有效，范围git diff --check通过；6个范围源码/测试/清单摘要与已记录最终版本一致。关闭契约注释修订已单独记录，未修改测试中的运行行为；全目标仍在实施中。
+
+P08 M3c2b9b3-2 Console代理开工：ConsoleProxyService按整个forward（可信身份/机器凭据读取→发布会话交换→原代理动作）登记运行计数，固定最多1024个本机在途、无队列。host shutdownTransport拒绝新forward但保留原两阶段流程，全部forward返回后才HttpClient.shutdown；终止必须同时父调用为0及JDK客户端isTerminated。无新线程或身份传播，Future取消/超时不当作库已退出；PreDestroy强制关闭阻止尚未发出的下一阶段，不自动重做未知发布写。
+
+保持HTTPS配置、路径白名单、权限、原host token不外传、机器token ACL、2MiB响应/1MiB分片、请求20秒/等待25秒及NATIVE回执协议。包内测试接缝可缩短等待/容量但不能放宽生产配置。先受控客户端两阶段/容量/拒绝/取消及真实本地HTTPS证书校验、慢正文未知写/优雅终止，再原Console请求治理HTTP和默认宿主MySQL回归。只用合成回环服务，无用户发布服务/外部发布动作；通过后再推进TLS/NodeControl。
+
+Console首轮p08-m3c2b9-console-unit.log在测试编译阶段失败，未执行测试：并行新增DefenseMaintenanceConfigurationTests给已有primitive boolean的DefenseCollectionProperties.enabled传null。仅将该测试夹具首参数修为false（默认禁用采集），不修改安全生产实现/其他字段。记录此一行跨线编译修正后复跑，未标当前子项完成。
+
+并行新增SecurityRetentionService已源码审查：宿主入口、单线程有界调度/禁止继承身份，平台清理/目录发现/逐租户清理各自DeploymentWork准入，关闭等待原事务而不提前归还；它是业务维护而非基础协调例外。仅在P08活动清单登记新增构造、Scheduled（含initialDelay）及提交3条，基线由82到85；不修改其生产代码、不把登记当作安全专项已验收。Console没有新增执行器或外部发布调用。
+
+Console修复后p08-m3c2b9-console-fixed.log **35/35通过、0跳过、BUILD SUCCESS（20:34，01:42）**：ConsoleTransportDeployment5（含真实本地HTTPS、可信/不可信证书、两阶段优雅完成、未知命令只发一次、库终止）、原Proxy5/Scope1、跨线夹具Configuration2、Inventory2及结构20。已审新增SecurityRetention3条也通过普通入口门禁，当前85条；首轮编译笔误记录保留。
+
+进入P08专用MySQL的ConsoleRequestGovernanceHttpTests与ApplicationSmokeTests，验证原QUERY/NATIVE/分片重复拒绝、权限/白名单及默认宿主实际装配。代理外部目标仍受控替身，真实HTTPS传输证据来自上轮本机合成服务；不调用用户发布服务、不自动重发未知动作，数据库通过前不推进其他传输。
+
+**M3c2b9b3-2 Console传输完成（本地）**：p08-m3c2b9-console-mysql.log **3/3通过、0跳过、BUILD SUCCESS（20:40，05:44）**，ApplicationSmoke2＋ConsoleRequestGovernanceHttp1。默认宿主实际装配通过，原QUERY/NATIVE、分片重复/伪造查询拒绝、权限/白名单保持；治理用例代理为受控替身，真实HTTPS来自console-fixed本机合成服务，分别记录，不宣称真实发布服务验收。
+
+console-fixed **35/35通过**包括新Deployment5、原Proxy5/Scope1、Inventory2/结构20及跨线夹具Config2。真实HTTPS确认已接受会话交换在关闭后仍完成原命令，后续请求拒绝；慢正文未知命令只发送1次、JDK客户端实际终止；不可信证书在进入合成处理器前拒绝。受控客户端另验证2项容量同时占用、强制close不清运行计数/迟到会话不再开始后续阶段、Future完成仍须独立库终止证据。生产每次20秒请求/25秒等待与凭据隔离保持，1024本机在途无排队。
+
+首轮console-unit在编译阶段被并行DefenseMaintenanceConfigurationTests的primitive boolean传null阻断；只修测试首参false，并在console-fixed验证该配置2项通过，不更改安全生产实现。并行SecurityRetentionService新增3入口已按源码人工审查登记，85条普通清单通过；登记不代表保留维护已完成。
+
+制品backend/target/p08-m3c2b9-console-mysql/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar SHA256=8b8a98f3f01e5d1a6723c5af214f9fa8fc2d9f869feb8ae7c0dc339b23204e8f。均根tools/dev/verify-backend.ps1 -Standard，-Dsma.verify.directory=target/<对应日志前缀>/target、-Dsurefire.failIfNoSpecifiedTests=false；fixed指定ConsoleTransportDeploymentTests,ConsoleProxyTests,ConsoleRequestScopeTests,DeploymentActivityInventoryTests,ArchitectureRulesTests,ModularityTests,SecurityEndpointInventoryTests,DefenseMaintenanceConfigurationTests；mysql指定ConsoleRequestGovernanceHttpTests,ApplicationSmokeTests。P08专用sma_test_p08_local（13306），JVM30628已退出；2个Console运行class两轮字节一致，4个范围源码/清单/修复夹具摘要无漂移。
+
+README/后端及插件规则/部署说明/活动台账与双进度已同步；无外部发布动作，无用户服务重启或其他库改动。下一b9b3-3 TLS定时关闭及NodeControl客户端资源，随后规则/独立检查边界和b9收口；c2c/c2d/c3/M3d/S6/X5未完成，multi继续关闭。
+
+Console子项最终文档核对：7份文档229个本地链接有效，范围git diff --check通过。失败记录、跨线夹具一行修正和新增维护入口审查均保留；当前全目标继续实施，不将本地代理传输通过当作完整多实例交付。
+
+P08 M3c2b9b3-3a TLS探测开工：DomainTlsProbe同时观察同步探测/套接字归属与截止关闭回调，回调经DeploymentTaskTracker登记后交原单线程scheduler，取消未开始任务移出延迟队列，已运行回调保留计数至finally。固定最多1024个本机探测，线程不继承身份；原固定地址、SNI/证书主机名/信任、端口443和≤12秒预算保持。host shutdownTransport拒绝新探测，但在既有探测真正返回前保留其截止任务；之后关scheduler，并同时核对套接字归属、回调计数和scheduler终止。PreDestroy同样保留在途截止保护，不提前shutdownNow丢失关闭任务。
+
+包内Socket工厂仅用于受控竞争夹具；真实Socket关闭后才释放归属，关闭异常且isClosed=false保持未完成，不超时清零。先新回调竞争/失败保留/host门禁与原真实TLS固定地址/证书/无响应peer/优雅关闭，再对应领域回归；不改变租户域名授权/数据库状态或用户服务。通过后再独立处理NodeControl流式响应及HttpClient资源。

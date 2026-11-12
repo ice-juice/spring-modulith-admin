@@ -14,11 +14,15 @@ public class PermissionCatalogSync {
     private final List<PermissionCatalog> catalogs;
     private final RequestMappingHandlerMapping mappings;
     private final PermissionService service;
-    public PermissionCatalogSync(List<PermissionCatalog> catalogs,@Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping mappings,PermissionService service) {
-        this.catalogs=catalogs; this.mappings=mappings; this.service=service;
+    private final PlatformTenantQuery platform;
+    public PermissionCatalogSync(List<PermissionCatalog> catalogs,@Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping mappings,PermissionService service,PlatformTenantQuery platform) {
+        this.catalogs=catalogs; this.mappings=mappings; this.service=service;this.platform=platform;
     }
     @EventListener(ApplicationReadyEvent.class)
     public void synchronize() {
+        TenantScope.within(platform.platformTenantId(),()->{synchronizePlatform();return null;});
+    }
+    private void synchronizePlatform() {
         List<PermissionSpec> declared=new ArrayList<>();
         catalogs.forEach(catalog -> declared.addAll(catalog.permissions()));
         Set<String> keys=new HashSet<>(); declared.forEach(spec -> { if(!keys.add(spec.portal()+"/"+spec.key())) throw new IllegalStateException("Duplicate declared permission: "+spec.key()); });

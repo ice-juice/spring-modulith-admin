@@ -46,7 +46,7 @@ class SharedConfigurationTests {
     record Catalog(List<ParameterDefinition> parameters, List<DictionaryDefinition> dictionaries) implements ConfigurationCatalog {}
     @TestConfiguration(proxyBeanMethods=false) static class CatalogConfiguration {
         @Bean ConfigurationCatalog sharedCatalog() {
-            var parameters = List.of("draft", "concurrent", "snapshot", "rollback", "capacity", "startup", "authority").stream().map(key -> definition(key, "seed", 4000)).toList();
+            var parameters = List.of("draft", "http", "concurrent", "snapshot", "rollback", "capacity", "startup", "authority").stream().map(key -> definition(key, "seed", 4000)).toList();
             var dictionary = new DictionaryDefinition("config", "config_s5_tree", label("Shared tree"), DictionaryDefinition.Mode.EXTENDABLE, true,
                     List.of(item("root", null, true), item("child", "root", true)));
             return new Catalog(parameters, List.of(dictionary));

@@ -39,5 +39,30 @@
     "DECIMAL": "小数",
     "JSON": "JSON"
   },
-  "masked": "敏感值（编辑时留空保留）"
+  "masked": "敏感值（编辑时留空保留）",
+  "effective": {
+    "tab": "共享与内置",
+    "readOnly": "此处只读显示当前租户的有效值与来源。覆盖、恢复继承和平台发布请在新版管理端操作；内置项不再出现在下方私有列表中。",
+    "nullValue": "（显式空值 null）",
+    "emptyValue": "（空字符串）",
+    "name": "名称",
+    "key": "参数 Key",
+    "value": "有效值",
+    "origin": "来源",
+    "revision": "版本",
+    "revisionValue": "平台 r{platform} · 租户 v{tenant}",
+    "label": "显示名称",
+    "code": "代码",
+    "parent": "上级代码",
+    "selectable": "可选择",
+    "yes": "是",
+    "no": "否",
+    "origins": {
+      "DEFAULT": "代码默认",
+      "PLATFORM": "平台共享",
+      "TENANT_OVERRIDE": "本租户覆盖",
+      "TENANT_ONLY": "本租户私有"
+    },
+    "privateTab": "租户私有"
+  }
 }

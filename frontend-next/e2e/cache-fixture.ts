@@ -1,5 +1,5 @@
 import type { Page, Route } from '@playwright/test'
-import type { CacheTask, CacheRegion, CachePolicyState } from '../src/features/monitor/cache'
+import type { CacheTask, CacheRegion, CachePolicyState, CacheNode } from '../src/features/monitor/cache'
 const stamp = '2026-11-11T08:00:00Z'
 export const cachePolicy = { ttl: 'PT5M', negativeTtl: 'PT10S', maxEntries: '1000', maxBytes: '1048576', maxEntryBytes: 32768 }
 export function cacheRegion(id = 'config.dictionary-options', overrides: Partial<CacheRegion> = {}): CacheRegion {
@@ -8,14 +8,25 @@ export function cacheRegion(id = 'config.dictionary-options', overrides: Partial
 export function createCacheFixture() {
   const regions = [cacheRegion(), cacheRegion('config.preferences', { name: '个人偏好', group: 'personal', scenario: 'preferences', scope: 'TENANT_USER', allowedOperations: ['CLEAR', 'PAUSE', 'EDIT_POLICY'], declaredOperations: ['CLEAR', 'PAUSE', 'EDIT_POLICY'], prewarming: null }), cacheRegion('auth.sessions', { name: '登录会话', owner: 'auth', group: 'security', scenario: 'login', kind: 'PROTECTED', allowedOperations: [], declaredOperations: [], observation: null, prewarming: null, state: 'PROTECTED' })]
   const tasks: CacheTask[] = []
+  const members: CacheNode[] = [{ nodeId: 'node-a', processId: 'process-a', epoch: '1', leaseUntil: stamp, stateAtCapture: 'ONLINE' }, { nodeId: 'node-b', processId: null, epoch: null, leaseUntil: null, stateAtCapture: 'OFFLINE' }]
+  const requests: { path: string; method: string; node?: string; process?: string }[] = []
+  const directories = new Map<string, CacheRegion[]>()
   const writes: { path: string; method: string; body: Record<string, unknown>; key?: string }[] = []
   const policy: CachePolicyState = { region: regions[0]!.id, version: '9007199254740993123', dataRevision: '5', statsEpoch: '1', paused: false, requestedPolicy: null, deploymentPolicy: { ...cachePolicy }, effectivePolicy: { ...cachePolicy } }
   let lostSubmit = false, conflictPolicy = false
   async function handle(route: Route, path: string, method: string, body: Record<string, unknown>) {
+    const node = route.request().headers()['x-sma-cache-node'], process = route.request().headers()['x-sma-cache-process']
+    requests.push({ path, method, node, process })
     const ok = (data: unknown) => route.fulfill({ json: { code: 0, data, message: 'ok', error: null } })
+    if (node || process) {
+      const member = members.find(value => value.nodeId === node)
+      if (!member || !process) return route.fulfill({ status: 400, json: { code: 400, message: '节点选择无效' } })
+      if (member.stateAtCapture !== 'ONLINE') return route.fulfill({ status: 503, json: { code: 503, error: 'common.cache.selection-wrong-node', message: '选定节点不可达，请核对路由' } })
+      if (member.processId !== process) return route.fulfill({ status: 409, json: { code: 409, error: 'common.cache.selection-replaced-process', message: '节点进程已更换，请重新选择' } })
+    }
     if (method !== 'GET') writes.push({ path, method, body, key: route.request().headers()['idempotency-key'] })
-    if (path === '/monitor/caches/directory') return ok(regions)
-    if (path === '/monitor/caches/nodes') return ok({ localProcessId: 'process-a', observerState: 'OWNED', lastHeartbeatAt: stamp, scope: { manifestHash: 'frozen-manifest', manifestVersion: '1', capturedAt: stamp, members: [{ nodeId: 'node-a', processId: 'process-a', epoch: '1', leaseUntil: stamp, stateAtCapture: 'ONLINE' }, { nodeId: 'node-b', processId: null, epoch: null, leaseUntil: null, stateAtCapture: 'OFFLINE' }] } })
+    if (path === '/monitor/caches/directory') return ok(directories.get(node || '') || regions)
+    if (path === '/monitor/caches/nodes') return ok({ localProcessId: process || 'process-a', observerState: 'OWNED', lastHeartbeatAt: stamp, scope: { manifestHash: 'frozen-manifest', manifestVersion: '1', capturedAt: stamp, members } })
     if (path === '/monitor/caches/tasks/preview') {
       const selected = regions.filter(region => (body.regions as string[]).includes(region.id)), action = body.action as CacheTask['action']
       const capable = selected.filter(region => region.allowedOperations.includes(action === 'RESUME' ? 'PAUSE' : action))
@@ -41,7 +52,7 @@ export function createCacheFixture() {
     }
     return ok(null)
   }
-  return { regions, tasks, writes, policy, handle, loseSubmit: () => { lostSubmit = true }, conflictPolicy: () => { conflictPolicy = true } }
+  return { regions, tasks, writes, policy, handle, members, requests, directories, loseSubmit: () => { lostSubmit = true }, conflictPolicy: () => { conflictPolicy = true } }
 }
 export async function installCacheFixture(page: Page) {
   const fixture = createCacheFixture()

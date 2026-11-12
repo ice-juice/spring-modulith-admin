@@ -9,8 +9,8 @@ import com.sma.admin.common.security.CurrentUser;
 
 @Service
 public class PublicationService {
- private final EventPublicationRepository repository;private final FailedEventPublications failures;
- public PublicationService(EventPublicationRepository repository,FailedEventPublications failures){this.repository=repository;this.failures=failures;}
+ private final EventPublicationRepository repository;private final IncompleteEventPublications incomplete;
+ public PublicationService(EventPublicationRepository repository,IncompleteEventPublications incomplete){this.repository=repository;this.incomplete=incomplete;}
  public record View(String id,String eventType,String listener,String status,int attempts,Instant publishedAt,Instant lastResubmissionAt,Instant completedAt){}
  public PageResult<View> page(PageQuery page,String status){
   var paging=page.toPage(Map.of());EventPublication.Status state;
@@ -22,8 +22,10 @@ public class PublicationService {
  public synchronized void retry(UUID id){
   if(repository.findByStatus(EventPublication.Status.FAILED).stream().noneMatch(publication->publication.getIdentifier().equals(id)&&sameTenant(publication)))throw new BizException(CommonErrorCode.DATA_NOT_FOUND);
   long tenant=CurrentUser.tenantId();
-  failures.resubmit(ResubmissionOptions.defaults().withBatchSize(1).withMaxInFlight(1).withMinAge(Duration.ZERO)
-   .withFilter(publication->publication.getIdentifier().equals(id)&&tenant(publication.getEvent())==tenant));
+  // Failed-event batching applies its global LIMIT before the predicate, starving an explicitly selected ID.
+  // Framework resubmission still performs its atomic markResubmitted; never invoke the listener directly.
+  incomplete.resubmitIncompletePublications(publication->publication.getIdentifier().equals(id)
+   &&publication.getStatus()==EventPublication.Status.FAILED&&tenant(publication.getEvent())==tenant);
  }
  private boolean sameTenant(EventPublication publication){return tenant(publication.getEvent())==CurrentUser.tenantId();}
  private long tenant(Object event){

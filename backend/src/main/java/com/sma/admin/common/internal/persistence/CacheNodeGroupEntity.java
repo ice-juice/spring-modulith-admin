@@ -9,4 +9,14 @@ public class CacheNodeGroupEntity extends BaseEntity {
     private String clusterHash;
     private String manifestHash;
     private Long manifestVersion;
+    @com.baomidou.mybatisplus.annotation.TableField(updateStrategy=com.baomidou.mybatisplus.annotation.FieldStrategy.NEVER)
+    private String evidenceManifestHash;
+    @com.baomidou.mybatisplus.annotation.TableField(updateStrategy=com.baomidou.mybatisplus.annotation.FieldStrategy.NEVER)
+    private String evidenceNonce;
+    @com.baomidou.mybatisplus.annotation.TableField(updateStrategy=com.baomidou.mybatisplus.annotation.FieldStrategy.NEVER)
+    private String evidenceDigest;
+    @com.baomidou.mybatisplus.annotation.TableField(updateStrategy=com.baomidou.mybatisplus.annotation.FieldStrategy.NEVER)
+    private String storageManifestHash;
+    @com.baomidou.mybatisplus.annotation.TableField(updateStrategy=com.baomidou.mybatisplus.annotation.FieldStrategy.NEVER)
+    private String storageAnchorJson;
 }

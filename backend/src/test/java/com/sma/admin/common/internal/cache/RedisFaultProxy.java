@@ -7,14 +7,14 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Test-only TCP fault injection; never stops or reconfigures the shared task Redis process. */
-final class RedisFaultProxy implements AutoCloseable {
+public final class RedisFaultProxy implements AutoCloseable {
     private final ServerSocket listener;
     private final int targetPort;
     private final Set<Socket> sockets = ConcurrentHashMap.newKeySet();
     private final ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor();
     private final AtomicBoolean disconnected = new AtomicBoolean(), closed = new AtomicBoolean();
 
-    RedisFaultProxy(int targetPort) throws IOException {
+    public RedisFaultProxy(int targetPort) throws IOException {
         this.targetPort = targetPort;
         listener = new ServerSocket(0, 20, InetAddress.getByName("127.0.0.1"));
         workers.submit(() -> {
@@ -27,9 +27,9 @@ final class RedisFaultProxy implements AutoCloseable {
             }
         });
     }
-    int port() { return listener.getLocalPort(); }
-    void disconnect() { disconnected.set(true); sockets.forEach(RedisFaultProxy::closeSocket); }
-    void reconnect() { disconnected.set(false); }
+    public int port() { return listener.getLocalPort(); }
+    public void disconnect() { disconnected.set(true); sockets.forEach(RedisFaultProxy::closeSocket); }
+    public void reconnect() { disconnected.set(false); }
     private void connect(Socket client) {
         Socket server = new Socket(); sockets.add(server);
         try {

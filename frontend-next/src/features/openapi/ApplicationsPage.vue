@@ -127,10 +127,9 @@ function edit(row?: Application) {
 }
 async function save() {
   if (saving.value) return
-  const id = editingId.value
+  const id = editingId.value, value = { ...form }
   const result = await formAction.run<Credentials | undefined>({ operation: id ? 'openapi.update' : 'openapi.create', resource: 'openapi.apps.' + (id || 'new'), protocol: 'LOCAL' }, () => {
-    if (!form.name.trim()) { error.value = t('common.required'); return }
-    const value = { ...form }
+    if (!value.name.trim()) { error.value = t('common.required'); return }
     return async options => { if (id) { await put('/openapi/apps/' + id, value, options); return }; return post<Credentials>('/openapi/apps', value, options) }
   })
   if (result.kind === 'success' || result.kind === 'completed') {

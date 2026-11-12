@@ -15,6 +15,8 @@ const mysql = process.env.SMA_E2E_MYSQL || path.join(process.env.LOCALAPPDATA, '
 const mysqlDefaults = process.env.SMA_CLUSTER_MYSQL_DEFAULTS
 const mysqlPort = Number(process.env.SMA_CLUSTER_MYSQL_PORT || 13306)
 const redisPort = Number(process.env.SMA_CLUSTER_REDIS_PORT || 16379)
+const redisTimeout = process.env.SMA_CLUSTER_REDIS_TIMEOUT || '200ms'
+if (!/^(?:[1-9][0-9]{1,3}ms|[1-5]s)$/.test(redisTimeout)) throw new Error('Invalid isolated Redis timeout')
 const ports = [Number(process.env.SMA_CLUSTER_PORT_A || 18101), Number(process.env.SMA_CLUSTER_PORT_B || 18102)]
 const originPort = Number(process.env.SMA_CLUSTER_ORIGIN_PORT || 5197), origin = `http://127.0.0.1:${originPort}`
 const javaHome = process.env.JAVA21_HOME || spawnSync('powershell', ['-NoProfile', '-Command', "[Environment]::GetEnvironmentVariable('JAVA21_HOME','User')"], { encoding: 'utf8', windowsHide: true }).stdout.trim()
@@ -24,19 +26,44 @@ if (new Set([...ports, originPort]).size !== 3) throw new Error('Distinct isolat
 const password = crypto.randomBytes(24).toString('hex'), adminPassword = 'A7' + crypto.randomBytes(5).toString('hex')
 const accountPassword = 'M7n4R8p2V6', namespace = `p08_cluster_${suffix}`
 const includeM2 = process.env.SMA_CLUSTER_M2 === '1'
+const includeRouting = process.env.SMA_CLUSTER_ROUTING === '1'
+const includeSchemaMigration = process.env.SMA_CLUSTER_SCHEMA_MIGRATION === '1'
+const includeEvidence = process.env.SMA_CLUSTER_EVIDENCE === '1'
+const includeStorage = process.env.SMA_CLUSTER_STORAGE === '1'
+const includeTraffic = process.env.SMA_CLUSTER_TRAFFIC === '1'
+const trafficOnly = process.env.SMA_CLUSTER_TRAFFIC_ONLY === '1'
+if (trafficOnly && !includeTraffic) throw new Error('Focused traffic verification requires the traffic gate')
+if (includeTraffic && !includeStorage) throw new Error('Traffic qualification requires storage and evidence verification')
+if (includeStorage && (!includeEvidence || !includeM2)) throw new Error('Storage qualification requires evidence and M2 verification')
+if (includeEvidence && !includeSchemaMigration) throw new Error('Evidence verification requires controlled schema migration')
 const fingerprintKey = crypto.randomBytes(32).toString('base64')
+const previousFingerprintKey = crypto.randomBytes(32).toString('base64')
+const wrongFingerprintKey = crypto.randomBytes(32).toString('base64')
+const ownedKeyNames = ['auth.keys', 'openapi.key', 'tenant.keys', 'wrong-auth.keys', 'wrong-tenant.keys', 'wrong-openapi.key', 'absent-openapi.key']
 const runnerSource = fs.readFileSync(fileURLToPath(import.meta.url))
 const runnerSha256 = crypto.createHash('sha256').update(runnerSource).digest('hex')
 const jarSha256 = crypto.createHash('sha256').update(fs.readFileSync(jar)).digest('hex')
+let businessMatrixReference
+if (trafficOnly) {
+  const reference = process.env.SMA_CLUSTER_TRAFFIC_BASE_RESULT
+  check(reference && fs.existsSync(reference) && fs.statSync(reference).size <= 1048576, 'Focused verification requires a bounded successful full result')
+  const bytes = fs.readFileSync(reference), prior = JSON.parse(bytes.toString('utf8'))
+  check(prior.passed === true && prior.cleanupComplete === true && prior.jarSha256 === jarSha256 && prior.trafficOnly !== true
+    && prior.m2Included && prior.routingIncluded && prior.schemaMigrationIncluded && prior.evidenceIncluded && prior.storageIncluded && prior.trafficIncluded,
+  'Focused verification requires a cleaned full business/traffic matrix for the identical JAR')
+  businessMatrixReference = { path: path.relative(root, reference), sha256: crypto.createHash('sha256').update(bytes).digest('hex') }
+}
 const children = [], logs = [], evidence = [], processes = []
+const failureObservations = []
+const trafficChecks = []
 let created = false, browser, server, passed = false
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
 function check(condition, message) { if (!condition) throw new Error(message) }
 function record(name, details = {}) { evidence.push({ name, ...details }); console.log('PASS ' + name) }
-function sql(statement, rootAccount = false) {
+function sql(statement, rootAccount = false, readTimeout) {
   const args = rootAccount ? [`--defaults-extra-file=${mysqlDefaults}`] : ['--no-defaults']
   args.push('--host=127.0.0.1', `--port=${mysqlPort}`, `--user=${rootAccount ? 'root' : user}`, '--batch', '--skip-column-names')
-  const result = spawnSync(mysql, args, { input: statement, encoding: 'utf8', windowsHide: true,
+  const result = spawnSync(mysql, args, { input: statement, encoding: 'utf8', windowsHide: true, ...(readTimeout ? { timeout: readTimeout } : {}),
     env: { ...process.env, MYSQL_PWD: rootAccount ? '' : password } })
   // Never print SQL, connection credentials, or fixture contents.
   if (result.status !== 0) throw new Error('Isolated MySQL command failed')
@@ -60,41 +87,192 @@ async function ready(node) {
   }
   throw new Error(`Node ${node} readiness deadline exceeded`)
 }
-function launch(node, { signalsEnabled = true } = {}) {
-  const log = fs.openSync(path.join(work, `node-${node}.log`), 'a'); logs.push(log)
+function launch(node, { signalsEnabled = true, migrationMode, evidenceFault = 'none', storageFault = 'none' } = {}) {
+  check(['none', 'split', 'missing'].includes(storageFault), 'Unknown storage fixture')
+  check(['none', 'fingerprint', 'retained-key', 'auth-key', 'tenant-key', 'tenant-missing', 'session-policy', 'openapi-key', 'openapi-missing'].includes(evidenceFault), 'Unknown evidence fixture')
+  const logName = migrationMode ? `migration-${processes.length}-${migrationMode}.log` : `node-${node}.log`
+  const log = fs.openSync(path.join(work, logName), 'a'); logs.push(log)
   const child = spawn(path.join(javaHome, 'bin/java.exe'), ['-Xmx512m', '-jar', path.join(work, 'backend.jar'),
     '--server.address=127.0.0.1', `--server.port=${ports[node]}`, '--management.endpoint.health.probes.enabled=true',
     '--sma.tenant.bootstrap-hosts=localhost,127.0.0.1,[::1]', `--sma.security.browser.allowed-origins=${origin}`,
     `--sma.message.socket.allowed-origins=${origin}`, `--sma.file.directory=${path.join(work, 'uploads')}`,
-    `--sma.openapi.key-file=${path.join(work, 'openapi.key')}`, '--sma.cache.provider=redis', `--sma.cache.namespace=${namespace}`,
+    `--sma.openapi.key-file=${path.join(work, evidenceFault === 'openapi-missing' ? 'absent-openapi.key' : evidenceFault === 'openapi-key' ? 'wrong-openapi.key' : 'openapi.key')}`, '--sma.cache.provider=redis', `--sma.cache.namespace=${namespace}`,
     '--sma.cache.deployment-mode=single', `--sma.cache.nodes.cluster=${namespace}`, `--sma.cache.nodes.id=node-${node === 0 ? 'a' : 'b'}`,
-    '--sma.cache.nodes.expected=node-a,node-b', '--spring.data.redis.host=127.0.0.1', `--spring.data.redis.port=${redisPort}`,
+    '--sma.cache.nodes.expected=node-a,node-b', '--spring.data.redis.host=127.0.0.1', `--spring.data.redis.port=${redisPort}`, `--spring.data.redis.timeout=${redisTimeout}`,
     `--sma.message.signals.enabled=${signalsEnabled}`,
-    ...(includeM2 ? ['--sma.file.cluster.shared-resources=file.legacy,file.local.default', `--sma.file.storage.local-roots.default=${path.join(work, 'managed')}`] : [])],
+    ...(includeSchemaMigration ? ['--sma.deployment.schema-mode=validate'] : []),
+    ...(includeEvidence ? ['--sma.deployment.evidence.enabled=true', `--management.endpoint.health.group.readiness.include=readinessState,deploymentEvidence${includeStorage ? ',sharedStorage' : ''}${includeTraffic ? ',deploymentTraffic' : ''}`,
+      ...(evidenceFault === 'session-policy' ? ['--sma.auth.session-ttl=PT9H'] : [])] : []),
+    ...(includeStorage ? ['--sma.deployment.storage.enabled=true'] : []),
+    ...(includeTraffic ? ['--sma.deployment.traffic.enabled=true', '--management.endpoint.health.group.liveness.include=livenessState',
+      '--logging.level.com.sma.admin.common.internal.deployment.DeploymentTrafficFilter=DEBUG'] : []),
+    ...(migrationMode ? [`--sma-migration=${migrationMode}`] : []),
+    ...(includeM2 ? ['--sma.file.cluster.shared-resources=file.legacy,file.local.default', `--sma.file.storage.local-roots.default=${path.join(work, storageFault === 'split' ? 'isolated-managed' : storageFault === 'missing' ? 'missing-managed' : 'managed')}`] : [])],
   { cwd: work, windowsHide: true, stdio: ['ignore', log, log], env: { ...process.env,
     DB_NAME: schema, DB_USERNAME: user, DB_PASSWORD: password, DB_HOST: '127.0.0.1', DB_PORT: String(mysqlPort),
     SPRING_DATASOURCE_URL: `jdbc:mysql://127.0.0.1:${mysqlPort}/${schema}?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true`,
     SPRING_DATASOURCE_USERNAME: user, SPRING_DATASOURCE_PASSWORD: password, SMA_APP_MASTER_KEY: '', SMA_ADMIN_PASSWORD: adminPassword,
-    SMA_AUTH_SECURITY_KEY_FILE: path.join(work, 'auth.keys'), SMA_SECURITY_REQUESTS_FINGERPRINT_KEY: fingerprintKey } })
-  const processEvidence = { node, pid: child.pid, startedAt: new Date().toISOString() }
+    SMA_AUTH_SECURITY_KEY_FILE: path.join(work, evidenceFault === 'auth-key' ? 'wrong-auth.keys' : 'auth.keys'),
+    SMA_TENANT_CREDENTIAL_KEY_FILE: includeEvidence && evidenceFault !== 'tenant-missing' ? path.join(work, evidenceFault === 'tenant-key' ? 'wrong-tenant.keys' : 'tenant.keys') : '',
+    SMA_SECURITY_REQUESTS_FINGERPRINT_KEY: evidenceFault === 'fingerprint' ? wrongFingerprintKey : fingerprintKey,
+    SMA_SECURITY_REQUESTS_PREVIOUS_FINGERPRINT_KEYS: includeEvidence && evidenceFault !== 'retained-key' ? `previous=${previousFingerprintKey}` : '' } })
+  const processEvidence = { node, command: migrationMode || 'serve', evidenceFault, storageFault, log: logName, pid: child.pid, startedAt: new Date().toISOString() }
   processes.push(processEvidence)
   child.once('exit', (code, signal) => { processEvidence.exitCode = code; processEvidence.signal = signal })
   children[node] = child; return child
 }
-async function api(node, route, { method = 'GET', token, body } = {}) {
+async function schemaCommand(mode, expectedCode) {
+  const child = launch(0, { migrationMode: mode })
+  let timer
+  try {
+    const exitCode = await Promise.race([
+      new Promise((resolve, reject) => { child.once('error', reject); child.once('exit', resolve) }),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Controlled migration deadline exceeded')), 900000) }),
+    ])
+    check(exitCode === expectedCode, `Controlled ${mode} exited unexpectedly; inspect owned process log`)
+  } finally { clearTimeout(timer); await stop(child) }
+}
+async function blockedTraffic(node, token, requiredState) {
+  if (!includeTraffic) return
+  check(['WAITING_CONFIGURATION', 'WAITING_STORAGE'].includes(requiredState), 'Unknown expected refusal state')
+  const live = await fetch(`http://127.0.0.1:${ports[node]}/actuator/health/liveness`, { signal: AbortSignal.timeout(5000) })
+  const liveBody = await live.json()
+  check(live.status === 200 && liveBody.status === 'UP' && !liveBody.components && !liveBody.details, 'Dependency failure incorrectly broke or exposed liveness')
+  const logPath = path.join(work, `node-${node}.log`), offset = fs.statSync(logPath).size, pid = children[node].pid
+  const deadline = Date.now() + 60000
+  let observed = false
+  while (Date.now() < deadline) {
+    check(children[node].pid === pid && children[node].exitCode === null, 'Faulted node exited before post-startup traffic verification')
+    // Seeing a specific dependency refusal proves ApplicationAvailability has left NOT_READY.
+    // Poll only the read endpoint; never repeat the synthetic POST below or any business write.
+    const response = await fetch(`http://127.0.0.1:${ports[node]}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) })
+    const body = await response.json()
+    check(response.status === 503 && body.error === 'common.error.unavailable', 'Faulted node allowed access while finishing startup')
+    const end = fs.statSync(logPath).size, start = Math.max(offset, end - 65536), bytes = Buffer.alloc(end - start)
+    const fd = fs.openSync(logPath, 'r')
+    try { fs.readSync(fd, bytes, 0, bytes.length, start) } finally { fs.closeSync(fd) }
+    observed = bytes.toString('utf8').split('\n').some(line => line.includes(` ${pid} --- `) && line.includes(`Deployment traffic refused: ${requiredState}`))
+    if (observed) break
+    await pause(500)
+  }
+  check(observed, 'Dependency refusal was not proved after application startup')
+  trafficChecks.push({ node, pid, state: requiredState, at: new Date().toISOString() })
+  // Each request is issued once; never retry a business write or interpret rejection as a historic receipt.
+  for (const [method, route] of [['GET', '/api/auth/me'], ['GET', '/api/auth/captcha'], ['POST', '/api/auth/login'], ['GET', '/api/message/ws?ticket=invalid-test-ticket'], ['GET', '/app/identity/sessions'], ['GET', '/open/login']]) {
+    const response = await fetch(`http://127.0.0.1:${ports[node]}${route}`, {
+      method, headers: { Authorization: `Bearer ${token}`, ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}) },
+      ...(method === 'POST' ? { body: '{}' } : {}), signal: AbortSignal.timeout(5000),
+    })
+    const body = await response.json()
+    check(response.status === 503 && response.headers.get('cache-control') === 'no-store' && body.error === 'common.error.unavailable', 'Unqualified node accepted or bypassed traffic gate')
+  }
+}
+function deploymentRow(node, readTimeout) {
+  const hash = crypto.createHash('sha256').update(namespace).digest('hex')
+  const raw = sql(`SELECT process_id,epoch,COALESCE(evidence_state,'NONE'),IF(evidence_process_id=process_id AND evidence_epoch=epoch AND evidence_until>UTC_TIMESTAMP(3) AND lease_until>UTC_TIMESTAMP(3),1,0) FROM \`${schema}\`.common_cache_node_lease WHERE cluster_hash='${hash}' AND node_id='node-${node === 0 ? 'a' : 'b'}';`, false, readTimeout)
+  if (!raw) return null
+  const [processId, epoch, state, fresh] = raw.split('\t')
+  check(/^[0-9a-f-]{36}$/.test(processId) && /^[1-9][0-9]*$/.test(epoch), 'Unexpected node evidence identity')
+  return { processId, epoch, state, fresh: fresh === '1' }
+}
+function deploymentBaseline() {
+  const hash = crypto.createHash('sha256').update(namespace).digest('hex')
+  return sql(`SELECT evidence_nonce,evidence_digest FROM \`${schema}\`.common_cache_node_group WHERE cluster_hash='${hash}';`)
+}
+async function qualification(node, expected, previousProcess) {
+  const deadline = Date.now() + 120000
+  while (Date.now() < deadline) {
+    check(children[node].exitCode === null, `Evidence node ${node} exited; inspect owned log`)
+    let response, body
+    try {
+      response = await fetch(`http://127.0.0.1:${ports[node]}/actuator/health/readiness`, { signal: AbortSignal.timeout(2000) })
+      body = await response.json()
+    } catch { await pause(500); continue } // Read-only connection observation, never a mutation retry.
+    if (expected !== 'MATCH') check(response.status !== 200 && body.status !== 'UP', 'Incorrect evidence node became ready')
+    const row = deploymentRow(node)
+    if (row && row.processId !== previousProcess && row.state === expected && row.fresh) {
+      check(response.status === (expected === 'MATCH' ? 200 : 503) && body.status === (expected === 'MATCH' ? 'UP' : 'DOWN'), 'Readiness disagrees with current process evidence')
+      return row
+    }
+    await pause(500)
+  }
+  throw new Error(`Node ${node} did not reach expected ${expected} qualification`)
+}
+function storageRow(node, readTimeout) {
+  const hash = crypto.createHash('sha256').update(namespace).digest('hex')
+  const raw = sql(`SELECT COALESCE(storage_report_json,'null') FROM \`${schema}\`.common_cache_node_lease WHERE cluster_hash='${hash}' AND node_id='node-${node === 0 ? 'a' : 'b'}';`, false, readTimeout)
+  return raw ? JSON.parse(raw) : null
+}
+function storageAnchor() {
+  const hash = crypto.createHash('sha256').update(namespace).digest('hex')
+  return sql(`SELECT storage_anchor_json FROM \`${schema}\`.common_cache_node_group WHERE cluster_hash='${hash}';`)
+}
+async function storageQualification(node, expectedReady, previousProcess, requireReport = true) {
+  const deadline = Date.now() + 120000
+  while (Date.now() < deadline) {
+    check(children[node].exitCode === null, 'Storage node exited; inspect owned log')
+    let response, body
+    try { response = await fetch(`http://127.0.0.1:${ports[node]}/actuator/health/readiness`, { signal: AbortSignal.timeout(2000) }); body = await response.json() }
+    catch { await pause(500); continue }
+    if (!expectedReady && previousProcess) check(response.status !== 200, 'Bad storage process became ready')
+    const identity = deploymentRow(node), report = storageRow(node)
+    const bound = report && identity && report.offer.processId === identity.processId && String(report.offer.epoch) === identity.epoch
+    if (identity?.fresh && identity.state === 'MATCH' && identity.processId !== previousProcess && (!requireReport || bound)
+        && response.status === (expectedReady ? 200 : 503) && body.status === (expectedReady ? 'UP' : 'DOWN')
+        && (!expectedReady || (bound && report.certified && report.healthy))) return { identity, report: bound ? report : null }
+    await pause(500)
+  }
+  throw new Error('Storage qualification observation deadline exceeded')
+}
+async function api(node, route, { method = 'GET', token, body, headers = {} } = {}) {
   const r = await fetch(`http://127.0.0.1:${ports[node]}${route}`, { method, signal: AbortSignal.timeout(30000),
-    headers: { 'Content-Type': 'application/json', 'User-Agent': 'P08-isolated-cluster', 'Idempotency-Key': crypto.randomUUID(), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { 'Content-Type': 'application/json', 'User-Agent': 'P08-isolated-cluster', 'Idempotency-Key': crypto.randomUUID(), ...headers, ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
-  const value = await r.json(); return { http: r.status, ...value }
+  const value = await r.json()
+  if (includeTraffic && r.status === 503) await observeTraffic(node, 'http-503')
+  return { http: r.status, ...value }
+}
+async function observeTraffic(node, reason) {
+  if (failureObservations.length >= 12) return
+  const observation = { node, reason, at: new Date().toISOString() }
+  try {
+    const probes = await Promise.all(['readiness', 'liveness'].map(async name => {
+      const response = await fetch(`http://127.0.0.1:${ports[node]}/actuator/health/${name}`, { signal: AbortSignal.timeout(1500) })
+      const body = await response.json()
+      return { name, http: response.status, status: ['UP', 'DOWN', 'OUT_OF_SERVICE', 'UNKNOWN'].includes(body.status) ? body.status : 'UNAVAILABLE' }
+    }))
+    observation.probes = probes
+  } catch { observation.probesUnavailable = true }
+  try {
+    const row = deploymentRow(node, 2000), storage = storageRow(node, 2000)
+    observation.configuration = row
+    observation.storage = storage ? { generation: storage.generation, healthy: storage.healthy, certified: storage.certified, until: storage.until } : null
+  } catch { observation.recordsUnavailable = true }
+  failureObservations.push(observation)
+  // Only fixed states and process/epoch identity; never request/token/body, paths, keys or digests.
+  console.log('Traffic failure observation ' + JSON.stringify(observation))
 }
 function ok(result, label) { check(result.http === 200 && result.code === 0, `${label}: HTTP ${result.http}, code ${result.code}, error ${result.error || 'none'}`); return result.data }
 const me = (node, token) => api(node, '/api/auth/me', { token })
 const login = (node, username = 'admin', secret = adminPassword, extra = {}) => api(node, '/api/auth/login', { method: 'POST', body: { username, password: secret, portal: 'admin', remember: false, ...extra } })
 const preference = { locale: 'en-US', timeZone: 'UTC', theme: 'dark', tabsEnabled: true, keepTabsAfterReload: false, skin: 'iris' }
-function setParameter(key, value) {
+async function setParameter(key, value, token) {
   check(['login.captchaEnabled', 'auth.singleTerminal'].includes(key) && ['true', 'false'].includes(value), 'Unexpected fixture parameter')
-  const changed = sql(`UPDATE \`${schema}\`.config_parameter SET param_value='${value}' WHERE param_key='${key}'; SELECT ROW_COUNT();`)
-  check(changed === '1', 'Fixture parameter must identify exactly one isolated row')
+  const route = `/api/config/effective-parameters/${key}`
+  const current = ok(await api(0, route, { token }), 'Read effective fixture parameter')
+  const saved = ok(await api(0, `${route}/override`, { method: 'PUT', token, body: {
+    expectedPlatformRevision: current.revision.platform, expectedTenantRevision: current.revision.tenant, value,
+  } }), 'Override fixture parameter')
+  check(saved.value === value && saved.overridden, 'Parameter override not applied')
+  check(ok(await api(1, route, { token }), 'Read parameter on B').value === value, 'B missed parameter override')
+}
+async function captchaFixture() {
+  const challenge = ok(await api(0, '/api/auth/captcha'), 'Issue captcha')
+  check(/^[A-Za-z0-9_-]+$/.test(challenge.id), 'Unexpected challenge ID shape')
+  const answerHash = crypto.createHash('sha256').update(`${challenge.id}:ABCD`).digest('hex')
+  const changed = sql(`UPDATE \`${schema}\`.auth_captcha SET answer_hash='${answerHash}' WHERE tenant_id=1 AND portal='admin' AND challenge_id='${challenge.id}' AND deleted=0; SELECT ROW_COUNT();`)
+  check(changed === '1', 'Captcha fixture must identify exactly one issued challenge')
+  return { captchaId: challenge.id, captcha: 'ABCD' }
 }
 function totp(secret, step) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
@@ -115,16 +293,76 @@ try {
   fs.mkdirSync(work, { recursive: true }); fs.copyFileSync(jar, path.join(work, 'backend.jar'))
   fs.writeFileSync(path.join(work, 'runner-source.mjs'), runnerSource)
   if (includeM2) { fs.mkdirSync(path.join(work, 'uploads')); fs.mkdirSync(path.join(work, 'managed')) }
+  if (includeStorage) fs.mkdirSync(path.join(work, 'isolated-managed'))
   fs.writeFileSync(path.join(work, 'auth.keys'), `encryption.active=e2e\nencryption.e2e=${crypto.randomBytes(32).toString('base64')}\npepper.active=e2e\npepper.e2e=${crypto.randomBytes(32).toString('base64')}\n`, { mode: 0o600 })
   fs.writeFileSync(path.join(work, 'openapi.key'), crypto.randomBytes(32), { mode: 0o600 })
+  if (includeEvidence) {
+    fs.writeFileSync(path.join(work, 'tenant.keys'), `active=e2e\nkey.e2e=${crypto.randomBytes(32).toString('base64')}\n`, { mode: 0o600 })
+    fs.writeFileSync(path.join(work, 'wrong-tenant.keys'), `active=e2e\nkey.e2e=${crypto.randomBytes(32).toString('base64')}\n`, { mode: 0o600 })
+    fs.writeFileSync(path.join(work, 'wrong-auth.keys'), `encryption.active=e2e\nencryption.e2e=${crypto.randomBytes(32).toString('base64')}\npepper.active=e2e\npepper.e2e=${crypto.randomBytes(32).toString('base64')}\n`, { mode: 0o600 })
+    fs.writeFileSync(path.join(work, 'wrong-openapi.key'), crypto.randomBytes(32), { mode: 0o600 })
+  }
   sql(`CREATE DATABASE \`${schema}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;`, true); created = true
   sql(`CREATE USER '${user}'@'127.0.0.1' IDENTIFIED BY '${password}'; GRANT ALL PRIVILEGES ON \`${schema}\`.* TO '${user}'@'127.0.0.1';`, true)
-  launch(0); console.log(`Starting isolated node A; evidence directory ${path.relative(root, work)}`); await ready(0)
-  launch(1); console.log('Starting isolated node B against migrated schema'); await ready(1)
-  setParameter('login.captchaEnabled', 'false')
-  const admin = ok(await login(0), 'A login').token
+  if (includeSchemaMigration) {
+    await schemaCommand('validate', 1)
+    check(sql(`SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${schema}';`) === '0', 'Empty validation wrote a schema object')
+    record('Packaged validate rejects empty schema without creating tables')
+    await schemaCommand('migrate', 0)
+    check(sql(`SELECT COUNT(*) FROM \`${schema}\`.iam_user;`) === '0', 'Migration started business account bootstrap')
+    const histories = () => sql(`SELECT table_name FROM information_schema.tables WHERE table_schema='${schema}' AND table_name LIKE 'flyway_schema_history%' ORDER BY table_name;`)
+      .split(/\s+/).map(table => {
+        check(/^flyway_schema_history(?:_[a-z]+)?$/.test(table), 'Unexpected module history name')
+        return table + '\n' + sql(`SELECT installed_rank,version,type,script,checksum,success FROM \`${schema}\`.\`${table}\` ORDER BY installed_rank;`)
+      }).join('\n')
+    const before = histories()
+    check(before.includes('flyway_schema_history_auth') && before.includes('flyway_schema_history_common'), 'Module migrations missing')
+    record('Packaged migrate applies module histories and exits without account bootstrap')
+    await schemaCommand('validate', 0)
+    await schemaCommand('migrate', 0)
+    check(histories() === before, 'Validation/repeated migration changed schema histories')
+    check(sql(`SELECT COUNT(*) FROM \`${schema}\`.iam_user;`) === '0', 'Repeated migration started business bootstrap')
+    record('Packaged validate and repeated migrate preserve applied module histories')
+    sql(`REVOKE CREATE,ALTER,DROP,INDEX ON \`${schema}\`.* FROM '${user}'@'127.0.0.1';`, true)
+  }
+  launch(0); console.log(`Starting isolated node A; evidence directory ${path.relative(root, work)}`)
+  if (!includeStorage) await ready(0)
+  launch(1); console.log('Starting isolated node B against migrated schema'); await Promise.all([ready(0), ready(1)])
+  if (includeSchemaMigration) {
+    for (const node of [0, 1]) check(!fs.readFileSync(path.join(work, `node-${node}.log`), 'utf8').includes('DbMigrate'), 'Serving node invoked migration instead of validation')
+    record('Two serving JVMs start in validate mode without CREATE/ALTER/DROP/INDEX privileges')
+  }
+  const admin = ok(await login(0, 'admin', adminPassword, await captchaFixture()), 'A login').token
+  await setParameter('login.captchaEnabled', 'false', admin)
   check(ok(await me(1, admin), 'B me').username === 'admin', 'Cross-node identity differs')
   record('A login, B authenticated access', { pids: children.map(c => c.pid), ports })
+  if (includeEvidence) {
+    await qualification(0, 'MATCH'); await qualification(1, 'MATCH')
+    record('Both independent JVMs prove matching configuration and keys with readiness explicitly gated')
+  }
+  if (includeStorage) {
+    await storageQualification(0, true); await storageQualification(1, true)
+    record('Both JVMs prove mutual storage with sharedStorage included in readiness')
+  }
+  if (!trafficOnly) {
+  const routing = []
+  if (includeRouting) {
+    for (const n of [0, 1]) {
+      const response = await fetch(`http://127.0.0.1:${ports[n]}/api/monitor/caches/directory`, { headers: { Authorization: `Bearer ${admin}` }, signal: AbortSignal.timeout(30000) })
+      ok({ http: response.status, ...await response.json() }, 'Read actual cache process')
+      const nodeId = response.headers.get('X-SMA-Cache-Node'), processId = response.headers.get('X-SMA-Cache-Process')
+      check(nodeId === `node-${n === 0 ? 'a' : 'b'}` && /^[0-9a-f-]{36}$/.test(processId || ''), 'Missing actual node/process headers')
+      routing.push({ 'X-SMA-Cache-Node': nodeId, 'X-SMA-Cache-Process': processId })
+      const selected = ok(await api(n, '/api/monitor/caches/directory', { token: admin, headers: routing[n] }), 'Selected directory')
+      check(selected.filter(row => row.observation).every(row => row.observation.processId === processId), 'Selected statistics belong to another process')
+    }
+    const before = ok(await api(0, '/api/monitor/caches/tasks', { token: admin }), 'Tasks before wrong route')
+    const wrong = await api(0, '/api/monitor/caches/tasks/preview', { method: 'POST', token: admin, headers: routing[1], body: { action: 'CLEAR', regions: ['config.preferences'], reason: 'isolated wrong-route assertion' } })
+    check(wrong.http === 503 && wrong.error === 'common.cache.selection-wrong-node', 'Wrong node accepted preview')
+    const after = ok(await api(1, '/api/monitor/caches/tasks', { token: admin }), 'Tasks after wrong route')
+    check(JSON.stringify(before.map(task => task.id).sort()) === JSON.stringify(after.map(task => task.id).sort()), 'Wrong route created a task')
+    record('Explicit A/B process selection returns matching statistics and wrong-route preview has no task effect')
+  }
 
   ok(await api(0, '/api/auth/lock', { method: 'POST', token: admin }), 'A lock')
   check(ok(await me(1, admin), 'B locked me').locked, 'B missed lock')
@@ -174,14 +412,12 @@ try {
   ok(await me(0, admin), 'Session after cache clear A'); ok(await me(1, admin), 'Session after cache clear B')
   record('Actual Redis invalidation and login survives cache clearing')
 
-  setParameter('login.captchaEnabled', 'true')
-  const challenge = ok(await api(0, '/api/auth/captcha'), 'Issue captcha')
-  check(/^[A-Za-z0-9_-]+$/.test(challenge.id), 'Unexpected challenge ID shape')
-  const answerHash = crypto.createHash('sha256').update(`${challenge.id}:ABCD`).digest('hex')
-  sql(`UPDATE \`${schema}\`.auth_captcha SET answer_hash='${answerHash}' WHERE challenge_id='${challenge.id}';`)
-  const captchaRace = await Promise.all([0, 1].map(n => login(n, 'cluster1', accountPassword, { captchaId: challenge.id, captcha: 'ABCD' })))
+  await setParameter('login.captchaEnabled', 'true', admin)
+  const challenge = await captchaFixture()
+  const captchaRace = await Promise.all([0, 1].map(n => login(n, 'cluster1', accountPassword, challenge)))
   check(captchaRace.filter(r => r.code === 0 && r.data?.token).length === 1, 'Captcha was not consumed exactly once')
-  setParameter('login.captchaEnabled', 'false'); record('One captcha consumed once across A/B')
+  await pause(550)
+  await setParameter('login.captchaEnabled', 'false', admin); record('One captcha consumed once across A/B')
 
   server = http.createServer((_request, response) => { response.writeHead(200, { 'Content-Type': 'text/html' }); response.end('<!doctype html><title>P08 isolated socket test</title>') })
   await new Promise(resolve => server.listen(originPort, '127.0.0.1', resolve))
@@ -220,11 +456,12 @@ try {
   await page.waitForFunction(() => window.p08SocketClosed === true, undefined, { timeout: 40000 })
   record('A forced logout denies B HTTP and closes B WebSocket within heartbeat bound')
 
-  setParameter('auth.singleTerminal', 'true')
+  await setParameter('auth.singleTerminal', 'true', admin)
   const terminals = await Promise.all([0, 1].map(n => login(n, 'cluster2', accountPassword).then(r => ok(r, 'Concurrent terminal login').token)))
   const terminalChecks = await Promise.all(terminals.map(token => Promise.all([0, 1].map(n => me(n, token)))))
   check(terminalChecks.filter(rs => rs.every(r => r.code === 0)).length === 1 && terminalChecks.filter(rs => rs.every(r => r.http === 401)).length === 1, 'Single-terminal winner differs across nodes')
-  setParameter('auth.singleTerminal', 'false'); record('Concurrent single-terminal login has one shared winner')
+  await pause(550)
+  await setParameter('auth.singleTerminal', 'false', admin); record('Concurrent single-terminal login has one shared winner')
 
   const enrollment = ok(await api(0, '/api/auth/totp-enrollments', { method: 'POST', token: sessions[3], body: { password: accountPassword, code: null } }), 'A TOTP enrollment')
   const initialCode = await codeAfter(enrollment.secret)
@@ -308,10 +545,101 @@ try {
   await stop(children[0]); ok(await me(1, admin), 'B survives A stop')
   await free(ports[0]); launch(0); await ready(0); ok(await me(0, admin), 'A restart retains session'); ok(await me(1, admin), 'B still serves session')
   record('A stop / B continuity / A restart retains same session')
+  if (includeRouting) {
+    const stale = await api(0, '/api/monitor/caches/directory', { token: admin, headers: routing[0] })
+    check(stale.http === 409 && stale.error === 'common.cache.selection-replaced-process', 'Restart silently rebound old selected process')
+    ok(await api(0, '/api/monitor/caches/tasks', { token: admin }), 'Shared tasks remain readable after selected process restart')
+    record('Old selected process rejects after A restart while shared task reads remain available')
+  }
+  }
+  if (includeEvidence) {
+    const baseline = deploymentBaseline()
+    check(/^[a-f0-9]{64}\t[a-f0-9]{64}$/.test(baseline), 'Missing immutable deployment baseline')
+    let previous = await qualification(1, 'MATCH')
+    for (const fault of ['fingerprint', 'retained-key', 'auth-key', 'tenant-key', 'tenant-missing', 'session-policy', 'openapi-key', 'openapi-missing']) {
+      await stop(children[1]); await free(ports[1]); launch(1, { evidenceFault: fault })
+      const expected = ['tenant-missing', 'openapi-missing'].includes(fault) ? 'UNAVAILABLE' : 'MISMATCH'
+      const rejected = await qualification(1, expected, previous.processId)
+      await blockedTraffic(1, admin, 'WAITING_CONFIGURATION')
+      check(BigInt(rejected.epoch) > BigInt(previous.epoch), 'Restart inherited an old evidence epoch')
+      await qualification(0, 'MATCH'); ok(await me(0, admin), 'Healthy A remains authenticated during rejected B')
+      check(deploymentBaseline() === baseline, 'Rejected peer altered immutable baseline')
+      if (fault === 'openapi-missing') check(!fs.existsSync(path.join(work, 'absent-openapi.key')), 'Missing-key probe generated a file')
+      record('Rejected B qualification preserves healthy A and baseline', { fault, expected, epoch: rejected.epoch })
+      previous = rejected
+    }
+    await stop(children[1]); await free(ports[1]); launch(1); await ready(1)
+    const recovered = await qualification(1, 'MATCH', previous.processId)
+    check(BigInt(recovered.epoch) > BigInt(previous.epoch), 'Recovered process did not re-prove qualification')
+    ok(await me(1, admin), 'Recovered B retains original login'); check(deploymentBaseline() === baseline, 'Recovery replaced baseline')
+    record('Restored B re-proves its new process and retains original session')
+    await stop(children[0])
+    // Exceed both the 15s evidence lifetime and 30s membership lease using live read-only observations.
+    const until = Date.now() + 32000
+    while (Date.now() < until) { await qualification(1, 'MATCH'); ok(await me(1, admin), 'B continues without bootstrap A'); await pause(1000) }
+    const oldA = deploymentRow(0)
+    await free(ports[0]); launch(0); await ready(0)
+    const returned = await qualification(0, 'MATCH', oldA.processId)
+    check(BigInt(returned.epoch) > BigInt(oldA.epoch) && deploymentBaseline() === baseline, 'Restarted bootstrap did not preserve baseline and re-prove')
+    ok(await me(0, admin), 'Restarted bootstrap retains original login')
+    record('Qualified B survives bootstrap A lease expiry; restarted A re-proves without replacing baseline')
+  }
+  if (includeStorage) {
+    const anchor = storageAnchor()
+    let previous = (await storageQualification(1, true)).identity
+    for (const fault of ['split', 'missing']) {
+      await stop(children[1]); await free(ports[1]); launch(1, { storageFault: fault })
+      const rejected = await storageQualification(1, false, previous.processId, fault !== 'missing')
+      await blockedTraffic(1, admin, 'WAITING_STORAGE')
+      check(BigInt(rejected.identity.epoch) > BigInt(previous.epoch), 'Storage restart reused prior epoch')
+      await storageQualification(0, true); ok(await me(0, admin), 'Healthy A during wrong B directory')
+      check(storageAnchor() === anchor, 'Wrong directory replaced shared anchor')
+      if (fault === 'missing') check(!fs.existsSync(path.join(work, 'missing-managed')), 'Missing mount was created locally')
+      record('Bad B managed root rejects readiness while A remains qualified', { fault })
+      previous = rejected.identity
+    }
+    await stop(children[1]); await free(ports[1]); launch(1); await ready(1)
+    const recovered = await storageQualification(1, true, previous.processId)
+    ok(await me(1, admin), 'Recovered B storage retains session')
+    record('Restored B root re-proves storage in new process')
+    const hash = text => crypto.createHash('sha256').update(text).digest('hex')
+    const offer = recovered.report.offer
+    const probe = path.join(work, 'managed', '.sma-cluster', hash(hash(`${offer.manifestHash}:${offer.epoch}`)), hash('file.local.default'), offer.nodeId, `${offer.processId}.probe`)
+    const managed = path.resolve(work, 'managed')
+    check(path.resolve(probe).startsWith(managed + path.sep) && fs.lstatSync(probe).isFile() && !fs.lstatSync(probe).isSymbolicLink(), 'Probe fixture outside owned managed root')
+    const original = fs.readFileSync(probe)
+    check(original.length === 32 && hash(original) === offer.digests['file.local.default'], 'Probe fixture digest differs')
+    fs.unlinkSync(probe)
+    await storageQualification(1, false)
+    const until = Date.now() + 17000
+    while (Date.now() < until) {
+      check(!fs.existsSync(probe), 'Lost probe was silently recreated')
+      await storageQualification(0, true); ok(await me(0, admin), 'A remains usable during missing B probe'); await pause(1000)
+    }
+    const failed = storageRow(1)
+    await blockedTraffic(1, admin, 'WAITING_STORAGE')
+    check(!failed.certified && BigInt(failed.generation) > BigInt(recovered.report.generation), 'Lost probe retained old certificate')
+    record('Lost B probe stays absent beyond evidence TTL and revokes only B')
+    fs.writeFileSync(probe, original, { flag: 'wx' }) // Restore this run's exact known bytes; production never auto-recreates it.
+    const restored = await storageQualification(1, true)
+    check(BigInt(restored.report.generation) >= BigInt(failed.generation) && storageAnchor() === anchor, 'Restoration reused old generation or changed anchor')
+    ok(await me(1, admin), 'B restored probe retains original session')
+    record('Restored exact probe bytes require fresh reciprocal acknowledgement before READY')
+  }
+  if (includeTraffic) {
+    check(trafficChecks.length === 11, 'Post-startup fault coverage is incomplete')
+    record('Post-startup traffic gate rejects login/session/WS/app/open on all eleven configuration and storage faults; liveness stays UP and recovery retains sessions')
+  }
   passed = true
 } catch (failure) {
   // Log the stage failure before potentially slow database teardown, never a response/request body.
   console.error('Cluster check stopped: ' + String(failure.message).replaceAll(adminPassword, '[redacted]').replaceAll(password, '[redacted]'))
+  if (includeTraffic && children.some(child => child?.exitCode === null)) {
+    for (let sample = 0; sample < 3; sample++) {
+      for (const node of [0, 1]) if (children[node]?.exitCode === null) await observeTraffic(node, 'failure-diagnosis')
+      if (sample < 2) await pause(1000)
+    }
+  }
   throw failure
 } finally {
   let cleanupComplete = false
@@ -324,7 +652,7 @@ try {
     if (created && /^sma_p08_cluster_\d+$/.test(schema) && /^sma_p08_\d+$/.test(user)) sql(`DROP DATABASE IF EXISTS \`${schema}\`; DROP USER IF EXISTS '${user}'@'127.0.0.1';`, true)
     cleanupComplete = true
   } finally {
-    for (const name of ['auth.keys', 'openapi.key']) { const file = path.join(work, name); if (fs.existsSync(file)) fs.unlinkSync(file) }
-    if (fs.existsSync(work)) fs.writeFileSync(path.join(work, 'result.json'), JSON.stringify({ passed, cleanupComplete, runnerSha256, jarSha256, m2Included: includeM2, deploymentMode: 'single', namespace, schema, processes, evidence, finishedAt: new Date().toISOString(), credentialsPersisted: false, boundaries: ['No load balancer qualification', ...(includeM2 ? ['Single-host shared directory; no multi-host mount qualification', 'Delivery pause is configuration fault injection, not a network partition'] : ['No cross-node event broadcast qualification']), 'Redis namespace data expires under registered TTL; never global flush'] }, null, 2) + '\n')
+    for (const name of ownedKeyNames) { const file = path.join(work, name); if (fs.existsSync(file)) fs.unlinkSync(file) }
+    if (fs.existsSync(work)) fs.writeFileSync(path.join(work, 'result.json'), JSON.stringify({ passed, cleanupComplete, runnerSha256, jarSha256, redisTimeout, m2Included: includeM2 && !trafficOnly, routingIncluded: includeRouting && !trafficOnly, schemaMigrationIncluded: includeSchemaMigration, evidenceIncluded: includeEvidence, storageIncluded: includeStorage, trafficIncluded: includeTraffic, trafficOnly, businessMatrixReference, deploymentMode: 'single', namespace, schema, processes, evidence, failureObservations, trafficChecks, finishedAt: new Date().toISOString(), credentialsPersisted: false, boundaries: ['No load balancer qualification', ...(trafficOnly ? ['Focused post-startup traffic matrix; full business matrix is separate'] : []), ...(includeM2 ? ['Single-host shared directory; no multi-host mount qualification', ...(trafficOnly ? [] : ['Delivery pause is configuration fault injection, not a network partition'])] : ['No cross-node event broadcast qualification']), 'Redis namespace data expires under registered TTL; never global flush'] }, null, 2) + '\n')
   }
 }

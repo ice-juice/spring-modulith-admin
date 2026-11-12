@@ -101,9 +101,9 @@ function compose(row?: PrivateMessage) {
 }
 async function refresh() { await load(); await messages.refresh() }
 async function send() {
+  const input = { recipientId: recipientId.value, content: content.value }
   const result = await formAction.run({ operation: 'private.send', resource: 'message.private.compose', protocol: 'LOCAL' }, () => {
-    if (!recipientId.value || !content.value.trim()) { error.value = t('common.required'); return }
-    const input = { recipientId: recipientId.value, content: content.value }
+    if (!input.recipientId || !input.content.trim()) { error.value = t('common.required'); return }
     return options => post('/message/private', input, options)
   })
   if (result.kind === 'success' || result.kind === 'completed') { dialog.value = false; content.value = ''; await refresh() }

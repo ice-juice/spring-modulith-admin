@@ -20,7 +20,12 @@ public class TenantPermissionCatalog implements PermissionCatalog {
                 new PermissionSpec("tenant:domain:view","tenant:settings","tenant.menu.domains","域名管理","MENU","/tenant/domains",null,2,"admin",true),
                 new PermissionSpec("tenant:domain:create","tenant:domain:view","tenant.action.create-domain","登记域名","BUTTON",null,null,0,"admin",true),
                 new PermissionSpec("tenant:domain:verify","tenant:domain:view","tenant.action.verify-domain","验证域名","BUTTON",null,null,1,"admin",true),
-                new PermissionSpec("tenant:domain:update","tenant:domain:view","tenant.action.update-domain","管理域名状态","BUTTON",null,null,2,"admin",true)));
+                new PermissionSpec("tenant:domain:update","tenant:domain:view","tenant.action.update-domain","管理域名状态","BUTTON",null,null,2,"admin",true),
+                new PermissionSpec("tenant:storage:view",null,"tenant.menu.storage","业务存储资源","LOGIC",null,null,3,"admin",true),
+                new PermissionSpec("tenant:storage:register",null,"tenant.action.register-storage","登记资源","LOGIC",null,null,0,"admin",true),
+                new PermissionSpec("tenant:storage:bind",null,"tenant.action.bind-storage","绑定存储组","LOGIC",null,null,1,"admin",true),
+                new PermissionSpec("tenant:storage:provision",null,"tenant.action.provision-storage","开通业务库","LOGIC",null,null,2,"admin",true),
+                new PermissionSpec("tenant:storage:switch",null,"tenant.action.switch-storage","迁移业务库","LOGIC",null,null,3,"admin",true)));
         return List.copyOf(entries);
     }
 }

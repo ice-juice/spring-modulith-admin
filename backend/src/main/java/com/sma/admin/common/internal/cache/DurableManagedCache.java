@@ -70,6 +70,8 @@ public final class DurableManagedCache implements ManagedCache, AutoCloseable {
     }
 
     @Override public void invalidate(String region) {
+        if(com.sma.admin.common.internal.persistence.BusinessRouteScope.active())
+            throw new IllegalStateException("Business writes must invalidate through their pinned BusinessLedger session");
         var descriptor = registry.require(region);
         if (descriptor.kind() != CacheDescriptor.Kind.DATA || !descriptor.operations().contains(CacheDescriptor.Operation.CLEAR)) {
             throw new IllegalArgumentException("Region does not allow cache invalidation");

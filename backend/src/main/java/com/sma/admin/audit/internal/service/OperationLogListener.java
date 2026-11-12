@@ -13,7 +13,7 @@ import com.sma.admin.audit.internal.persistence.*;
 public class OperationLogListener {
  private final OperationLogMapper mapper;private final MessageSource messages;private final JsonMapper json;
  public OperationLogListener(OperationLogMapper mapper,MessageSource messages,JsonMapper json){this.mapper=mapper;this.messages=messages;this.json=json;}
- @ApplicationModuleListener public void on(OperationAuditEvent event){
+ @org.springframework.scheduling.annotation.Async("deploymentEventExecutor") @ApplicationModuleListener public void on(OperationAuditEvent event){
   TenantScope.within(event.tenantId(),()->{
    String[] args={event.objectId()==null?"—":event.objectId()};
    var row=new OperationLogEntity();row.setEventId(event.eventId());row.setUserId(event.userId());row.setDeptId(event.departmentId());row.setUsername(event.username());row.setPortal(event.portal());

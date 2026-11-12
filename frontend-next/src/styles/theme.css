@@ -180,7 +180,7 @@
 .admin-content { position: relative; z-index: 1; }
 .admin-brand-watermark { position: absolute; inset-inline: 16px; bottom: 16px; z-index: 0; pointer-events: none; user-select: none; text-align: center; overflow-wrap: anywhere; color: color-mix(in srgb, var(--muted-foreground) 60%, transparent); font-size: .75rem; line-height: 1.5; }
 @container (max-width: 1100px) { .global-search-label { display: none; } .global-search-trigger { width: 36px; padding-inline: 0; } }
-@container (max-width: 420px) { .admin-topbar { padding-inline: 8px; gap: 4px; } .admin-topbar [data-slot=button][data-size=icon] { width: 32px; } .admin-topbar > :first-child > span { display: none; } }
+@container (max-width: 420px) { .admin-topbar { flex-wrap: wrap; padding-inline: 8px; gap: 0; } .admin-topbar > :first-child { width: 100%; min-height: 38px; } .admin-topbar > :nth-child(2) { width: 100%; justify-content: flex-end; min-height: 38px; gap: 0; } .admin-topbar [data-slot=button][data-size=icon] { width: 32px; } .admin-topbar > :first-child > span { display: none; } }
 @container (max-width: 600px) { .admin-topbar .account-name { display: none; } }
 
 .workspace-welcome { min-height: 244px; }

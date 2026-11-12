@@ -28,6 +28,10 @@ public final class RequestFingerprintKeys {
         keys = Map.copyOf(entries);
     }
     public String activeId() { return active; }
+    public com.sma.admin.common.deployment.DeploymentEvidence.Proof deploymentEvidence(
+            com.sma.admin.common.deployment.DeploymentEvidence.Challenge challenge) {
+        return com.sma.admin.common.deployment.DeploymentEvidence.keyRing("common.request-fingerprint", challenge, active, keys);
+    }
     public String digest(String id, String context, byte[] input) {
         byte[] key = keys.get(id);
         if (key == null) throw new RequestRejected(RequestRejected.Reason.UNAVAILABLE, 0);

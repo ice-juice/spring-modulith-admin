@@ -11,6 +11,8 @@ import java.util.concurrent.*;
 import jakarta.annotation.PreDestroy;
 import com.sma.admin.common.*;
 import com.sma.admin.common.security.ActorContext;
+import com.sma.admin.common.deployment.DeploymentActivity;
+import com.sma.admin.common.deployment.DeploymentTaskTracker;
 import com.sma.admin.file.FileErrorCode;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /** Immutable local bytes with bounded workers and buffers. Directory aliases are deployment-owned, not request parameters. */
 @Component @EnableConfigurationProperties(LocalTransferProperties.class)
-public class LocalTransferStorage implements AutoCloseable {
+public class LocalTransferStorage implements AutoCloseable, DeploymentActivity {
     /** Only executor rejection before work starts carries this proof; it is safe to release the unused task claim. */
     public static class NotStarted extends BizException {public NotStarted(){super(CommonErrorCode.SERVICE_UNAVAILABLE);}}
     public record ObjectRef(LocalStorageLocation.Location location,String uploadId,String name){
@@ -33,10 +35,14 @@ public class LocalTransferStorage implements AutoCloseable {
     public enum Presence { ABSENT, BUSY, MATCH, MISMATCH }
     public record Inspection(Presence presence,Stored stored){}
     private final LocalTransferProperties settings;private final ExecutorService workers;
+    private final DeploymentTaskTracker activity;
     public LocalTransferStorage(LocalTransferProperties settings){
-        this.settings=settings;workers=new ThreadPoolExecutor(settings.maximumConcurrent(),settings.maximumConcurrent(),0,TimeUnit.SECONDS,new SynchronousQueue<>(),
-                Thread.ofPlatform().daemon().name("sma-local-transfer-",0).factory(),new ThreadPoolExecutor.AbortPolicy());
+        this.settings=settings;activity=new DeploymentTaskTracker(settings.maximumConcurrent());
+        workers=new ThreadPoolExecutor(settings.maximumConcurrent(),settings.maximumConcurrent(),0,TimeUnit.SECONDS,new SynchronousQueue<>(),
+                Thread.ofPlatform().daemon().inheritInheritableThreadLocals(false).name("sma-local-transfer-",0).factory(),new ThreadPoolExecutor.AbortPolicy());
     }
+    @Override public String id(){return "file.local-transfer";}
+    @Override public DeploymentActivity.Snapshot snapshot(){return activity.snapshot();}
     public Stored write(ObjectRef object,InputStream input,long expectedSize,String expectedChecksum){
         validate(object,expectedSize,expectedChecksum);Objects.requireNonNull(input);
         return execute(()->writeBytes(object,input,expectedSize,expectedChecksum),input);
@@ -131,10 +137,11 @@ public class LocalTransferStorage implements AutoCloseable {
     }
     private <T>T execute(Callable<T> work,Closeable input){
         Future<T> future;
-        try{future=workers.submit(work);}catch(RejectedExecutionException busy){closeQuietly(input);throw new NotStarted();}
+        try{future=activity.submit(workers,work);}catch(RejectedExecutionException busy){closeQuietly(input);throw new NotStarted();}
         try{return future.get(settings.deadline().toMillis(),TimeUnit.MILLISECONDS);}
         catch(InterruptedException interrupted){future.cancel(true);closeQuietly(input);Thread.currentThread().interrupt();throw new BizException(FileErrorCode.STORAGE);}
         catch(TimeoutException timeout){future.cancel(true);closeQuietly(input);throw new BizException(FileErrorCode.STORAGE);}
+        catch(CancellationException cancelled){closeQuietly(input);throw new BizException(FileErrorCode.STORAGE);}
         catch(ExecutionException failure){closeQuietly(input);if(failure.getCause() instanceof BizException rejected)throw rejected;if(failure.getCause() instanceof IllegalStateException bug)throw bug;throw new BizException(FileErrorCode.STORAGE);}
     }
     private void closeQuietly(Closeable input){if(input!=null)try{input.close();}catch(IOException ignored){/* Preserve the transfer failure and immutable evidence. */}}
@@ -142,5 +149,5 @@ public class LocalTransferStorage implements AutoCloseable {
     private MessageDigest digest(){try{return MessageDigest.getInstance("SHA-256");}catch(NoSuchAlgorithmException impossible){throw new IllegalStateException(impossible);}}
     private BizException invalid(){return new BizException(FileErrorCode.INVALID_UPLOAD);}
     private BizException state(){return new BizException(FileErrorCode.UPLOAD_STATE);}
-    @Override @PreDestroy public void close(){workers.shutdownNow();}
+    @Override @PreDestroy public void close(){activity.close();workers.shutdownNow();}
 }

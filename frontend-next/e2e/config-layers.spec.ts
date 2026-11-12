@@ -1,0 +1,132 @@
+import { expect, test } from '@playwright/test'
+import { fullApi } from './full-api'
+import { login } from './mock-api'
+const mockOrigin = process.env.SMA_E2E_MOCK_ORIGIN || 'http://127.0.0.1:5174'
+
+test.setTimeout(90000)
+
+test('shared parameters show their source, keep explicit null distinct and restore inheritance with fixed versions', async ({ page }) => {
+  const api = await fullApi(page)
+  await login(page, '/config/parameters')
+  await expect(page.getByRole('tab', { name: '共享与内置参数', exact: true })).toHaveAttribute('data-state', 'active')
+  const theme = page.locator('[data-row-id="ui.theme"]')
+  await expect(theme).toContainText('平台共享')
+  await expect(page.locator('[data-row-id="auth.sessionTtlSeconds"]').getByRole('button', { name: '覆盖', exact: true })).toHaveCount(0)
+  await theme.getByRole('button', { name: '覆盖', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByLabel('保存为显式空值（null）').check()
+  await dialog.getByRole('button', { name: '保存覆盖', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(theme).toContainText('本租户覆盖')
+  await expect(theme).toContainText('（显式空值 null）')
+  const override = api.writes.find(write => write.path === '/config/effective-parameters/ui.theme/override')
+  expect(override?.body).toEqual({ expectedPlatformRevision: '1', expectedTenantRevision: '0', value: null })
+  await theme.getByRole('button', { name: '恢复继承', exact: true }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '确认', exact: true }).click()
+  await expect(theme).toContainText('平台共享')
+  expect(api.writes.find(write => write.path === '/config/effective-parameters/ui.theme/inherit')?.body).toEqual({ expectedPlatformRevision: '1', expectedTenantRevision: '1' })
+})
+
+test('a lost override response is reconciled by its original key and never resent with a new key', async ({ page }) => {
+  const api = await fullApi(page)
+  await login(page, '/config/parameters')
+  const theme = page.locator('[data-row-id="ui.theme"]')
+  let lookups = 0, original = ''
+  await page.route(mockOrigin + '/api/config/effective-parameters/ui.theme/override', route => { original = route.request().headers()['idempotency-key'] || ''; return route.abort('connectionreset') })
+  await page.route(mockOrigin + '/api/common/requests/lookup', route => {
+    lookups++
+    expect(route.request().postDataJSON()).toEqual({ key: original })
+    return route.fulfill({ json: { code: 0, data: { operationId: 'parameter-receipt', operation: 'parameters.override', state: 'SUCCEEDED', createdAt: '2026-11-10T08:00:00Z', updatedAt: '2026-11-10T08:00:01Z' } } })
+  })
+  await theme.getByRole('button', { name: '覆盖', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('textbox', { name: '值', exact: true }).fill('dark')
+  await dialog.getByRole('button', { name: '保存覆盖', exact: true }).click()
+  const check = dialog.getByRole('button', { name: /查询/ })
+  await expect(check).toBeVisible()
+  await expect(dialog.getByRole('textbox', { name: '值', exact: true })).toHaveValue('dark')
+  const attempts = api.writes.filter(write => write.path === '/config/effective-parameters/ui.theme/override').length
+  await check.click()
+  await expect.poll(() => lookups).toBe(1)
+  expect(original).toMatch(/^[0-9a-f-]{36}$/)
+  await expect(dialog).toHaveCount(0)
+  expect(api.writes.filter(write => write.path === '/config/effective-parameters/ui.theme/override')).toHaveLength(attempts)
+})
+
+test('dictionary layers override shared labels, add private codes and keep shared codes reserved', async ({ page }) => {
+  const api = await fullApi(page)
+  await login(page, '/config/dictionaries')
+  await expect(page.getByRole('tab', { name: '共享与内置字典', exact: true })).toHaveAttribute('data-state', 'active')
+  const table = page.getByRole('table')
+  await expect(table).toContainText('男')
+  await table.getByRole('row', { name: /男/ }).getByRole('button', { name: '覆盖', exact: true }).click()
+  let dialog = page.getByRole('dialog')
+  await dialog.getByLabel('默认名称').fill('先生')
+  await dialog.getByRole('button', { name: '保存', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(table.getByRole('row', { name: /先生/ })).toContainText('本租户覆盖')
+  expect(api.writes.find(write => write.path === '/config/effective-dictionaries/sex/item-overrides')?.body).toMatchObject({ code: '1', label: { text: '先生' }, sort: null, hidden: null, versions: { expectedPlatformRevision: '1', expectedTenantRevision: '0' } })
+  await page.getByRole('button', { name: '新增私有项', exact: true }).click()
+  dialog = page.getByRole('dialog')
+  await dialog.getByLabel('代码').fill('Ü 9')
+  await dialog.getByLabel('默认名称').fill('其他')
+  await dialog.getByRole('button', { name: '保存', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(table.getByRole('row', { name: /其他/ })).toContainText('本租户私有')
+  expect(api.writes.find(write => write.path === '/config/effective-dictionaries/sex/private-items')?.body).toMatchObject({ code: 'Ü 9', parentCode: null, enabled: true })
+  expect(api.writes.every(write => !write.path.includes('%C3%9C'))).toBe(true)
+})
+
+test('platform shared drafts are separate from publication and the publish request binds both versions', async ({ page }) => {
+  const api = await fullApi(page)
+  await login(page, '/config/shared')
+  await expect(page.getByRole('heading', { name: '平台共享配置' })).toBeVisible()
+  const publish = page.getByRole('button', { name: '发布', exact: true })
+  await page.getByRole('textbox', { name: '值', exact: true }).fill('dark')
+  await expect(publish).toBeDisabled()
+  await page.getByRole('button', { name: '保存草稿', exact: true }).click()
+  await expect(page.getByText('草稿 v2 · 已发布 r1')).toBeVisible()
+  expect(api.layered.head.publishedRevision).toBe('1')
+  await publish.click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '确认', exact: true }).click()
+  await expect(page.getByText('草稿 v2 · 已发布 r2')).toBeVisible()
+  expect(api.writes.find(write => write.path.endsWith('/publications'))?.body).toEqual({ expectedDraftVersion: '2', expectedPublishedRevisionId: '9007199254740993101' })
+  await page.goto('/config/parameters')
+  await expect(page.locator('[data-row-id="ui.theme"]')).toContainText('dark')
+})
+
+test('shared directory paging keeps unsaved draft until the operator confirms leaving', async ({ page }) => {
+  const api = await fullApi(page)
+  const requested: string[] = []
+  await page.route('**/api/config/shared-configurations?*', route => {
+    const next = new URL(route.request().url()).searchParams.get('page') || '1'
+    requested.push(next)
+    return route.fulfill({ json: { code: 0, data: { items: [api.layered.head], page: next, size: '50', total: '51' } } })
+  })
+  await login(page, '/config/shared')
+  const value = page.getByRole('textbox', { name: '值', exact: true })
+  await value.fill('unpublished')
+  await page.getByRole('button', { name: '查询', exact: true }).click()
+  const confirm = page.getByRole('alertdialog')
+  await expect(confirm).toContainText('未保存的修改')
+  await confirm.getByRole('button', { name: '取消' }).click()
+  await expect(value).toHaveValue('unpublished')
+  expect(requested).toEqual(['1'])
+  await page.getByRole('button', { name: '下一页' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '确认' }).click()
+  await expect(value).toHaveValue('light')
+  await expect.poll(() => requested.at(-1)).toBe('2')
+})
+
+test('shared configuration remains usable in English, dark mode and a narrow viewport', async ({ page }) => {
+  const api = await fullApi(page)
+  Object.assign(api.preferences, { locale: 'en-US', theme: 'dark' })
+  await page.setViewportSize({ width: 320, height: 700 })
+  await login(page, '/config/shared')
+  await expect(page.getByRole('heading', { name: 'Platform shared configuration' })).toBeVisible()
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await expect(page.getByRole('button', { name: 'Save draft', exact: true })).toBeVisible()
+  await expect(page.locator('header').getByRole('button', { name: 'Expand navigation' })).toBeInViewport()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+})
+

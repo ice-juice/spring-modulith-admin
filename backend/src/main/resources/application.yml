@@ -55,7 +55,24 @@ server:
   port: 8080
 
 sma:
+  deployment:
+    # migrate preserves single-node startup; validate never applies DDL on a serving node.
+    schema-mode: ${SMA_DEPLOYMENT_SCHEMA_MODE:migrate}
+    evidence:
+      # Staged deployment qualification. Full multi-mode remains closed until P08 acceptance.
+      enabled: ${SMA_DEPLOYMENT_EVIDENCE_ENABLED:false}
+    storage:
+      # Requires evidence enabled and all local resources declared shared; multi acceptance remains separate.
+      enabled: ${SMA_DEPLOYMENT_STORAGE_ENABLED:false}
+    traffic:
+      # Requires evidence/storage plus the fixed readiness/liveness deployment configuration.
+      enabled: ${SMA_DEPLOYMENT_TRAFFIC_ENABLED:false}
   security:
+    source:
+      # Telemetry only: does not extend tenant Host/Proto trust or change authentication budgets.
+      trusted-proxies: ${SMA_SECURITY_SOURCE_TRUSTED_PROXIES:}
+      maximum-hops: ${SMA_SECURITY_SOURCE_MAXIMUM_HOPS:16}
+      maximum-header-characters: ${SMA_SECURITY_SOURCE_MAXIMUM_HEADER_CHARACTERS:2048}
     browser:
       allowed-origins: ${SMA_SECURITY_BROWSER_ALLOWED_ORIGINS:}
       maximum-json-bytes: ${SMA_SECURITY_BROWSER_MAXIMUM_JSON_BYTES:2097152}
@@ -69,6 +86,29 @@ sma:
       max-records-per-tenant: ${SMA_SECURITY_REQUESTS_MAX_RECORDS_PER_TENANT:100000}
       max-concurrent: ${SMA_SECURITY_REQUESTS_MAX_CONCURRENT:8}
       minimum-write-interval: ${SMA_SECURITY_REQUESTS_MINIMUM_WRITE_INTERVAL:500ms}
+  defense:
+    maintenance:
+      enabled: ${SMA_DEFENSE_MAINTENANCE_ENABLED:true}
+      interval: ${SMA_DEFENSE_MAINTENANCE_INTERVAL:30s}
+      tenant-batch: ${SMA_DEFENSE_MAINTENANCE_TENANT_BATCH:8}
+    collection:
+      # Explicit opt-in; per-node private spool and stable raw 32-byte key, never tenant provider credentials.
+      enabled: ${SMA_DEFENSE_COLLECTION_ENABLED:false}
+      directory: ${SMA_DEFENSE_COLLECTION_DIRECTORY:}
+      key-file: ${SMA_DEFENSE_COLLECTION_KEY_FILE:}
+      scope: ${SMA_DEFENSE_COLLECTION_SCOPE:}
+      memory-records: ${SMA_DEFENSE_COLLECTION_MEMORY_RECORDS:1024}
+      disk-records: ${SMA_DEFENSE_COLLECTION_DISK_RECORDS:10000}
+      disk-bytes: ${SMA_DEFENSE_COLLECTION_DISK_BYTES:33554432}
+      per-second: ${SMA_DEFENSE_COLLECTION_PER_SECOND:1000}
+      batch: ${SMA_DEFENSE_COLLECTION_BATCH:32}
+      retry-delay: ${SMA_DEFENSE_COLLECTION_RETRY_DELAY:5s}
+    storage:
+      maximum-platform-records: ${SMA_DEFENSE_MAXIMUM_PLATFORM_RECORDS:100000}
+      maximum-tenant-records: ${SMA_DEFENSE_MAXIMUM_TENANT_RECORDS:100000}
+      maximum-tenant-total-records: ${SMA_DEFENSE_MAXIMUM_TENANT_TOTAL_RECORDS:1000000}
+      retention: ${SMA_DEFENSE_RETENTION:30d}
+      cleanup-batch: ${SMA_DEFENSE_CLEANUP_BATCH:100}
   mail:
     dispatch:
       # Explicit deployment opt-in after tenant profiles, templates and SMTP egress routes are configured.

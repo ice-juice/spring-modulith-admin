@@ -4,6 +4,85 @@ import { fullApi } from '../e2e/full-api'
 const origin = 'http://127.0.0.1:5196'
 test.use({ locale: 'zh-CN' })
 
+test('accepted file upload resumes the original bytes and key only after a fresh lookup', async ({ page }) => {
+  await fullApi(page, origin)
+  const uploadId = '11111111-1111-4111-8111-111111111111', keys: string[] = []
+  let writes = 0, lookups = 0
+  await page.route(url => url.pathname === '/api/file/files', route => {
+    if (route.request().method() !== 'POST') return route.fallback()
+    writes++; keys.push(route.request().headers()['idempotency-key'] || '')
+    expect(route.request().postDataBuffer()?.toString()).toContain('original-upload-content')
+    return writes === 1 ? route.abort('failed') : route.fulfill({ json: { code: 0, data: { id: '42', name: 'original.txt' } } })
+  })
+  await page.route(url => url.pathname === '/api/file/uploads/lookup', route => {
+    lookups++; expect(route.request().postDataJSON()).toEqual({ key: keys[0] })
+    return route.fulfill({ json: { code: 0, data: { uploadId, state: 'ACCEPTED', fileId: null, resumable: true } } })
+  })
+  await login(page, '/file/files')
+  await page.locator('input[type="file"]').setInputFiles({ name: 'original.txt', mimeType: 'text/plain', buffer: Buffer.from('original-upload-content') })
+  await page.getByRole('button', { name: '查询原操作结果', exact: true }).click()
+  await page.getByRole('button', { name: '继续上传原文件', exact: true }).evaluate(button => { for (let i = 0; i < 20; i++) (button as HTMLButtonElement).click() })
+  await expect(page.getByRole('button', { name: '查询原操作结果', exact: true })).toHaveCount(0)
+  await expect.poll(() => writes).toBe(2)
+  expect(writes).toBe(2); expect(lookups).toBe(2); expect(keys[0]).toMatch(/^[a-f0-9-]{36}$/); expect(keys[1]).toBe(keys[0])
+})
+
+test('file-library recovery survives reload without attaching to a profile or recreating missing file input', async ({ page }) => {
+  await fullApi(page, origin); let writes = 0, key = ''
+  await page.route(url => url.pathname === '/api/file/files', route => {
+    if (route.request().method() !== 'POST') return route.fallback()
+    writes++; key = route.request().headers()['idempotency-key'] || ''; return route.abort('failed')
+  })
+  await page.route(url => url.pathname === '/api/file/uploads/lookup', route => {
+    expect(route.request().postDataJSON()).toEqual({ key })
+    return route.fulfill({ json: { code: 0, data: { uploadId: '11111111-1111-4111-8111-111111111111', state: 'ACCEPTED', fileId: null, resumable: true } } })
+  })
+  await login(page, '/file/files')
+  await page.locator('input[type="file"]').setInputFiles({ name: 'original.txt', mimeType: 'text/plain', buffer: Buffer.from('private-upload-content') })
+  await expect(page.getByRole('button', { name: '查询原操作结果', exact: true })).toBeVisible()
+  await page.goto('/profile'); await expect(page.getByRole('button', { name: '上传头像', exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: '查询原操作结果', exact: true })).toHaveCount(0)
+  await page.goto('/file/files'); await page.getByRole('button', { name: '查询原操作结果', exact: true }).click()
+  await expect(page.getByText('原文件已离开当前页面，不能直接续传。可继续查询原任务；完成后从文件库选择文件。', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: '继续上传原文件', exact: true })).toHaveCount(0)
+  const saved = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('sma.operation.v1.')).map(key => localStorage.getItem(key)).join(''))
+  expect(saved).toContain('file.library.upload'); expect(saved).not.toMatch(/original.txt|private-upload-content/); expect(writes).toBe(1)
+})
+
+test('a late attachment upload cannot attach itself to a newly opened notice draft', async ({ page }) => {
+  await fullApi(page, origin); let release!: () => void, writes = 0
+  const pending = new Promise<void>(resolve => { release = resolve })
+  await page.route(url => url.pathname === '/api/file/files', async route => {
+    if (route.request().method() !== 'POST') return route.fallback()
+    writes++; await pending
+    return route.fulfill({ json: { code: 0, data: { id: '42', name: 'old-draft.txt', contentType: 'text/plain', sizeBytes: '8' } } })
+  })
+  await login(page, '/message/notices'); await page.getByRole('button', { name: '发布通知', exact: true }).click()
+  await page.getByRole('dialog').locator('#notice-title').fill('Original draft')
+  await page.getByRole('dialog').locator('input[type="file"]').setInputFiles({ name: 'old-draft.txt', mimeType: 'text/plain', buffer: Buffer.from('original') })
+  await expect.poll(() => writes).toBe(1)
+  await page.getByRole('dialog').locator('[data-slot="dialog-footer"]').getByRole('button', { name: '取消', exact: true }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '确认', exact: true }).click()
+  await page.getByRole('button', { name: '发布通知', exact: true }).click(); release()
+  await expect(page.getByRole('dialog').getByRole('button', { name: '上传文件', exact: true })).toBeEnabled()
+  await expect(page.getByRole('dialog').getByText('old-draft.txt', { exact: true })).toHaveCount(0)
+  expect(writes).toBe(1)
+})
+
+test('removing the previous avatar starts a distinct upload context without replaying an unresolved replacement', async ({ page }) => {
+  await fullApi(page, origin); let writes = 0
+  await page.route(url => url.pathname === '/api/iam/profile', route => route.fulfill({ json: { code: 0, data: { id: '101', username: 'fixture', name: 'Fixture', avatarFileId: '77' } } }))
+  await page.route(url => url.pathname === '/api/file/files/images', route => { writes++; return route.abort('failed') })
+  await login(page, '/profile')
+  await page.locator('input[type="file"]').setInputFiles({ name: 'new-avatar.png', mimeType: 'image/png', buffer: Buffer.from('fixture-image') })
+  await expect(page.getByRole('button', { name: '查询原操作结果', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '移除头像', exact: true }).click()
+  await expect(page.getByRole('button', { name: '查询原操作结果', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '上传头像', exact: true })).toBeEnabled()
+  const saved = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('sma.operation.v1.')).map(key => localStorage.getItem(key)).join(''))
+  expect(saved).toContain('file.avatar.self.77'); expect(writes).toBe(1)
+})
+
 test('unknown notice submission freezes rich content and attachments and checks the original intent', async ({ page }) => {
   await fullApi(page, origin); let writes = 0, key = ''
   await page.route(url => url.pathname === '/api/message/notices', route => {

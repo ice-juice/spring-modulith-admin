@@ -22,7 +22,7 @@ import com.sma.admin.common.BizException;
 
 @Component
 @EnableConfigurationProperties(AccountSecurityProperties.class)
-public class SecuritySecrets {
+public class SecuritySecrets implements com.sma.admin.common.deployment.DeploymentEvidenceSource {
     private final Map<String, byte[]> encryption = new HashMap<>();
     private final Map<String, byte[]> peppers = new HashMap<>();
     private final String encryptionId;
@@ -61,6 +61,15 @@ public class SecuritySecrets {
     }
 
     public boolean configured() { return encryption.containsKey(encryptionId) && peppers.containsKey(pepperId); }
+    @Override public String id() { return "auth.security-keys"; }
+    @Override public com.sma.admin.common.deployment.DeploymentEvidence.Proof collect(
+            com.sma.admin.common.deployment.DeploymentEvidence.Challenge challenge) {
+        com.sma.admin.common.deployment.DeploymentEvidence.requireHost();
+        if (!configured()) return com.sma.admin.common.deployment.DeploymentEvidence.unavailable(id());
+        return com.sma.admin.common.deployment.DeploymentEvidence.combine(id(), challenge, java.util.List.of(
+                com.sma.admin.common.deployment.DeploymentEvidence.keyRing("auth.encryption", challenge, encryptionId, encryption),
+                com.sma.admin.common.deployment.DeploymentEvidence.keyRing("auth.pepper", challenge, pepperId, peppers)));
+    }
     public String encryptionId() { key(encryption, encryptionId); return encryptionId; }
     public String reencrypt(String envelope, String context) {
         String plaintext = decrypt(envelope, context);

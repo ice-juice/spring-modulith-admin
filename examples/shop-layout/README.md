@@ -7,7 +7,7 @@
 | `backend/src/main/java/com/sma/business/shop/internal/web/` | 商城 Controller，例如将来的 `ShopOrderController.java` |
 | `backend/src/main/java/com/sma/business/shop/internal/service/` | 商城业务逻辑和事务 |
 | `backend/src/main/java/com/sma/business/shop/internal/persistence/` | 商城实体和 Mapper |
-| `backend/src/main/resources/db/migration/shop/` | 商城 Flyway 迁移，如将来新增 `shop_order` 表 |
+| `backend/src/main/resources/db/migration/shop/` | 历史同库布局空占位；当前路由业务应改用db/business/shop并声明BusinessSchemaCatalog，不在此创建脚本 |
 | `backend/src/main/resources/i18n/shop/` | 商城后端语言包 |
 | `backend/src/test/java/com/sma/business/shop/` | 商城模块和接口测试 |
 | `frontend-next/src/business/shop/` | 商城管理页面、业务 API 调用与组件 |

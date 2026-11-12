@@ -24,10 +24,10 @@ test('all existing business routes render at desktop and mobile without page err
 test('dictionary editing is independent of selecting its type and database filtering has an explicit empty state', async ({ page }) => {
   const api = await fullApi(page)
   await login(page, '/config/dictionaries')
-  await page.getByRole('tab', { name: '字典类型', exact: true }).click()
+  await page.getByRole('tab', { name: '私有字典类型', exact: true }).click()
   await page.getByRole('button', { name: '编辑', exact: true }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.locator('[role=tab][data-state=active]')).toHaveText('字典类型')
+  await expect(page.locator('[role=tab][data-state=active]')).toHaveText('私有字典类型')
   await page.getByRole('dialog').getByRole('button', { name: '取消', exact: true }).last().click()
   await page.goto('/monitor/database')
   await page.getByPlaceholder('搜索表名或说明').fill('does-not-exist')

@@ -41,6 +41,8 @@ export function useSubmission(supplied?: OperationRegistry) {
     key.value = ticket.key; boundResource.value = spec.resource; preparing.value = true
     activeTicket = ticket
     try {
+      if (registry.coordinated) await registry.admit(ticket)
+      if (!live || !ticket.current()) return { kind: 'cancelled' }
       const send = await prepare()
       if (!send || !live || !ticket.current()) return { kind: 'cancelled' }
       preparing.value = false
@@ -52,7 +54,7 @@ export function useSubmission(supplied?: OperationRegistry) {
     } catch (cause) {
       if (live) error.value = message(cause)
       return { kind: 'blocked' }
-    } finally { preparing.value = false; registry.cancel(ticket) }
+    } finally { preparing.value = false; await registry.cancel(ticket) }
   }
   async function check() {
     if (querying.value || record.value?.protocol !== 'LOCAL') return
@@ -78,7 +80,20 @@ export function useSubmission(supplied?: OperationRegistry) {
     finally { querying.value = false }
   }
   function guard() { const current = registry.guard(), currentKey = record.value?.key || key.value; return () => live && current() && currentKey === (record.value?.key || key.value) }
+  async function continueNative<T>(send: (record: Readonly<OperationRecord>, options: OperationSend) => Promise<T>,
+    native: { success: (value: T) => 'completed' | 'pending' | 'unknown' | 'failed' | 'rejected'; failure?: (cause: unknown) => 'completed' | 'pending' | 'unknown' | 'failed' | 'rejected' }) {
+    if (!live || busy.value || querying.value || !record.value) return
+    key.value = record.value.key
+    const current = guard(); error.value = ''
+    try {
+      const result = await registry.continueNative(key.value, send, native)
+      if (!current()) return
+      if (result.kind === 'unknown' || result.kind === 'pending') error.value = i18n.global.t('common.operation.unknown')
+      else if (result.kind === 'failed' || result.kind === 'rejected') error.value = i18n.global.t('common.operation.failed')
+      return result
+    } catch (cause) { if (current()) error.value = message(cause) }
+  }
   function resetView() { if (!busy.value && !querying.value) { key.value = ''; boundResource.value = ''; error.value = '' } }
   function bind(resource: string) { boundResource.value = resource; key.value = ''; revision.value++ }
-  return { run, check, checkNative, guard, resetView, bind, key, record, busy, unresolved, slow, querying, error }
+  return { run, check, checkNative, continueNative, guard, resetView, bind, key, record, busy, unresolved, slow, querying, error }
 }

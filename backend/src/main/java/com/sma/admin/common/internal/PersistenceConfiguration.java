@@ -1,6 +1,5 @@
 package com.sma.admin.common.internal;
 
-import static com.sma.admin.SpringbootModulithAdminApplication.BUSINESS_PACKAGE;
 import static com.sma.admin.SpringbootModulithAdminApplication.PLATFORM_PACKAGE;
 
 import java.time.Instant;
@@ -9,6 +8,10 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.config.GlobalConfig;
+import com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
@@ -19,13 +22,42 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.sma.admin.common.persistence.TenantEntity;
 import com.sma.admin.common.security.CurrentUser;
+import javax.sql.DataSource;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 
 @Configuration(proxyBeanMethods = false)
-@MapperScan(basePackages = {PLATFORM_PACKAGE, BUSINESS_PACKAGE}, annotationClass = org.apache.ibatis.annotations.Mapper.class,
+@MapperScan(basePackages = PLATFORM_PACKAGE, sqlSessionFactoryRef = "sqlSessionFactory",
+        annotationClass = org.apache.ibatis.annotations.Mapper.class,
         nameGenerator = org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator.class)
 class PersistenceConfiguration {
+    @Bean("sqlSessionFactory") @Primary
+    SqlSessionFactory platformSqlSessionFactory(@Qualifier("dataSource") DataSource source,
+            MybatisPlusInterceptor interceptor, MetaObjectHandler audit, SqlTelemetry telemetry,
+            com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator identifiers) throws Exception {
+        return factory(source,interceptor,audit,telemetry,identifiers);
+    }
+    static SqlSessionFactory factory(DataSource source, MybatisPlusInterceptor interceptor,
+            MetaObjectHandler audit, SqlTelemetry telemetry,
+            com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator identifiers) throws Exception {
+        var bean=new MybatisSqlSessionFactoryBean();
+        bean.setDataSource(source);
+        var configuration=new MybatisConfiguration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        bean.setConfiguration(configuration);
+        var db=new GlobalConfig.DbConfig();
+        db.setIdType(IdType.ASSIGN_ID);
+        db.setLogicDeleteField("deleted"); db.setLogicDeleteValue("1"); db.setLogicNotDeleteValue("0");
+        bean.setGlobalConfig(new GlobalConfig().setDbConfig(db).setMetaObjectHandler(audit)
+                .setIdentifierGenerator(java.util.Objects.requireNonNull(identifiers,"Host identifier allocator required")));
+        if (telemetry==null) bean.setPlugins(interceptor);
+        else bean.setPlugins(interceptor,telemetry);
+        bean.afterPropertiesSet();
+        return bean.getObject();
+    }
     @Bean
     MybatisPlusInterceptor mybatisPlusInterceptor() {
         var interceptor = new MybatisPlusInterceptor();

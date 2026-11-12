@@ -3,5 +3,5 @@
  */
 @org.springframework.modulith.ApplicationModule(
 		displayName = "Auth（认证与会话）",
-        allowedDependencies = { "common", "common :: security", "common :: persistence", "common :: request", "common :: cache", "iam", "config" })
+        allowedDependencies = { "common", "common :: security", "common :: persistence", "common :: request", "common :: cache", "common :: deployment", "iam", "config" })
 package com.sma.admin.auth;

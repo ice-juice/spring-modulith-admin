@@ -22,6 +22,8 @@
 
 **P08 缓存治理与多实例（2026-11-11）**：已授权按[完整方案](proposals/P08-cache-governance-and-cluster.md)实施，逐项依赖、实际验证和集群边界统一见[专项进度](cache-governance-progress.md)。Redis 接入不能代替关闭粘性会话的双实例验收。
 
+2026-11-12：P08已推进至M3c1接流门禁完成本地验收；同JAR完整双JVM41组与启动后专项23组（11次明确依赖拒绝）通过并清理，同时修复共享见证读锁竞争与首次租户引导竞争。下一项M3c2主动摘流/WS及业务worker排空；M3d真实LB、S6与X5尚未完成，multi仍关闭。具体制品、失败记录、命令和边界见专项进度与[总排期](development-schedule.md)。
+
 P07 已于 2026-11-11 授权开始实施；实时状态和实际检查记录统一维护在[认证安全实施进度](auth-security-progress.md)，原方案中的未实施描述为方案保存时的历史状态。
 
 | 层 | 要求 |
@@ -157,14 +159,49 @@ P07 已于 2026-11-11 授权开始实施；实时状态和实际检查记录统�
 | 顺序 | 任务 | 依赖 | 验证方法 | 状态 |
 | --- | --- | --- | --- | --- |
 | X0 | 固化跨线归属规则，修订四份方案的冲突条款与编号 | 无 | 文档链接检查、四份方案条款一致性复核 | 完成（文档） |
-| X1 | 账本归属落到实现：要求同业务事务的幂等/互斥/失效登记随业务资源创建，平台库只留目录与对账 | X0、租户 S5 | 独立业务夹具＋真实两个 MySQL：业务回滚不留执行权、跨库不声称原子、代次汇聚延迟有界 | 待实施（租户 S6 前置） |
+| X1 | 账本归属落到实现：要求同业务事务的幂等/互斥/失效登记随业务资源创建，平台库只留目录与对账 | X0、租户 S5 | 独立业务夹具＋真实两个 MySQL：业务回滚不留执行权、跨库不声称原子、代次汇聚延迟有界 | 完成（本地，2026-11-12；S6可开工） |
 | X2 | Redis 归属：部署级连接工厂保持重启生效，租户资源登记只决定业务缓存绑定与预算 | X1 | 真共享/独立 Redis：改绑只对新解析生效、冷启动/限速预热、PROTECTED 不迁移、单资源故障隔离 | 待实施（租户 S8 前置） |
-| X3 | 预算 scope 登记：六处预算表在接口清单标注 shared/node 与多实例换算，部署文档给出总量 | X0 | 接口清单编译期门禁覆盖新字段；N 实例容量换算与部署文档一致 | 待实施 |
-| X4 | 品牌公开资产安全验收提前至安全专项 S2 之前 | X0 | 资产类型/URL 策略/公开投影字段/权限不外溢；未知域名回落与跨租户注入拒绝 | 待实施 |
+| X3 | 预算 scope 登记：六处预算实现按实际存储在接口清单标注 shared/node 与多实例换算，部署文档给出总量 | X0 | 接口清单编译期门禁覆盖新字段；N 实例容量换算与部署文档一致 | 完成（本地，2026-11-12） |
+| X4 | 品牌公开资产安全验收提前至安全专项 S2 之前 | X0、X3 | 资产类型/URL 策略/公开投影字段/权限不外溢；未知域名不回落与跨租户注入拒绝 | 完成（本地，2026-11-12）；分轮41项基础＋既有回归＋最终10项HTTP通过 |
 | X5 | 联合验收：同库同双实例跑交叉矩阵 | X1～X4 及各线收尾前 | 分库写＋失效＋幂等重放＋三类身份互拒＋跨节点文件＋故障隔离；专用可清空库与隔离端口 | 待实施 |
 
 X1、X2 分别是租户平台 S6、S8 的开工前置；未对齐即实施会导致 S6/S7 的账本位置返工。X5 在任一条线标记整体完成之前必须存在。
 
+X1实施计划（租户S5已验收）：
+
+| 子项 | 内容与边界 | 依赖 | 验证 | 状态 |
+| --- | --- | --- | --- | --- |
+| X1a | 核对请求执行权、互斥、缓存代次及Outbox的现有调用和事务归属；定义由宿主选择平台或业务资源的最小公开契约，业务模块不接触Common内部Mapper | 租户S5 | 现有平台调用与跨模块结构门禁；缺少业务绑定时拒绝默认落平台库 | 完成（本地，2026-11-12） |
+| X1b | 让业务资源自己的事务管理器、账本表和失效登记参与业务写入；平台自有写继续用原平台事务；资源选择在事务开始前固定，拒绝跨资源嵌套 | X1a | 真实双MySQL的提交、回滚、同键重放、并发互斥与错库拒绝 | 完成（本地，2026-11-12） |
+| X1c | 定义宿主业务库框架表迁移与对账的接入契约；用独立夹具验证同业务库Outbox及稳定键、代次权威读取与有界汇聚延迟，正式资源目录与迁移任务留给S6/S7 | X1b | 真实双库夹具的未知结果/重试、汇聚延迟及故障恢复；现有平台回归 | 完成（本地，2026-11-12） |
+
+X1只建立S6可接入的资源账本边界；资源目录、租户绑定、连接池预算和路由由S6实现。X1验收必须同时更新本进度、租户进度和开发调度，不能以契约或单库单测替代双库事务证据。
+
+X1a验收：新增`common :: request`的`BusinessLedger`/`BusinessLedgerProvider`，宿主入口在事务前按可信Actor租户和业务组打开会话；组名非法、外层事务已激活、provider缺失或资源未绑定均拒绝，不回退平台账本。会话后续读取、写入与失效复查原租户，失效还要求可写事务；会话显式关闭并幂等释放资源修订租约，关闭后拒绝继续使用。现有平台`RequestExecution`/`ManagedCache`入口及表未迁移，真正资源绑定与双库提交由X1b实现。根reactor独立输出`target/p11-x1a/target`的`backend/target/p11-x1a.log`为初版新边界3项、架构17项、模块2项共22/22通过；关闭契约补充后的最终`backend/target/p11-x1a-close.log`同样22/22通过。专用可清空库`sma_test_p11_x1a_20261112`、独立输出`target/p11-x1a-integration/target`的`backend/target/p11-x1a-integration.log`为应用启动2、平台请求账本13、缓存代次4、新边界3、模块2，共24/24、0跳过、BUILD SUCCESS；该轮在关闭契约补充前，关闭行为由最终22项覆盖。未验证双库原子性、业务库迁移、Outbox或汇聚，X1总体仍进行中，S6仍阻塞。
+
+X1b验收：宿主`BusinessLedgerResourceFactory`按物理资源及修订装配业务库Mapper与本地事务管理器，请求执行权/互斥和`common_cache_revision`落到同一业务库，平台自有入口仍走原平台库。装配时精确核对DataSource身份与租户、数据范围、全表拦截、审计填充；失效时还核对活动可写事务绑定此DataSource，拒绝平台事务冒充业务事务。会话由调用者释放租约。真实双库`BusinessLedgerMysqlTests`用`PersistenceConfiguration`现有拦截器和Common V1～V5形状，覆盖业务提交/回滚、FAILED_FINAL回执、同键重放、不同键同资源并发互斥、平台库账本不变、平台事务失效与嵌套拒绝。初轮`p11-x1b.log`测试编译导入错误、`p11-x1b-recheck.log`测试密钥缺失、`p11-x1b-key.log`夹具跨schema误判、`p11-x1b-schema.log`缺V5列、`p11-x1b-v5.log`固定租户重放、`p11-x1b-final.log`固定业务主键冲突，均保留失败原日志；随后改为任务双库轻量夹具、每轮独立租户/业务ID。最终根reactor独立输出`target/p11-x1b-lean/target`、日志`backend/target/p11-x1b-lean.log`：架构17、双库1、边界/错误装配4、模块2，共24/24、0失败/错误/跳过、BUILD SUCCESS，约1分钟。两个任务库为`sma_test_p11_x1b_platform_20261112`和`sma_test_p11_x1b_business_20261112`；不清空其他库。X1c Outbox、业务版本权威读取和汇聚尚待验收，S6继续阻塞。
+
+X1c验收：`db/business-ledger/V1__framework_ledger.sql`是业务库独立Flyway位置及历史，只建执行权、互斥、缓存代次与Outbox四张框架表，不带平台请求预算；S7负责正式资源迁移编排、旧库升级和共享资源只迁一次。`BusinessLedger.Session`在选定业务事务中入队，事件类型＋稳定键按租户唯一，重复内容返回原ID、不同字节拒绝；业务回滚不留事件，平台库无此表。权威代次只在事务外从本资源READ_COMMITTED读取；`BusinessRevisionRollup`按租户、资源ID/修订和区域保存有容量上限的观测，超过设定最大年龄或读取失败报告stale，恢复采样清除stale。该上限是陈旧报告阈值，不是后台轮询已交付或跨库强一致。首次根reactor`backend/target/p11-x1c.log`因PowerShell Maven参数转义失败；`p11-x1c-recheck.log`测试编译推断错误；`p11-x1c-schema.log`因测试账号无新建库权限失败，均已修正。最终专用可清空双库`sma_test_p11_x1b_platform_20261112`＋`sma_test_p11_x1b_business_20261112`、独立输出`target/p11-x1c-schema/target`的`backend/target/p11-x1c-schema-recheck.log`为25/25、0失败/错误/跳过、BUILD SUCCESS；业务库测试前只清空精确命名的专用业务库并重建。平台回归用专用`sma_test_p11_x1a_20261112`、`backend/target/p11-x1c-platform.log`为RequestExecutionTests 13＋CacheRevisionIntegrationTests 4，共17/17、0跳过、BUILD SUCCESS。X1前置已完成，S6可开工；真实资源目录、池预算、路由、轮询/派发、迁移任务仍归S6/S7。
+
+
+X3实施计划（2026-11-12）：先核对六处预算实际存储/事务/节点并发，建立受审结构化目录；再让编译后端点清单和策略基线包含scope、模块/库、N实例换算与目录引用，校验真实实现/实体映射；同步部署示例并运行显式基线审查及普通门禁，最后双写调度和本进度。只登记实际机制，不合并预算或改认证/限额。已发现P11将BrandWorkBudget称作持久预算表与代码不符：其实际为tenant模块Semaphore(4)，随事务完成释放，应登记node/JVM，不虚构tenant预算表。identity预算在MANDATORY内部参与所属工作事务，也不能把shared误称全部REQUIRES_NEW。
+
+X3验收完成（2026-11-12）：EndpointBudgetCatalog受审14项预算（六处指定实现＋相关节点门禁），SecurityEndpointInventoryTests登记351条编译端点/39条精确原生策略。scope/模块/存储/物理表/键/生命周期/N换算与端点引用均进入策略基线；编译实体归属、默认节点容量、缺字段、共享不乘N、串联取共同约束、部署表一致性由EndpointBudgetCatalogTests验证。纠正P11中BrandWorkBudget和identity/file预算事务描述，未修改运行限额或预算实现。
+
+实际命令：Java21、根reactor `-pl backend -am -Dsma.verify.directory=target/p11-x3/target -Dtest=EndpointBudgetCatalogTests,SecurityEndpointInventoryTests -Dsurefire.failIfNoSpecifiedTests=false -Dsma.security.review-policy-baseline=true -Dsma.security.inventory=../docs/security-endpoint-inventory.md test`，日志backend/target/p11-x3-review.log，6项全部通过。关闭审查开关后加入ArchitectureRulesTests/ModularityTests，输出target/p11-x3/endpoint-inventory-ordinary.md，日志p11-x3-ordinary.log，25项全部通过；两份接口清单SHA256相同（4EA27925993BB2EFB33D497AA6A7A95E82A8B6A5DD257BFC4AEC8F78623FEA45）。定向git diff --check通过。
+
+基线同时包含并行租户线的DefinedDictionaryController新增6条入口，已读Controller/Management/Service审查：2条GET纯授权读取，4条写按config:dictionary:update及LOCAL同资源事务，版本/对象由领域复查、缓存失效/事件同事务、不含外部I/O；本轮只确认策略登记，实际HTTP数据库验收仍由租户S5d-4提供，不借此声明业务功能通过。X3不使用数据库、不证明双实例运行或X5合流；同步开发调度、接口清单、运行说明、README/后端规则及安全专项记录。X3前置完成，但C5仍等待P09完整C4d，X1仍等待租户S5。
+
+X4分项验收（2026-11-12）：X4a的PublicImageEncoder改为受审JDK PNG/JPEG/GIF SPI＋固定PNG writer，读/写插件在白名单前均不可调用；输入/可寻址缓存/输出有界。根reactor `-pl backend -am -Dsma.verify.directory=target/p11-x4/target -Dtest=PublicImageEncoderTests,BrandValidationTests,LegacyBrandConverterTests,BrandWorkBudgetTests,BrandResolverTests,ArchitectureRulesTests,ModularityTests,SecurityEndpointInventoryTests,EndpointBudgetCatalogTests -Dsurefire.failIfNoSpecifiedTests=false test`，`p11-x4a.log`41项全通过（2分04秒），无跳过。真实SPI注入、压缩源展开超限、元数据/尾随剥离和8个URL字段拒绝路径均验证；只覆盖公开快照编码，不等于旧上传已接P09完整扫描。
+
+X4b在独立`sma_test_p11_x4_20261112`库和同专项输出执行BrandPublicSecurityTests及既有entry/发布/回退/预览/文件/头像与门禁。首次`p11-x4b.log`为测试helper遮蔽MockMvc content断言而编译失败，修正命名后`p11-x4b-recheck.log`运行中。没有新增迁移/端点或改运行服务；匿名精确字段、GET/HEAD、原件/管理权限、跨租户/portal/Host注入须本轮真实HTTP结果通过后才可标X4完成。完整命令、失败和边界同步[安全进度](security-defense-progress.md)，X5仍未完成。
+
+X4本地验收完成（2026-11-12）：`p11-x4b-recheck.log`首轮64项中63通过，唯一失败为MockMvc对象未执行容器HEAD抑制；没有放宽零正文要求或修改生产控制器。将BrandPublicSecurityTests增加回环随机端口真实Tomcat后，根reactor同库/同输出 `-Dtest=BrandPublicSecurityTests,BrandEntryHttpTests,BrandHttpTests` 复验，`p11-x4b-wire.log`10/10、0跳过、BUILD SUCCESS（8分01秒）。真实Socket核对HEAD 200、image/png/no-store/nosniff/准确Content-Length和实际零正文；同批MockMvc＋真实MySQL核对精确字段白名单、Host/转发头/tenantId/portal注入、跨租户/门户/停用/未知入口、原件和管理路径401、发布素材引用授权不外溢及文档/SVG不可作为公开素材。首轮已通过的发布/回退/并发、预览、旧文件/头像及架构证据继续有效，不把失败组合伪记成一次64项全绿。无新迁移或端点，不部署用户服务；完整杀毒、P09容器及X5联合验收仍未完成。README、品牌契约、专项规则、运行说明、调度及安全进度同批同步。
+
 ## 前端交互增强：LeiBox 三项功能
 
 用户已确认实施随手栏快捷标签栏、可调宽度面板、收藏列表/卡片切换；属于main可复用基座前端，采用现有授权/导航/请求协议，不新增后端接口。L1～L4已本地完成：固定前端副本完整verify（317单测）、31项综合浏览器分轮验证、原随手栏生产包4项通过；无新增运行依赖，不代表部署或真实后端新增能力。范围、逐项结果/失败修正及并行变更证据边界见[专项进度](frontend-next/leibox-ui-progress.md)。使用方法见[新版前端说明](../frontend-next/README.md#快捷入口可调面板与收藏布局)。
+
+## P13 游戏裂变邀请与分层积分奖励
+
+2026-11-12 形成独立示例业务的设计草案，比较“上级两列”和“截断闭包”两套关系模型，并记录邀请人数无上限、任务积分落账、两层奖励计算、合表边界及字符串祖先取舍。当前只有[设计文档](proposals/P13-game-referral-points.md)，尚未创建业务模块、迁移或接口；实施须先确定两层是否为永久上限，再按方案中的 R0～R5 逐项验证。

@@ -24,6 +24,8 @@ class PublicationTests {
    var original=login("initial");new TransactionTemplate(transactions).execute(status->{events.publishEvent(original);return null;});
    org.awaitility.Awaitility.await().pollInSameThread().atMost(Duration.ofSeconds(10)).until(()->repository.findCompletedPublications().stream().anyMatch(p->p.getEvent().equals(original)));
    var target=repository.findCompletedPublications().stream().filter(p->p.getEvent().equals(original)).findFirst().orElseThrow().getTargetIdentifier();
+   var earlier=repository.create(TargetEventPublication.of(new LoginEvent(UUID.randomUUID().toString(),272,101L,null,"earlier-foreign","admin","SUCCESS","127.0.0.1","test",Instant.now()),target,Instant.now().minusSeconds(120)));
+   repository.markFailed(earlier.getIdentifier());
    var failed=repository.create(TargetEventPublication.of(login("retry"),target,Instant.now().minusSeconds(60)));repository.markFailed(failed.getIdentifier());
    assertThat(service.page(new PageQuery(1,20,null,null),"FAILED").items()).anySatisfy(row->assertThat(row.id()).isEqualTo(failed.getIdentifier().toString()));
    Users.as(Users.principal(101,272,DataAccess.unrestricted()),()->{
@@ -32,6 +34,7 @@ class PublicationTests {
    });
    service.retry(failed.getIdentifier());
    org.awaitility.Awaitility.await().pollInSameThread().atMost(Duration.ofSeconds(10)).until(()->repository.findCompletedPublications().stream().anyMatch(p->p.getIdentifier().equals(failed.getIdentifier())));
+   assertThat(repository.findByStatus(EventPublication.Status.FAILED)).anySatisfy(row->assertThat(row.getIdentifier()).isEqualTo(earlier.getIdentifier()));
    assertThatThrownBy(()->service.retry(failed.getIdentifier())).isInstanceOf(BizException.class);return null;
   });
  }

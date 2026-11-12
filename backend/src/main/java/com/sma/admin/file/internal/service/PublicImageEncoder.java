@@ -5,7 +5,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.*;
-import javax.imageio.ImageIO;
+import javax.imageio.*;
+import javax.imageio.spi.*;
+import javax.imageio.stream.*;
 import org.springframework.stereotype.Component;
 import com.sma.admin.common.BizException;
 import com.sma.admin.file.*;
@@ -23,26 +25,61 @@ public class PublicImageEncoder {
         try {
             if(!Files.isRegularFile(path,LinkOption.NOFOLLOW_LINKS) || Files.size(path)>MAX_BYTES) throw invalid();
             byte[] bytes;
-            try(var input=Files.newInputStream(path)) { bytes=input.readNBytes(MAX_BYTES+1); }
+            try(var input=Files.newInputStream(path,LinkOption.NOFOLLOW_LINKS)) { bytes=input.readNBytes(MAX_BYTES+1); }
             if(bytes.length>MAX_BYTES) throw invalid();
-            try(var image=ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
-                if(image==null) throw invalid();var readers=ImageIO.getImageReaders(image);if(!readers.hasNext()) throw invalid();
-                var reader=readers.next();
+            try(var image=new MemoryCacheImageInputStream(new ByteArrayInputStream(bytes))) {
+                var reader=reader(bytes);
                 try {
-                    reader.setInput(image,true,true);String format=reader.getFormatName().toLowerCase(Locale.ROOT);
-                    if(!Set.of("png","jpeg","jpg","gif").contains(format)) throw invalid();
+                    reader.setInput(image,true,true);
                     int width=reader.getWidth(0),height=reader.getHeight(0);
                     if(width<1 || height<1 || width>4096 || height>4096 || (long)width*height>4_000_000) throw invalid();
                     var decoded=reader.read(0);if(decoded==null) throw invalid();
                     var raster=new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);
                     var graphics=raster.createGraphics();try { graphics.drawImage(decoded,0,0,null); } finally { graphics.dispose();decoded.flush(); }
-                    var output=new BoundedOutput();try { if(!ImageIO.write(raster,"png",output)) throw invalid(); } finally { raster.flush(); }
+                    var output=new BoundedOutput();var writer=writer();
+                    try(var sink=new BoundedImageOutput(output)) {
+                        writer.setOutput(sink);writer.write(null,new IIOImage(raster,null,null),writer.getDefaultWriteParam());sink.flush();
+                    } finally { writer.dispose();raster.flush(); }
                     byte[] png=output.toByteArray();
                     return new ImagePublication.Image(png,"image/png",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(png)),width,height);
                 } finally { reader.dispose(); }
             }
         } catch(BizException failure) { throw failure; }
         catch(Exception failure) { throw invalid(); }
+    }
+    private ImageReader reader(byte[] bytes) throws IOException {
+        String type;
+        if(bytes.length>=8 && Arrays.equals(Arrays.copyOf(bytes,8),new byte[]{(byte)137,80,78,71,13,10,26,10})) type="png.PNG";
+        else if(bytes.length>=3 && (bytes[0]&255)==255 && (bytes[1]&255)==216 && (bytes[2]&255)==255) type="jpeg.JPEG";
+        else if(bytes.length>=6 && bytes[0]=='G' && bytes[1]=='I' && bytes[2]=='F' && bytes[3]=='8' && (bytes[4]=='7'||bytes[4]=='9') && bytes[5]=='a') type="gif.GIF";
+        else throw invalid();
+        String expected="com.sun.imageio.plugins."+type+"ImageReaderSpi";
+        var providers=IIORegistry.getDefaultInstance().getServiceProviders(ImageReaderSpi.class,false);
+        while(providers.hasNext()) {
+            var provider=providers.next();
+            // Do not invoke arbitrary canDecodeInput/createReaderInstance before applying the allowlist.
+            if(jdkProvider(provider,expected)) return provider.createReaderInstance();
+        }
+        throw invalid();
+    }
+    private ImageWriter writer() throws IOException {
+        var providers=IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class,false);
+        while(providers.hasNext()) {
+            var provider=providers.next();
+            if(jdkProvider(provider,"com.sun.imageio.plugins.png.PNGImageWriterSpi")) return provider.createWriterInstance();
+        }
+        throw invalid();
+    }
+    private boolean jdkProvider(Object provider,String name) {
+        return name.equals(provider.getClass().getName()) && "java.desktop".equals(provider.getClass().getModule().getName());
+    }
+    /** Bound ImageIO's seekable cache as well as the final byte stream, without disk cache or global SPIs. */
+    private static final class BoundedImageOutput extends MemoryCacheImageOutputStream {
+        BoundedImageOutput(OutputStream stream) { super(stream); }
+        @Override public void write(int value) throws IOException { limit(1);super.write(value); }
+        @Override public void write(byte[] bytes,int offset,int length) throws IOException { limit(length);super.write(bytes,offset,length); }
+        @Override public void seek(long position) throws IOException { if(position<0 || position>MAX_BYTES) throw invalid();super.seek(position); }
+        private void limit(int length) { if(length<0 || streamPos>MAX_BYTES-length) throw invalid(); }
     }
     private static final class BoundedOutput extends ByteArrayOutputStream {
         @Override public synchronized void write(int value) { limit(1);super.write(value); }

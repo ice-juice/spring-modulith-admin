@@ -22,7 +22,7 @@ import { useRequestGate } from '@/composables/useRequestGate'
 import ReleaseFactors from './ReleaseFactors.vue'
 import RuntimePanel from './RuntimePanel.vue'
 import { definitions, fieldBody, type Field } from './commands'
-import { allowed, CommandNotDispatched, commandEvidence, releaseGuard, clearReleaseSession, connectRelease, executeCommand, inspectFiles, prepareCommand, reconcileCommand, releaseAccess, releaseIdentity, releaseRequest, sha256, uploadFiles, type Artifact, type Bundle, type Deployment, type FileIntent, type Group, type Plugin, type Policy, type Prepared, type Receipt, type Release } from './client'
+import { allowed, CommandNotDispatched, commandEvidence, commandStatusEvidence, lookupCommandStatus, resumeReleaseUpload, releaseGuard, clearReleaseSession, connectRelease, executeCommand, inspectFiles, prepareCommand, releaseAccess, releaseIdentity, releaseRequest, sha256, type CommandStatus, type Artifact, type Bundle, type Deployment, type FileIntent, type Group, type Plugin, type Policy, type Prepared, type Receipt, type Release } from './client'
 
 interface Item { id: string; [key: string]: unknown }
 const { t } = useI18n(), auth = useAuth(), preferences = usePreferences(), gate = useRequestGate()
@@ -97,7 +97,7 @@ watch(() => JSON.stringify([getToken(), auth.user?.id, auth.user?.portal, auth.u
   if (auth.user && !auth.user.locked) void connect()
 })
 watch(releaseAccess, value => { if (value) connected(); else { gate(); rows.value = []; groups.value = []; plugins.value = []; prepared.value = undefined; clearSecrets(); dialog.value = false; secretResult.value = ''; receipt.value = undefined;resumeUpload.value='';detail.value='';detailOpen.value=false;reviewSummary.value='' } })
-function releaseScopeChanged() { editorGeneration++; gate(); clearSecrets(); prepared.value = undefined; confirmOpen.value = false; dialog.value = false; receipt.value = undefined; secretResult.value = ''; detail.value = ''; detailOpen.value = false; reviewSummary.value = '' }
+function releaseScopeChanged() { editorGeneration++; gate(); clearSecrets(); resumeUpload.value = ''; prepared.value = undefined; confirmOpen.value = false; dialog.value = false; receipt.value = undefined; secretResult.value = ''; detail.value = ''; detailOpen.value = false; reviewSummary.value = '' }
 onMounted(() => { window.addEventListener('sma:release-access-changed', releaseScopeChanged); void connect(); heartbeat = setInterval(() => { if (releaseAccess.value) void connect() }, 30000) })
 onBeforeUnmount(() => { window.removeEventListener('sma:release-access-changed', releaseScopeChanged); connectionEpoch++; clearInterval(heartbeat); clearReleaseSession(); clearSecrets() })
 
@@ -122,9 +122,12 @@ function edit(kind: string, initial: Record<string, unknown> = {}) {
 function artifactAction(kind: string, row: Item) { edit(kind); pendingBody.value = row.id }
 function editBinding(row: Item) { const subject = row.subject as Record<string, unknown>; edit('IDENTITY_BIND', { machineId: row.machineId, tenantId: subject.tenantId, portal: subject.portal, hostUserId: subject.hostUserId, userId: row.userId, expectedRevision: row.revision, enabled: row.enabled }) }
 async function chooseFiles(event: Event) {
-  files.value = [...((event.target as HTMLInputElement).files || [])]; fileIntents.value = []
+  const selected = [...((event.target as HTMLInputElement).files || [])], owns = releaseGuard()
+  files.value = selected; fileIntents.value = []
   if (!policy.value) return
-  try { fileIntents.value = await inspectFiles(files.value, policy.value) } catch (e) { error.value = (e as Error).message; files.value = [] }
+  const current = files.value
+  try { const intents = await inspectFiles(selected, policy.value); if (owns() && files.value === current) fileIntents.value = intents }
+  catch (e) { if (owns() && files.value === current) { error.value = (e as Error).message; files.value = [] } }
 }
 const releaseForm = reactive({ id: 'business-extensions', stable: '', candidate: '', percent: 5, nodes: '', reason: '' })
 const selectedDeployment = ref<Deployment>(), releaseArtifacts = ref<Artifact[]>([]), releaseHistory = ref<Release[]>([])
@@ -186,33 +189,60 @@ async function review() {
 async function commit() {
   if (writing.value || commandAction.busy.value || !prepared.value) return
   writing.value = true; error.value = ''
-  const current = prepared.value, stagedFiles = [...files.value], password = operationPassword.value, code = otp.value, owns = releaseGuard()
+  const current = prepared.value, stagedFiles = [...files.value], password = operationPassword.value, code = otp.value, owns = releaseGuard(), limits = policy.value!
+  const upload = current.intent.action === 'UPLOAD'
   try {
-    const result = await commandAction.run<Receipt>({ operation: 'extension.command.' + current.intent.action, resource: 'extension.console.' + current.intent.environment + '.' + current.intent.pluginId, protocol: 'NATIVE', nativeId: current.idempotencyKey },
-      () => () => executeCommand(current, password, code),
-      { success: value => { const state = commandEvidence(value, current.idempotencyKey).state; return state === 'SUCCEEDED' ? 'completed' : state === 'FAILED_FINAL' ? 'failed' : 'unknown' }, failure: cause => cause instanceof CommandNotDispatched ? 'rejected' : 'unknown' })
+    const result = await commandAction.run<CommandStatus>({ operation: 'extension.command.' + current.intent.action, resource: 'extension.console.' + current.intent.environment + '.' + current.intent.pluginId, protocol: 'NATIVE', nativeId: current.idempotencyKey },
+      () => async () => {
+        const receipt = await executeCommand(current, password, code)
+        if (!owns()) throw new Error(t('extension.sessionChanged'))
+        return { receipt, upload: upload && commandEvidence(receipt, current.idempotencyKey).state === 'SUCCEEDED'
+          ? await resumeReleaseUpload(receipt.resourceId, stagedFiles, limits, p => { if (owns()) progress.value = p }) : undefined }
+      },
+      { success: value => commandOutcome(value, current.idempotencyKey, upload), failure: cause => cause instanceof CommandNotDispatched ? 'rejected' : 'unknown' })
     if (!owns()) return
     if (result.kind === 'success') {
-      receipt.value = result.value
-      if (current.intent.action === 'UPLOAD') { resumeUpload.value = result.value.resourceId; await uploadFiles(result.value.resourceId, stagedFiles, p => { if (owns()) progress.value = p }); if (owns()) resumeUpload.value = '' }
+      receipt.value = result.value.receipt
       if (owns()) { confirmOpen.value = false; clearSecrets(); await load() }
     } else error.value = commandAction.error.value
   } catch (cause) { if (owns()) error.value = (cause as Error).message }
   finally { writing.value = false; operationPassword.value = ''; otp.value = ''; prepared.value = undefined; confirmOpen.value = false; progress.value = undefined }
 }
+function commandOutcome(value: CommandStatus, key: string, upload: boolean) {
+  const state = commandStatusEvidence(value, key, upload).state
+  return state === 'SUCCEEDED' ? 'completed' : state === 'FAILED_FINAL' ? 'failed' : state === 'PENDING' ? 'pending' : 'unknown'
+}
 async function reconcile() {
   const record = commandAction.record.value
   if (!record?.operationId || commandAction.querying.value || writing.value) return
   const owns = releaseGuard(), key = record.operationId, upload = record.operation === 'extension.command.UPLOAD'
-  const result = await commandAction.checkNative(() => reconcileCommand(key), value => commandEvidence(value, key))
+  resumeUpload.value = ''
+  const result = await commandAction.checkNative(() => lookupCommandStatus(key, upload), value => commandStatusEvidence(value, key, upload))
   if (!owns()) return
+  if (result?.state === 'PENDING' && result.value.upload?.resumable) resumeUpload.value = result.value.upload.id
   if (result?.state === 'SUCCEEDED' || result?.state === 'FAILED_FINAL') {
-    receipt.value = result.value
-    if (upload && result.state === 'SUCCEEDED') resumeUpload.value = result.value.resourceId
+    receipt.value = result.value.receipt
+    clearSecrets()
     await load()
   } else error.value = commandAction.error.value
 }
-async function resume() { if(writing.value || !files.value.length)return; writing.value=true;const owns=releaseGuard();try{await uploadFiles(resumeUpload.value,[...files.value],p=>{if(owns())progress.value=p});if(owns()){resumeUpload.value='';clearSecrets();await load()}}catch(e){if(owns())error.value=(e as Error).message}finally{writing.value=false;progress.value=undefined} }
+async function resume() {
+  const record = commandAction.record.value, limits = policy.value
+  if (writing.value || !files.value.length || !limits || !record?.operationId || record.operation !== 'extension.command.UPLOAD') return
+  const owns = releaseGuard(), key = record.operationId, stagedFiles = [...files.value]
+  writing.value = true; error.value = ''
+  try {
+    const result = await commandAction.continueNative(async () => {
+      const status = await lookupCommandStatus(key, true)
+      if (commandStatusEvidence(status, key, true).state !== 'PENDING') return status
+      if (!owns()) throw new Error(t('extension.sessionChanged'))
+      return { receipt: status.receipt, upload: await resumeReleaseUpload(status.receipt.resourceId, stagedFiles, limits, p => { if (owns()) progress.value = p }) }
+    }, { success: value => commandOutcome(value, key, true) })
+    if (!owns()) return
+    if (result?.kind === 'success') { receipt.value = result.value.receipt; resumeUpload.value = ''; clearSecrets(); await load() }
+    else { resumeUpload.value = ''; error.value = commandAction.error.value }
+  } finally { writing.value = false; progress.value = undefined }
+}
 function show(row: Item) { detail.value=JSON.stringify(row,null,2);detailOpen.value=true }
 async function guardDetail(id:string){try{const value=await releaseRequest<Record<string,unknown>|null>('GET',`/deployments/${encodeURIComponent(id)}/guard?environment=${encodeURIComponent(environment.value)}`);detail.value=JSON.stringify(value,null,2);detailOpen.value=true}catch(e){error.value=(e as Error).message}}
 async function deliver(kind: string, id: string) {
@@ -241,7 +271,7 @@ async function deliver(kind: string, id: string) {
       <ErrorNotice :message="error" />
       <div v-if="receipt" role="status" class="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 text-sm"><span>{{ t('extension.receipt') }}{{ t('extension.colon') }} {{ receipt.state }}</span><code class="break-all text-xs">{{ receipt.id }}</code><Button variant="ghost" size="sm" @click="show({ ...receipt })">{{ t('common.details') }}</Button></div>
       <OperationStatus :slow="commandAction.slow.value" /><OperationStatus :slow="deliveryAction.slow.value" /><p v-if="deliveryAction.unresolved.value" class="rounded-xl border p-3 text-sm" role="status">{{ t('extension.credentialUnknown') }}</p><div v-if="unknownKey" class="rounded-xl border p-3"><p class="mb-2 text-sm">{{ t('extension.unknownResult') }}</p><code class="break-all text-xs">{{ unknownKey }}</code><Button :disabled="writing || commandAction.querying.value" variant="outline" @click="reconcile">{{ t('extension.reconcile') }}</Button></div>
-      <div v-if="resumeUpload" class="rounded-xl border p-3 text-sm"><span>{{ t('extension.resumeHint') }}</span><Button :disabled="writing || !files.length" variant="outline" @click="resume">{{ t('extension.resume') }}</Button></div>
+      <div v-if="resumeUpload" class="rounded-xl border p-3 text-sm"><p>{{ t('extension.resumeHint') }}</p><Label for="release-resume-files">{{ t('extension.originalFiles') }}</Label><Input id="release-resume-files" type="file" multiple accept=".jar,.java" :disabled="writing || commandAction.querying.value" @change="chooseFiles" /><Button :disabled="writing || commandAction.querying.value || !files.length" variant="outline" @click="resume">{{ t('extension.resume') }}</Button></div>
       <div v-if="progress !== undefined" role="status">{{ t('extension.uploadProgress', {progress}) }}<progress class="w-full" :value="progress" max="100" /></div>
       <nav class="hidden flex-wrap gap-1 sm:flex" :aria-label="t('extension.sections')"><Button v-for="item in tabs" :key="item" :variant="tab === item ? 'secondary' : 'ghost'" :aria-pressed="tab === item" :disabled="writing" @click="changeTab(item)">{{ t('extension.tabs.' + item) }}</Button></nav>
       <select :value="tab" class="h-10 w-full rounded-lg border bg-card px-3 sm:hidden" :aria-label="t('extension.sections')" :disabled="writing" @change="changeTab(($event.target as HTMLSelectElement).value)"><option v-for="item in tabs" :key="item" :value="item">{{ t('extension.tabs.'+item) }}</option></select>
@@ -283,7 +313,7 @@ async function deliver(kind: string, id: string) {
         </TableWorkspace>
       
     </template></TableWorkspace>
-    <EditorDialog v-model="dialog" :title="t('extension.actions.' + action)" :busy="writing" :dirty="true" :save-label="t('extension.review')" wide @save="review">
+    <EditorDialog v-model="dialog" :title="action ? t('extension.actions.' + action) : t('extension.title')" :busy="writing" :dirty="true" :save-label="t('extension.review')" wide @save="review">
       <ErrorNotice :message="error" /><fieldset :disabled="writing" class="space-y-4">
         <div v-if="['GROUP_CREATE','PLUGIN_CREATE'].includes(action)" class="space-y-2"><Label for="new-identifier">{{ t('extension.identifier') }}</Label><Input v-if="action === 'GROUP_CREATE'" id="new-identifier" v-model="targetGroup" /><Input v-else id="new-identifier" v-model="targetPlugin" /></div>
         <div v-for="f in fields" :key="f.key" class="space-y-2"><Label :for="'field-' + f.key">{{ t('extension.fields.' + f.key) }}</Label><PasswordInput v-if="f.type === 'password'" :id="'field-' + f.key" :model-value="String(values[f.key] || '')" autocomplete="off" @update:model-value="values[f.key]=$event" /><Textarea v-else-if="f.type === 'json'" :id="'field-' + f.key" :model-value="String(values[f.key])" class="min-h-52 font-mono" @update:model-value="values[f.key]=$event" /><input v-else-if="f.type === 'boolean'" :id="'field-' + f.key" type="checkbox" :checked="!!values[f.key]" class="ml-3 size-5" @change="values[f.key]=($event.target as HTMLInputElement).checked" /><Input v-else :id="'field-' + f.key" :type="f.type === 'number' ? 'number' : 'text'" :model-value="String(values[f.key] ?? '')" @update:model-value="values[f.key]=$event" /></div>

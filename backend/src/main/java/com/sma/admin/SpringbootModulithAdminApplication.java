@@ -20,6 +20,7 @@ public class SpringbootModulithAdminApplication {
     public static final String BUSINESS_PACKAGE = "com.sma.business";
 
 	public static void main(String[] args) {
+		if (com.sma.admin.common.deployment.DeploymentSchemaCommand.runIfRequested(SpringbootModulithAdminApplication.class, args)) return;
 		SpringApplication.run(SpringbootModulithAdminApplication.class, args);
 	}
 

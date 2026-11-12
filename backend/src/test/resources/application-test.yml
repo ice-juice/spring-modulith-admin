@@ -7,6 +7,10 @@ spring:
     password: ${SMA_TEST_DB_PASSWORD:sma_dev}
 
 sma:
+  defense:
+    maintenance:
+      # Integration scenarios explicitly drive cleanup; never inherit deployment retention scheduling.
+      enabled: false
   identity:
     email-maintenance:
       enabled: false

@@ -21,14 +21,13 @@ public class TenantDirectoryBootstrap {
         if(properties.bootstrapHosts().isEmpty()) return;
         if(!java.util.Set.of("localhost","127.0.0.1","[::1]").containsAll(properties.bootstrapHosts()))
             throw new IllegalArgumentException("Only explicit loopback hosts may bypass domain verification");
-        var tenant=tenants.selectById(properties.platformTenantId());
-        if(tenant==null) {
-            tenant=new TenantRecordEntity(); tenant.setId(properties.platformTenantId()); tenant.setCode("platform"); tenant.setName("Platform");
-            tenant.setStatus("ACTIVE"); tenant.setSecurityGeneration(1L); tenants.insert(tenant);
-        }
-        tenants.selectOne(new LambdaQueryWrapper<TenantRecordEntity>().eq(TenantRecordEntity::getId,tenant.getId()).last("FOR UPDATE"));
+        tenants.ensureBootstrap(properties.platformTenantId());
+        var tenant=tenants.selectOne(new LambdaQueryWrapper<TenantRecordEntity>()
+                .eq(TenantRecordEntity::getId,properties.platformTenantId()).last("FOR UPDATE"));
+        if(tenant==null) throw new IllegalStateException("Bootstrap tenant conflicts with an existing or retired directory entry");
         for(String host : properties.bootstrapHosts()) {
-            var existing=domains.selectOne(new LambdaQueryWrapper<DomainEntity>().eq(DomainEntity::getHostname,host));
+            // Current read also when the caller already established an older REPEATABLE_READ snapshot.
+            var existing=domains.selectOne(new LambdaQueryWrapper<DomainEntity>().eq(DomainEntity::getHostname,host).last("FOR UPDATE"));
             if(existing!=null) {
                 if(existing.getOwnerTenantId().longValue()!=tenant.getId()) throw new IllegalStateException("Bootstrap domain belongs to another tenant");
                 continue; // Do not reactivate domains disabled by an administrator.

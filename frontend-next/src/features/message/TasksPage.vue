@@ -123,10 +123,10 @@ function edit(row?: Task) {
 }
 async function refresh() { await load(); await messages.refresh() }
 async function save() {
-  const id = editingId.value, managed = props.managed
+  const id = editingId.value, managed = props.managed, snapshot: typeof form = JSON.parse(JSON.stringify(form)), zone = preferences.timeZone
   const result = await formAction.run({ operation: 'todos.save', resource: 'message.todos.' + (id || (managed ? 'assign' : 'new')), protocol: 'LOCAL' }, () => {
-    if (!form.title.trim() || !form.dueAt || (managed && !form.userId)) { error.value = t('common.required'); return }
-    const input = JSON.parse(JSON.stringify(taskInput(form, preferences.timeZone)))
+    if (!snapshot.title.trim() || !snapshot.dueAt || (managed && !snapshot.userId)) { error.value = t('common.required'); return }
+    const input = JSON.parse(JSON.stringify(taskInput(snapshot, zone)))
     return options => id ? put('/message/todos/' + id, input, options) : post('/message/todos' + (managed ? '/assign' : ''), input, options)
   })
   if (result.kind === 'success' || result.kind === 'completed') { dialog.value = false; await refresh() }

@@ -60,12 +60,14 @@ class SecurityEndpointInventoryTests {
         return Map.entry(route,new NativePolicy(handler,access,strategy,budget,retry));
     }
     @Test void everyCompiledHandlerHasReviewedGovernanceAndNoStaleExceptions() throws Exception {
+        EndpointBudgetCatalog.validateCompiled();
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(RestController.class));
         var rows = new TreeSet<String>();
         var contracts=new TreeSet<String>();
         var errors = new ArrayList<String>();
         var seenExceptions=new HashSet<String>();
+        var seenBudgets=new HashSet<String>();
         int handlers = 0;
         for (String root : List.of("com.sma.admin", "com.sma.business")) {
             for (var bean : scanner.findCandidateComponents(root)) {
@@ -106,11 +108,13 @@ class SecurityEndpointInventoryTests {
                         }else{
                             errors.add(route+" "+handler+": unreviewed request governance");strategy="MISSING";budget="未定义";retry="未定义";detail="必须审查";
                         }
-                        rows.add("| "+verb+" | `"+path+"` | "+access+" | "+strategy+" | "+escape(budget)+" | "+escape(retry)+" | `"+handler+"` | "+escape(detail)+" |");
+                        var budgetIds=EndpointBudgetCatalog.bindings(path,verb.name(),handler,policy,access);seenBudgets.addAll(budgetIds);
+                        String scope=EndpointBudgetCatalog.contracts(budgetIds);
+                        rows.add("| "+verb+" | `"+path+"` | "+access+" | "+strategy+" | "+escape(budget)+" | "+escape(retry)+" | `"+handler+"` | "+escape(detail)+" | "+escape(scope)+" |");
                         var permission=AnnotatedElementUtils.findMergedAnnotation(method,com.sma.admin.common.security.RequiresPermission.class);
                         if(permission==null)permission=AnnotatedElementUtils.findMergedAnnotation(type,com.sma.admin.common.security.RequiresPermission.class);
                         contracts.add(route+" | "+type.getName()+"#"+method.getName()+" | "+access+(permission==null?"":":"+permission.value())
-                                +" | "+strategy+" | "+escape(budget)+" | "+escape(detail));
+                                +" | "+strategy+" | "+escape(budget)+" | "+escape(detail)+" | "+escape(scope));
                     }
                 }
             }
@@ -119,6 +123,10 @@ class SecurityEndpointInventoryTests {
         assertThat(errors).as("Every API needs an effective policy or an exact reviewed native contract").isEmpty();
         assertThat(stale).as("Removed or moved native endpoints must remove/review their exceptions").isEmpty();
         assertThat(handlers).isGreaterThan(100);
+        assertThat(seenBudgets).as("Every registered budget must be bound to a live compiled endpoint").containsExactlyInAnyOrderElementsOf(EndpointBudgetCatalog.ALL.stream().map(EndpointBudgetCatalog.Budget::id).toList());
+        // Catalog fields, including table names, limits and transaction semantics, are reviewed along with endpoint bindings.
+        for(var registered:EndpointBudgetCatalog.ALL)contracts.add("BUDGET | "+registered.id()+" | "+registered.scope()+" | "+registered.module()+" | "+registered.storage()
+                +" | "+new TreeMap<>(registered.tables())+" | "+registered.key()+" | "+registered.limits()+" | "+registered.lifecycle()+" | "+registered.scale()+" | "+registered.implementation());
         Path baseline=Path.of("src/test/resources/security-endpoint-policies.txt");
         // A deliberate developer review step, never an HTTP/client-version bypass. Ordinary builds only compare.
         if(Boolean.getBoolean("sma.security.review-policy-baseline"))
@@ -134,7 +142,8 @@ class SecurityEndpointInventoryTests {
         Files.writeString(output, "# 安全专项接口清单\n\n由编译后的Controller有效方法/路径/访问策略生成；构建拒绝未分类入口或失效的精确例外。GET包含MVC隐式HEAD，CORS预检和框架Actuator不属于此Controller清单。\n\n"
                 + "处理方法数：" + handlers + "；映射行数：" + rows.size() + "；精确原生/公开策略："+seenExceptions.size()+"。\n\n"
                 + "这是策略覆盖，不是全部入口都使用通用限流/幂等的声明。公开品牌及部分机器接口的边缘速率防护按S5部署；原生入口的参数默认值和验证边界见安全运行说明。\n\n"
-                + "| HTTP | 路径 | 访问策略 | 有效分类 | 频率/并发预算 | 重试/结果 | 处理方法 | 作用域/审查原因 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n"
+                + EndpointBudgetCatalog.markdown()+"\n## 编译后端点\n\n"
+                + "| HTTP | 路径 | 访问策略 | 有效分类 | 频率/并发预算 | 重试/结果 | 处理方法 | 作用域/审查原因 | 预算ID:scope:模块/存储:N实例换算 |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
                 + String.join("\n", rows) + "\n");
     }
     private static String access(Class<?> type,Method method){

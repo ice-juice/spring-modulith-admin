@@ -14,6 +14,7 @@ public class ExtensionConfiguration {
     @ConditionalOnProperty(name="sma.extension.enabled",havingValue="true")
     ThreadPoolTaskScheduler extensionControlScheduler(ExtensionRuntimeService service) {
         var scheduler=new ThreadPoolTaskScheduler();scheduler.setPoolSize(1);scheduler.setThreadNamePrefix("extension-control-");
+        scheduler.setThreadFactory(Thread.ofPlatform().daemon().inheritInheritableThreadLocals(false).name("extension-control-",0).factory());
         scheduler.setWaitForTasksToCompleteOnShutdown(true);scheduler.setAwaitTerminationSeconds(35);scheduler.initialize();
         scheduler.scheduleWithFixedDelay(service::synchronize,Duration.ofSeconds(30));return scheduler;
     }

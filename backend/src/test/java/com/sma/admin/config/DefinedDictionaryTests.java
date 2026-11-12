@@ -148,8 +148,8 @@ class DefinedDictionaryTests {
         long tenant=7507;String key="config_layer_legacy";
         var ids=as(tenant,()->{
             var type=new DictionaryTypeEntity();type.setTypeKey(key);type.setName("Legacy type");type.setTree(true);type.setEnabled(true);type.setBuiltin(false);type.setSort(0);legacyTypes.insert(type);
-            long root=legacy(type.getId(),0,"root","Legacy root",9,true);names.replace("dictionary-item",root,Map.of("en-US","Legacy root EN"));
-            long child=legacy(type.getId(),root,"child","Legacy child",1,false);
+            long root=legacy(type.getId(),0,"root","Legacy root",9,true,true);names.replace("dictionary-item",root,Map.of("en-US","Legacy root EN"));
+            long child=legacy(type.getId(),root,"child","Legacy child",1,false,true);
             long old=legacy(type.getId(),root,"old","Old private",2,true);long oldChild=legacy(type.getId(),old,"old-child","Old child",0,true);
             return List.of(type.getId(),root,child,old,oldChild);
         });
@@ -179,6 +179,14 @@ class DefinedDictionaryTests {
         assertThat(rows("SELECT COUNT(*) FROM config_dictionary_layer WHERE tenant_id=?",conflict)).isZero();
         assertThat(rows("SELECT COUNT(*) FROM config_write_lock WHERE tenant_id=? AND dictionary_revision>0",conflict)).isZero();
         assertThat(rows(claims)).isEqualTo(before);
+        long sameParentCollision=7510;
+        as(sameParentCollision,()->{
+            var type=new DictionaryTypeEntity();type.setTypeKey(key);type.setName("Private collision");type.setTree(true);type.setEnabled(true);type.setBuiltin(false);type.setSort(0);legacyTypes.insert(type);
+            legacy(type.getId(),0,"root","Different private meaning",0,true);return null;
+        });
+        assertThatThrownBy(()->host(sameParentCollision,service::migrateCurrentTenant)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("tenant=7510").hasMessageNotContaining("Different private meaning");
+        assertThat(rows("SELECT COUNT(*) FROM config_dictionary_layer WHERE tenant_id=?",sameParentCollision)).isZero();
     }
     @Test void callerRollbackRestoresVersionAndRows() {
         String key="config_layer_tree";
@@ -192,7 +200,10 @@ class DefinedDictionaryTests {
         assertThat(rows("SELECT COUNT(*) FROM config_dictionary_layer WHERE tenant_id=7509")).isZero();
     }
     private long legacy(long type,long parent,String code,String name,int sort,boolean enabled){
-        var row=new DictionaryItemEntity();row.setTypeId(type);row.setParentId(parent);row.setItemValue(code);row.setName(name);row.setSort(sort);row.setEnabled(enabled);row.setBuiltin(false);
+        return legacy(type,parent,code,name,sort,enabled,false);
+    }
+    private long legacy(long type,long parent,String code,String name,int sort,boolean enabled,boolean builtin){
+        var row=new DictionaryItemEntity();row.setTypeId(type);row.setParentId(parent);row.setItemValue(code);row.setName(name);row.setSort(sort);row.setEnabled(enabled);row.setBuiltin(builtin);
         legacyItems.insert(row);return row.getId();
     }
 }

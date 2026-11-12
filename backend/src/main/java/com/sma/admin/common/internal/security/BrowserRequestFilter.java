@@ -55,10 +55,10 @@ public class BrowserRequestFilter extends OncePerRequestFilter {
                 if (host.contains(":") && !host.startsWith("[")) host = "[" + host + "]";
                 String current = WebAddresses.origin(request.getScheme() + "://" + host + ":" + request.getServerPort()).orElse("");
                 knownOrigin = parsed.isPresent() && (parsed.get().equals(current) || properties.allowedOrigins().contains(parsed.get()));
-                if (!knownOrigin) { errors.write(request, response, CommonErrorCode.FORBIDDEN); return; }
+                if (!knownOrigin) { errors.writeObserved(request, response, CommonErrorCode.FORBIDDEN,com.sma.admin.common.security.SecuritySignal.Fact.BROWSER_ORIGIN_REJECTED); return; }
             }
             if ("cross-site".equalsIgnoreCase(request.getHeader("Sec-Fetch-Site")) && !knownOrigin) {
-                errors.write(request, response, CommonErrorCode.FORBIDDEN); return;
+                errors.writeObserved(request, response, CommonErrorCode.FORBIDDEN,com.sma.admin.common.security.SecuritySignal.Fact.BROWSER_ORIGIN_REJECTED); return;
             }
             String type = request.getContentType();
             if (type != null) {

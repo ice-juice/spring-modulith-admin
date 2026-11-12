@@ -21,6 +21,7 @@ final class WorkCaller {
     }
     static <T>T job(long tenant,String policy,Set<String> permissions,Supplier<T> operation) {
         Checks.require(CurrentUser.optional().isEmpty() && JOB.get()==null,"job-context-must-be-background");
+        com.sma.admin.common.deployment.DeploymentEvidence.requireHost();
         var actor=new Actor(tenant,"job:"+policy,"system",InvocationIdentity.Kind.JOB,permissions);actor.identity();
         return TenantScope.within(tenant,() -> {JOB.set(actor);try{return operation.get();}finally{JOB.remove();}});
     }

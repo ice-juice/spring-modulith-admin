@@ -19,6 +19,8 @@ public final class CatalogRecords {
         public Upload state(String value) { return new Upload(id, actor, sessionId, groupId, groupRevision, pluginId, pluginRevision, environment, policyRevision, files, createdAt, expiresAt, value); }
     }
     public record Chunk(String id, String uploadId, int fileIndex, int index, String sha256, int bytes) {}
+    public record UploadStatus(String id, String state, Instant expiresAt, boolean resumable,
+            List<ActionIntent.FileIntent> files, List<String> artifactIds) {}
     public record Artifact(String id, String uploadId, int fileIndex, String groupId, String pluginId, String environment,
             String sha256, long bytes, String name, String state, ArtifactManifest manifest, ScanReport report, Instant createdAt) {}
     public record ActionReceipt(String id, String userId, String intentHash, String state, String resourceId, Instant createdAt) {}

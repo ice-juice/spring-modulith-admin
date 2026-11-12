@@ -94,6 +94,9 @@ test('all list workspaces and nested tabs fill the middle without document scrol
     await page.setViewportSize({width,height:900})
     for(const path of paths) {
       await page.goto(path)
+      // Layered configuration opens its shared overview; exercise the actual private list workspace.
+      if (path === '/config/dictionaries') await page.getByRole('tab', { name: '私有字典项', exact: true }).click()
+      if (path === '/config/parameters') await page.getByRole('tab', { name: '租户私有参数', exact: true }).click()
       const table=page.locator('.data-table:visible').first()
       await expect(table, path).toBeVisible()
       const box=(await table.boundingBox())!

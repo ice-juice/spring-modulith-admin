@@ -32,6 +32,12 @@
 		<mybatis-plus.version>3.5.18.1</mybatis-plus.version>
 	</properties>
 	<dependencies>
+		<dependency><groupId>org.apache.pdfbox</groupId><artifactId>pdfbox</artifactId><version>3.0.8</version><scope>provided</scope></dependency>
+		<!-- Only the separately packaged content worker uses archive parsing. -->
+		<dependency><groupId>org.apache.commons</groupId><artifactId>commons-compress</artifactId><version>1.28.0</version><scope>provided</scope></dependency>
+		<!-- Worker fixture runtime only. The isolated worker image supplies this decoder separately;
+		     do not auto-register its ImageIO SPI in the production host/legacy upload classpath. -->
+		<dependency><groupId>com.twelvemonkeys.imageio</groupId><artifactId>imageio-webp</artifactId><version>3.15.3</version><scope>test</scope></dependency>
 		<dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-oauth2-jose</artifactId></dependency>
 		<dependency><groupId>org.eclipse.angus</groupId><artifactId>angus-mail</artifactId></dependency>
 		<dependency><groupId>jakarta.mail</groupId><artifactId>jakarta.mail-api</artifactId></dependency>
@@ -88,6 +94,10 @@
 		<dependency>
 			<groupId>org.springframework.modulith</groupId>
 			<artifactId>spring-modulith-observability-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.modulith</groupId>
+			<artifactId>spring-modulith-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.modulith</groupId>
@@ -258,6 +268,39 @@
 		</plugins>
 	</build>
 	<profiles>
+		<profile>
+			<id>file-inspection-worker</id>
+			<build><plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId>
+					<executions><execution><id>inspection-worker</id><phase>package</phase><goals><goal>jar</goal></goals><configuration>
+						<classifier>inspection</classifier><outputDirectory>${project.build.directory}/inspection</outputDirectory>
+						<includes>
+							<include>com/sma/admin/file/internal/inspection/**</include>
+							<include>com/sma/admin/file/internal/service/FileContentProbe*.class</include>
+							<include>com/sma/admin/file/internal/service/FileNameRules*.class</include>
+							<include>com/sma/admin/file/FileFormat.class</include><include>com/sma/admin/file/FileErrorCode.class</include>
+							<include>com/sma/admin/common/BizException.class</include><include>com/sma/admin/common/ErrorCode.class</include>
+						</includes>
+						<archive><manifest><mainClass>com.sma.admin.file.internal.inspection.ContentInspectionWorker</mainClass></manifest></archive>
+					</configuration></execution></executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId><artifactId>maven-dependency-plugin</artifactId>
+					<executions><execution><id>inspection-libraries</id><phase>package</phase><goals><goal>copy-dependencies</goal></goals><configuration>
+						<includeScope>test</includeScope><includeTypes>jar</includeTypes>
+						<includeGroupIds>tools.jackson.core,org.apache.pdfbox,org.apache.commons,commons-io,commons-codec,commons-logging,com.twelvemonkeys.imageio,com.twelvemonkeys.common</includeGroupIds>
+						<includeArtifactIds>jackson-core,jackson-databind,jackson-annotations,pdfbox,pdfbox-io,fontbox,commons-compress,commons-io,commons-lang3,commons-codec,commons-logging,imageio-webp,imageio-core,imageio-metadata,common-lang,common-io,common-image</includeArtifactIds>
+						<outputDirectory>${project.build.directory}/inspection/lib</outputDirectory>
+					</configuration></execution>
+					<execution><id>inspection-annotations</id><phase>package</phase><goals><goal>copy-dependencies</goal></goals><configuration>
+						<includeScope>test</includeScope><includeTypes>jar</includeTypes>
+						<includeGroupIds>com.fasterxml.jackson.core</includeGroupIds><includeArtifactIds>jackson-annotations</includeArtifactIds>
+						<outputDirectory>${project.build.directory}/inspection/lib</outputDirectory>
+					</configuration></execution></executions>
+				</plugin>
+			</plugins></build>
+		</profile>
 		<profile>
 			<id>isolated-verification</id>
 			<activation><property><name>sma.verify.directory</name></property></activation>

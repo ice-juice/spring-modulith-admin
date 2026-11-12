@@ -66,6 +66,32 @@ async function fixture(page: Page, origin: string) {
   return { api, state, remote: () => draft, revisions }
 }
 
+test('brand upload recovery belongs to the original slot and prevents saving before completion', async ({ page, baseURL }, info) => {
+  test.skip(info.project.name !== 'next', 'Brand management belongs to frontend-next.')
+  const { remote } = await fixture(page, baseURL!)
+  let writes = 0, key = ''
+  await page.route(url => url.pathname === '/api/file/files/images', route => {
+    writes++
+    const sent = route.request().headers()['idempotency-key']!
+    if (writes === 1) { key = sent; return route.abort('failed') }
+    expect(sent).toBe(key)
+    return route.fulfill({ json: { code: 0, data: { id: '42', name: 'brand.png', contentType: 'image/png' } } })
+  })
+  await page.route(url => url.pathname === '/api/file/uploads/lookup', route => {
+    expect(route.request().postDataJSON()).toEqual({ key })
+    return route.fulfill({ json: { code: 0, data: { uploadId: '11111111-1111-4111-8111-111111111111', state: 'ACCEPTED', fileId: null, resumable: true } } })
+  })
+  await login(page, '/tenant/brand'); await page.getByRole('tab', { name: '品牌图片', exact: true }).click()
+  await page.locator('input[type="file"][aria-label="浅色 Logo"]').setInputFiles({ name: 'brand.png', mimeType: 'image/png', buffer: Buffer.from('fixture-image') })
+  await page.getByRole('button', { name: '查询原操作结果', exact: true }).click()
+  await page.getByRole('button', { name: '继续上传原文件', exact: true }).click()
+  await expect(page.getByRole('button', { name: '查询原操作结果', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '保存草稿', exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: '保存草稿', exact: true }).click()
+  await expect.poll(() => remote().content.assets.LOGO_LIGHT).toBe('42')
+  expect(remote().content.assets.LOGO_DARK).toBeUndefined(); expect(writes).toBe(2)
+})
+
 test('brand draft, isolated preview, publication and rollback preserve their distinct states', async ({ page, baseURL }, info) => {
   test.skip(info.project.name !== 'next', 'Brand management belongs to frontend-next.')
   const { state, remote, revisions } = await fixture(page, baseURL!)

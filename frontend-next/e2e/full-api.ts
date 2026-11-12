@@ -1,6 +1,7 @@
 import type { Page, WebSocketRoute } from '@playwright/test'
 import { tenantEntry } from './tenant-entry'
 import { createCacheFixture } from './cache-fixture'
+import { createConfigLayers } from './config-layers-fixture'
 const stamp = '2026-11-10T08:00:00Z'
 export async function fullApi(page: Page, origin = process.env.SMA_E2E_MOCK_ORIGIN || 'http://127.0.0.1:5174') {
   const cache = createCacheFixture()
@@ -9,7 +10,7 @@ export async function fullApi(page: Page, origin = process.env.SMA_E2E_MOCK_ORIG
     ...['user', 'role', 'department', 'post', 'permission', 'navigation'].flatMap(resource => ['view', 'create', 'update', 'delete'].map(action => 'iam:' + resource + ':' + action)),
     'iam:role:grant', 'iam:user:reset-password', 'auth:session:view', 'auth:session:revoke', 'audit:login:view', 'audit:operation:view',
     ...['dictionary', 'parameter'].flatMap(resource => ['view', 'create', 'update', 'delete'].map(action => 'config:' + resource + ':' + action)),
-    'file:file:view', 'file:file:upload', 'file:file:delete',
+    'config:shared:view', 'config:shared:edit', 'config:shared:publish', 'file:file:view', 'file:file:upload', 'file:file:delete',
     ...['view', 'create', 'update', 'delete', 'restore'].map(action => 'message:notice:' + action), 'message:todo:view', 'message:todo:assign',
     'monitor:server:view', 'monitor:sql:view', 'monitor:sql:reset', 'monitor:cache:view', 'monitor:cache:clear', 'monitor:event:view', 'monitor:event:retry', 'monitor:database:view',
     ...['view', 'create', 'update', 'delete', 'rotate', 'link'].map(action => 'openapi:app:' + action),
@@ -35,6 +36,7 @@ export async function fullApi(page: Page, origin = process.env.SMA_E2E_MOCK_ORIG
   const task = { id: 'task1', userId: '101', userName: '测试管理员', title: '核对待办事项', content: '核对信息后提交', url: '/iam/users', type: 4, priority: 1, state: 1, dueAt: '2030-11-10T08:00:00Z', completedAt: null, cancelledAt: null, readAt: null as string | null, source: { system: 'Example', messageId: null, requestId: null, url: null, senderKey: null, receiverKey: null }, createdAt: stamp }
   const privateMessage = { id: 'private1', senderId: '102', recipientId: '101', senderName: '测试成员', recipientName: '测试管理员', content: '这是一条测试私信', createdAt: stamp, readAt: null as string | null }
   const app = { id: 'app1', name: '测试应用', type: 1, description: '用于接口测试', appId: 'app_test_9007199254740993123', enabled: false, signatureRequired: true, targetType: null, targetId: null, targetName: null, createdAt: stamp }
+  const layered = createConfigLayers()
   let locked = false
   const sockets: WebSocketRoute[] = []
   await page.routeWebSocket('**/api/message/ws?*', socket => { sockets.push(socket) })
@@ -71,6 +73,8 @@ export async function fullApi(page: Page, origin = process.env.SMA_E2E_MOCK_ORIG
     if (path === '/iam/permissions') return ok([permission])
     if (path === '/iam/navigation') return ok([{ ...base, id: 'nav1', name: '业务导航', menuIds: [] }])
     if (/^\/iam\/(departments|posts|roles|permissions|navigation)\/[^/]+$/.test(path) && method !== 'GET') return ok(body)
+    const layer = layered.handle(path, method, body, url)
+    if (layer !== undefined) return layer === null ? route.fulfill({ json: { code: 400, error: 'config.error.shared-stale', message: '共享配置版本已变化，请读取当前版本后再操作。', data: null } }) : ok(layer)
     if (path === '/config/dictionaries/types') return ok(dictionaryTypes)
     if (path === '/config/dictionaries/items') return ok(dictionaryItems)
     if (path === '/config/dictionaries/initialize' || path === '/config/parameters/refresh' || path === '/config/parameters/reset-builtins') return ok(null)
@@ -119,5 +123,5 @@ export async function fullApi(page: Page, origin = process.env.SMA_E2E_MOCK_ORIG
     unmatched.push(method + ' ' + path)
     return route.fulfill({ status: 501, json: { code: 501, message: 'Missing test fixture', data: null } })
   })
-  return { writes, unmatched, me, preferences, notice, task, app, sockets }
+  return { layered, writes, unmatched, me, preferences, notice, task, app, sockets }
 }

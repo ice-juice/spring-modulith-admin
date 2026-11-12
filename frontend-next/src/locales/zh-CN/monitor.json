@@ -1,5 +1,6 @@
 {
   "sql": "SQL 执行统计",
+  "nativeCommandUnknown": "原操作结果尚未确认，同一目标暂不能再次提交。当前统计或事件状态不代表原操作已完成，刷新不会解除此限制。",
   "statement": "Mapper 语句标识",
   "command": "操作",
   "calls": "调用次数",
@@ -79,6 +80,10 @@
   "tableList": "数据库表列表",
   "tableFields": "字段",
   "cacheGovernance": {
+    "selectedNode": "查看节点",
+    "receivingNode": "本次接入节点",
+    "nodeChanged": "进程已变化，请重新选择",
+    "nodeSelectionHint": "统计属于选定进程；共享缓存数量不跨节点累加。",
     "tabs": {
       "directory": "缓存目录",
       "overview": "运行概览",

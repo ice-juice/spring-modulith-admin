@@ -31,7 +31,7 @@ import com.sma.admin.common.security.TenantSecretCodec;
 /** AES-256-GCM plus HKDF-SHA256 tenant/module key separation. No plaintext, envelope or key in errors/logs. */
 @Component
 @EnableConfigurationProperties(TenantCredentialProperties.class)
-public class TenantCredentialCrypto implements TenantSecretCodec {
+public class TenantCredentialCrypto implements TenantSecretCodec, com.sma.admin.common.deployment.DeploymentEvidenceSource {
     private static final int MAX_PLAINTEXT_BYTES = 65536;
     private static final int MAX_ENVELOPE_CHARS = 90000;
     private final Map<String, byte[]> keys = new HashMap<>();
@@ -70,6 +70,11 @@ public class TenantCredentialCrypto implements TenantSecretCodec {
     }
 
     @Override public boolean configured() { return keys.containsKey(activeId); }
+    @Override public String id() { return "common.tenant-credentials"; }
+    @Override public com.sma.admin.common.deployment.DeploymentEvidence.Proof collect(
+            com.sma.admin.common.deployment.DeploymentEvidence.Challenge challenge) {
+        return com.sma.admin.common.deployment.DeploymentEvidence.keyRing(id(), challenge, activeId, keys);
+    }
 
     @Override public String encrypt(TenantConfigurationRef reference, String purpose, char[] plaintext) {
         authorize(reference, purpose);

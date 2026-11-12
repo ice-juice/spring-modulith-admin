@@ -100,14 +100,57 @@ export async function inspectFiles(files: File[], policy: Policy): Promise<FileI
   return result
 }
 export async function uploadFiles(uploadId: string, files: File[], progress: (value: number) => void) {
+  const owns = releaseGuard()
   const sorted = [...files].sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0), total = sorted.reduce((n, f) => n + f.size, 0)
   let sent = 0
   for (const [index, file] of sorted.entries()) for (let start = 0, chunk = 0; start < file.size; start += 1048576, chunk++) {
+    if (!owns()) throw new Error(i18n.global.t('extension.sessionChanged'))
     const bytes = file.slice(start, start + 1048576)
     await releaseRequest('PUT', `/uploads/${encodeURIComponent(uploadId)}/files/${index}/chunks/${chunk}`, bytes)
     sent += bytes.size; progress(Math.round(sent / total * 100))
   }
+  if (!owns()) throw new Error(i18n.global.t('extension.sessionChanged'))
   return releaseRequest<Artifact[]>('POST', `/uploads/${encodeURIComponent(uploadId)}/complete`)
+}
+
+export interface UploadStatus { id: string; state: string; expiresAt: string; resumable: boolean; files: FileIntent[]; artifactIds: string[] }
+export const lookupReleaseUpload = (id: string) => releaseRequest<UploadStatus>('GET', '/uploads/' + encodeURIComponent(id))
+export function uploadStatusEvidence(value: UploadStatus, id: string) {
+  if (!value || value.id !== id || !['RECEIVING', 'COMPLETE'].includes(value.state) || typeof value.resumable !== 'boolean'
+    || !Array.isArray(value.files) || value.files.length < 1 || value.files.length > 100
+    || !Array.isArray(value.artifactIds) || value.artifactIds.length > 100 || !Number.isFinite(Date.parse(value.expiresAt))) throw new Error(i18n.global.t('extension.unknownResult'))
+  if (value.files.some(file => !file || typeof file.name !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,159}$/.test(file.name)
+    || typeof file.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(file.sha256) || !Number.isSafeInteger(file.bytes) || file.bytes <= 0)
+    || new Set(value.files.map(file => file.name)).size !== value.files.length) throw new Error(i18n.global.t('extension.unknownResult'))
+  if (value.state === 'COMPLETE' && (value.artifactIds.length !== value.files.length || new Set(value.artifactIds).size !== value.artifactIds.length
+    || value.artifactIds.some(id => typeof id !== 'string' || !/^[A-Za-z0-9_.:-]{1,160}$/.test(id)))) throw new Error(i18n.global.t('extension.unknownResult'))
+  return { id, state: value.state === 'COMPLETE' ? 'SUCCEEDED' as const : 'PENDING' as const }
+}
+/** The existing server protocol checks immutable chunk hashes. Never resume a new task or new input. */
+export async function resumeReleaseUpload(id: string, originalFiles: File[], policy: Policy, progress: (value: number) => void) {
+  const owns = releaseGuard(), status = await lookupReleaseUpload(id)
+  if (uploadStatusEvidence(status, id).state === 'SUCCEEDED') return status
+  if (!status.resumable || !originalFiles.length) throw new Error(i18n.global.t('extension.uploadNeedsOriginal'))
+  const intents = await inspectFiles(originalFiles, policy)
+  if (intents.length !== status.files.length || intents.some((file, index) => {
+    const original = status.files[index]!
+    return file.name !== original.name || file.bytes !== original.bytes || file.sha256 !== original.sha256
+  })) throw new Error(i18n.global.t('extension.uploadNeedsOriginal'))
+  if (!owns()) throw new Error(i18n.global.t('extension.sessionChanged'))
+  await uploadFiles(id, originalFiles, progress)
+  return lookupReleaseUpload(id)
+}
+
+export interface CommandStatus { receipt: Receipt; upload?: UploadStatus }
+export async function lookupCommandStatus(key: string, upload: boolean): Promise<CommandStatus> {
+  const receipt = await reconcileCommand(key)
+  return { receipt, upload: upload && commandEvidence(receipt, key).state === 'SUCCEEDED' ? await lookupReleaseUpload(receipt.resourceId) : undefined }
+}
+export function commandStatusEvidence(value: CommandStatus, key: string, upload: boolean) {
+  const result = commandEvidence(value.receipt, key)
+  if (!upload || result.state !== 'SUCCEEDED') return result
+  if (!value.upload) throw new Error(i18n.global.t('extension.unknownResult'))
+  return { id: key, state: uploadStatusEvidence(value.upload, value.receipt.resourceId).state }
 }
 
 

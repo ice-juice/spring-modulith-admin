@@ -35,6 +35,11 @@ class MailOutboxTests {
             public boolean canSend(ActorRef actor,MailSendApi.Command c){return actor.kind()==ActorRef.Kind.ADMIN_USER && c.recipient().endsWith("@example.test");}
         };}
     }
+    private static <T>T host(Supplier<T> action){
+        var request=org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
+        try{return action.get();}finally{org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(request);}
+    }
     private static Path keyFile;
     @DynamicPropertySource static void keys(DynamicPropertyRegistry registry)throws Exception{
         byte[] key=new byte[32];new SecureRandom().nextBytes(key);keyFile=Files.createTempFile("sma-mail-outbox-",".keys");
@@ -181,12 +186,12 @@ class MailOutboxTests {
             assertThat(prepared.payload().body()).isEqualTo("Code 123456");
             assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
             assertThat(ActorContext.tenantId()).isEqualTo(f.tenant);
-            return MailWorkService.Outcome.ACCEPTED;
-        }).when(sender).send(org.mockito.ArgumentMatchers.any());
-        assertThat(dispatch.runTenant(f.tenant)).isEqualTo(1);
+            i.getArgument(1,com.sma.admin.common.deployment.DeploymentWork.Permit.class).close();return MailWorkService.Outcome.ACCEPTED;
+        }).when(sender).send(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
+        assertThat(host(()->dispatch.runTenant(f.tenant))).isEqualTo(1);
         assertThat(as(f.tenant,()->status.get(receipt.id()).state())).isEqualTo("ACCEPTED");
-        assertThat(dispatch.runTenant(f.tenant)).isZero();
-        org.mockito.Mockito.verify(sender,org.mockito.Mockito.times(1)).send(org.mockito.ArgumentMatchers.any());
+        assertThat(host(()->dispatch.runTenant(f.tenant))).isZero();
+        org.mockito.Mockito.verify(sender,org.mockito.Mockito.times(1)).send(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
     }
 
     private MailReceiptApi.Command receipt(Fixture f,long id,String event,MailReceiptApi.Type type){

@@ -189,6 +189,26 @@ public class CatalogService {
         if(build!=null) tx.put("source-plan",id,build);
         tx.put("upload", id, new Upload(id, principal.userId(), principal.sessionId(), group.id(), group.revision(), plugin.id(), plugin.revision(), intent.environment(), policy.revision(), intent.files(), tx.now(), tx.now().plusSeconds(900), "RECEIVING")); return id;
     }
+    public UploadStatus uploadStatus(String session, String uploadId) {
+        return database.transaction(tx -> {
+            var p = identities.principal(tx, session);
+            var upload = tx.get("upload", uploadId, Upload.class).orElseThrow(() -> new ProtocolException("upload-not-found"));
+            Checks.require(upload.actor().equals(p.userId()) && upload.sessionId().equals(p.sessionId()), "forbidden");
+            var intent = new ActionIntent(ActionIntent.Action.UPLOAD, upload.environment(), upload.groupId(), upload.groupRevision(),
+                    upload.pluginId(), upload.pluginRevision(), upload.policyRevision(), upload.files(), Hashes.sha256(new byte[0]));
+            identities.requireScope(tx, p, intent);
+            boolean resumable = false;
+            if (upload.state().equals("RECEIVING") && tx.now().isBefore(upload.expiresAt())) {
+                var group = tx.get("group", upload.groupId(), Group.class).orElseThrow(() -> new ProtocolException("group-not-found"));
+                var plugin = plugin(tx, upload.pluginId());
+                resumable = group.enabled() && group.revision() == upload.groupRevision() && plugin.groupId().equals(group.id())
+                        && plugin.revision() == upload.pluginRevision() && policy(tx).revision() == upload.policyRevision();
+            }
+            var ids = upload.state().equals("COMPLETE") ? tx.list("artifact", Artifact.class).stream()
+                    .filter(a -> a.uploadId().equals(uploadId)).map(Artifact::id).toList() : List.<String>of();
+            return new UploadStatus(upload.id(), upload.state(), upload.expiresAt(), resumable, upload.files(), ids);
+        });
+    }
     public Chunk uploadChunk(String session, String uploadId, int fileIndex, int index, byte[] bytes) {
         Checks.require(bytes != null && bytes.length > 0 && bytes.length <= ArtifactFiles.CHUNK_BYTES, "invalid-chunk-size");
         return database.transaction(tx -> {

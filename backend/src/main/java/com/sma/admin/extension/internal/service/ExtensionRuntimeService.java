@@ -18,6 +18,8 @@ import com.sma.admin.common.extension.ExtensionCapability;
 import com.sma.admin.common.extension.ExtensionJobPolicy;
 import com.sma.admin.common.security.CurrentUser;
 import com.sma.admin.common.security.RuntimePermissionRegistrar;
+import com.sma.admin.common.deployment.DeploymentEvidence;
+import com.sma.admin.common.deployment.DeploymentWork;
 import com.sma.admin.extension.BusinessExtensions;
 import com.sma.admin.extension.ExtensionErrorCode;
 import com.sma.admin.extension.ExtensionWork;
@@ -42,17 +44,25 @@ public class ExtensionRuntimeService implements BusinessExtensions {
     private volatile String lastSync="NOT_CONFIGURED";
     private volatile Instant lastSuccess;
     private String trustDigest;
-    public ExtensionRuntimeService(ExtensionProperties properties,NodeControlClient control,HostCheckpoint checkpoint,ExtensionWorkJournal journal,RuntimeAdmission admission,RuntimePermissionRegistrar permissionRegistrar,List<ExtensionCapability> capabilities,List<ExtensionJobPolicy> jobPolicies,ExtensionTelemetry telemetry) {
+    private final DeploymentWork deploymentWork;
+    private volatile boolean closed;
+    public ExtensionRuntimeService(ExtensionProperties properties,NodeControlClient control,HostCheckpoint checkpoint,ExtensionWorkJournal journal,RuntimeAdmission admission,RuntimePermissionRegistrar permissionRegistrar,List<ExtensionCapability> capabilities,List<ExtensionJobPolicy> jobPolicies,ExtensionTelemetry telemetry,DeploymentWork deploymentWork) {
         this.properties=properties;this.control=control;this.checkpoint=checkpoint;this.journal=journal;this.admission=admission;this.permissionRegistrar=permissionRegistrar;this.telemetry=telemetry;
         this.capabilities=capabilities.stream().collect(Collectors.toUnmodifiableMap(ExtensionCapability::id,c -> c));
         this.jobPolicies=jobPolicies.stream().collect(Collectors.toUnmodifiableMap(ExtensionJobPolicy::id,p -> p));
+        this.deploymentWork=deploymentWork;
     }
     public record PublicKeySpec(String id,String environment,String algorithm,String publicKey,Instant notBefore,Instant notAfter,Set<SignedClaims.Purpose> purposes,boolean revoked) {}
     public record Status(boolean enabled,String lastSync,Instant lastSuccess,List<PluginRuntime.Status> versions) {}
     public Status status() { var current=runtime;return new Status(properties.enabled(),lastSync,lastSuccess,current==null?List.of():current.statuses()); }
     public ExtensionTelemetry.Snapshot metrics(){return telemetry.snapshot();}
     public synchronized void synchronize() {
-        if(!properties.enabled()) return;
+        DeploymentEvidence.requireHost();
+        if(closed||!properties.enabled()) return;
+        var accepted=deploymentWork.tryStart();if(accepted.isEmpty()){lastSync="DEFERRED";return;}
+        try(var permit=accepted.orElseThrow()){synchronizeAdmitted();}
+    }
+    private void synchronizeAdmitted(){
         try {
             var running=runtime();
             refreshTrust(running);
@@ -155,13 +165,20 @@ public class ExtensionRuntimeService implements BusinessExtensions {
         if(registeredPermissions.size()>=1000)registeredPermissions.clear();registeredPermissions.put(context,digest);
     }
     @Override public ExtensionWork invokeJob(String policyId,long trustedTenantId,String objectId) {
-        Checks.id(policyId);Checks.text(objectId,200);var policy=jobPolicies.get(policyId);Checks.require(policy!=null,"job-policy-unavailable");
-        return WorkCaller.job(trustedTenantId,policyId,policy.permissions(),() -> {
-            var job=policy.resolve(objectId);Checks.require(job!=null,"job-object-unavailable");
-            return invokeWork(job.deploymentId(),job.pluginId(),job.entryId(),job.workKey(),job.input());
-        });
+        DeploymentEvidence.requireHost();
+        if(closed)throw new BizException(ExtensionErrorCode.UNAVAILABLE);
+        var accepted=deploymentWork.tryStart();
+        if(accepted.isEmpty())throw new BizException(ExtensionErrorCode.UNAVAILABLE);
+        try(var permit=accepted.orElseThrow()){
+            Checks.id(policyId);Checks.text(objectId,200);var policy=jobPolicies.get(policyId);Checks.require(policy!=null,"job-policy-unavailable");
+            return WorkCaller.job(trustedTenantId,policyId,policy.permissions(),() -> {
+                var job=policy.resolve(objectId);Checks.require(job!=null,"job-object-unavailable");
+                return invokeWork(job.deploymentId(),job.pluginId(),job.entryId(),job.workKey(),job.input());
+            });
+        }
     }
-    private synchronized PluginRuntime runtime() throws Exception {
+    synchronized PluginRuntime runtime() throws Exception {
+        if(closed)throw new BizException(ExtensionErrorCode.UNAVAILABLE);
         if(!properties.enabled()) throw new BizException(ExtensionErrorCode.UNAVAILABLE);
         if(runtime!=null) return runtime;
         byte[] trustBytes=readTrust();var trust=parseTrust(trustBytes);trustDigest=Hashes.sha256(trustBytes);
@@ -203,5 +220,5 @@ public class ExtensionRuntimeService implements BusinessExtensions {
         byte[] bytes=readTrust();String digest=Hashes.sha256(bytes);if(digest.equals(trustDigest))return;
         running.replaceTrustedKeys(parseTrust(bytes));trustDigest=digest;
     }
-    @PreDestroy public synchronized void close() throws Exception { if(runtime!=null) runtime.close(); }
+    @PreDestroy public synchronized void close() throws Exception { closed=true;if(runtime!=null) runtime.close(); }
 }

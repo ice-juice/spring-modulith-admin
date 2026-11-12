@@ -32,8 +32,17 @@
 
 ## 运行验收边界
 
+宿主插件部署摘流（P08 c2b7）：`ExtensionRuntimeService.synchronize`整个控制同步周期与`invokeJob`分别在执行线程、事务外取得`DeploymentWork`许可，严格拒绝HTTP、已有认证身份和外层事务；后台job在`policy.resolve`前准入。同步调度线程禁止继承请求上下文，拒绝不得开始新控制调用/解析对象/领取工作。已准入许可持续到真实同步I/O、插件execute及结果事务结束；插件租约到期只拒绝新调用，不强制卸载在途实例。UNKNOWN保持原工作ID/版本引用，不因资格恢复自动重做。HTTP同步调用仍由原请求生命周期治理，不能借此创建脱离任务；能力适配器必须为真正异步子任务另行设计生命周期。销毁后不得重新初始化runtime，35秒scheduler等待不是实际排空证明。验证`ExtensionDeploymentTests`、`ExtensionJobDrainMysqlTests`、`ExtensionWorkJournalTests`、`WorkCallerTests`、`PluginRuntimeTests`及模块/架构；本机控制与完整关闭顺序另按[P08摘流方案](../proposals/P08-deployment-drain.md)验收。
+
 审计镜像使用独立 AUDITOR 身份（security环境）和独立留存主机，不能复用WORKER/NODE凭据。`audit-mirror`逐批验证锚点/哈希链、只追加文件，落盘后ack。生产可开启 `release.audit.required`：确认过期/积压时冻结新敏感动作与激活，旧租约语义保持。文件只追加不是WORM，独立权限与不可变保留由部署验证。测试 `AuditMirrorTests`、`SecurityMysqlHttpsTests`，运维模板见 [deploy](../extension/deploy/README.md)。
 
 扩展默认关闭。同 JVM 的 ClassLoader 隔离和字节码准入不构成恶意代码沙箱；宿主、发布服务和 worker 的权限边界、独立发布库与签名密钥归属必须保留。观测应能定位到发布修订、bundle、插件版本/哈希和调用结果；不要记录业务正文或凭据。
 
 修改运行时或发布链时检查协议、真实 JAR 双版本同 JVM 切换、拒绝路径、准备/撤销、灰度/回退、在途排空、租约、工作重试与宿主重启恢复。可从 `PluginRuntimeTests`、`ReleaseWorkflowTests`、`ExtensionWorkJournalTests`、`WorkerBoundaryTests` 及根 reactor 验证起步；记录使用的真实制品、状态与测试范围。上线结论另需独立 MySQL/HTTPS、真实容器与扫描、多节点及压力和恢复演练；按[当前实施记录](../extension/backend-status-2026-11-11.md)核对仍待验证的能力。
+
+
+安全专项上传查询：发布服务GET `/release/v1/uploads/{upload}`及宿主精确GET代理仅输出任务状态、到期、可恢复标记、原文件摘要与制品ID；不得返回session/令牌，重验原操作者、原会话、当前UPLOAD范围。查询不能调用completeUpload；RECEIVING且resumable才可显式原文件恢复，COMPLETE只核对制品。验证ReleaseWorkflowTests、SecurityHttpTests、ConsoleProxyTests、ConsoleRequestScopeTests与普通端点门禁。根sma.verify.directory同时隔离各extension输出，不能在并行测试中共用其默认target。
+
+插件前端上传的注册表标识始终为原command key，ACCEPTED不能释放上传意图；只在查询到COMPLETE后完成。续传必须由用户明确触发，先读原命令和上传状态，再逐文件核对名称、字节数及SHA-256；完整任务不写分片/complete，不重新发命令或授权请求。文件与凭据只在内存，原发布会话失效后不得借新会话接管；查询与续传同页互斥，跨标签原子协调属安全C4。回归extension client/operation-registry单元、playwright.security-extension.config.ts八场景及npm run verify。
+
+P08 Console传输关闭按整个forward登记（机器凭据→发布会话→原代理动作），不把两次HTTP拆成可提前关闭的空窗。shutdownTransport严格host/无事务，拒绝新forward，保留已接受流程；无在途后再shutdown JDK客户端，必须观察isTerminated，不能以Future取消或方法返回报告库已关闭。固定1024本机在途、无队列，原权限/白名单/HTTPS/凭据ACL和每次20秒请求/25秒等待保持；限额不替代请求治理。强制close只阻止尚未通过入口检查的后续阶段，不撤销并发已提交动作，未知不自动重试。验证ConsoleTransportDeploymentTests（真实本地HTTPS）、ConsoleProxy/RequestScopeTests、ConsoleRequestGovernanceHttpTests和ApplicationSmokeTests；外部发布服务/整机滚动停机另验，不能据合成命令夹具宣称真实发布完成。

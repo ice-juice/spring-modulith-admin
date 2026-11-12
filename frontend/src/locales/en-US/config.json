@@ -39,5 +39,30 @@
     "DECIMAL": "Decimal",
     "JSON": "JSON"
   },
-  "masked": "Sensitive value (leave blank to keep)"
+  "masked": "Sensitive value (leave blank to keep)",
+  "effective": {
+    "tab": "Shared and built-in",
+    "readOnly": "This read-only view shows the tenant's effective values and sources. Use the next console to override, restore inheritance or publish platform values; built-in entries no longer appear in the private lists below.",
+    "nullValue": "(explicit null)",
+    "emptyValue": "(empty string)",
+    "name": "Name",
+    "key": "Parameter key",
+    "value": "Effective value",
+    "origin": "Source",
+    "revision": "Version",
+    "revisionValue": "Platform r{platform} · tenant v{tenant}",
+    "label": "Label",
+    "code": "Code",
+    "parent": "Parent code",
+    "selectable": "Selectable",
+    "yes": "Yes",
+    "no": "No",
+    "origins": {
+      "DEFAULT": "Code default",
+      "PLATFORM": "Platform shared",
+      "TENANT_OVERRIDE": "Tenant override",
+      "TENANT_ONLY": "Tenant private"
+    },
+    "privateTab": "Tenant private"
+  }
 }

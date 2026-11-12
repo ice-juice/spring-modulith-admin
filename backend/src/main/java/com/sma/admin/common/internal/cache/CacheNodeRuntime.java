@@ -34,6 +34,8 @@ public class CacheNodeRuntime {
         if(!identity.properties().enabled())state="DISABLED";
     }
     public record Status(String state,Instant lastHeartbeatAt) {}
+    /** Internal deployment consumers must recheck this on each observation; no lease is inferred from persisted old evidence. */
+    public CacheNodeLeaseStore.Lease currentLease(){return status().state().equals("OWNED")?owned.get():null;}
     public Status status(){return new Status(state.equals("OWNED")&&System.nanoTime()-lastHeartbeatStart>TimeUnit.SECONDS.toNanos(30)?"STALE":state,lastHeartbeat);}
     @Scheduled(fixedDelay=5000)
     public void heartbeatTick(){

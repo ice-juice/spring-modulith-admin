@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 import axios, { AxiosError, AxiosHeaders, type AxiosResponse } from 'axios'
 import { createPinia, setActivePinia } from 'pinia'
-import { configureHttp, ApiError } from '../http'
+import { configureHttp, createApi, ApiError } from '../http'
 import { saveToken, getToken } from '@/lib/token'
 import { i18n } from '@/locales'
 import { usePreferences } from '@/stores/preferences'
@@ -9,6 +9,22 @@ beforeEach(() => {
   setActivePinia(createPinia())
   localStorage.clear()
   sessionStorage.clear()
+})
+it('captures scoped node headers per API without mutating other requests or losing original request keys', async () => {
+  saveToken('scoped-test-token', false)
+  const sent: { node: unknown; process: unknown; key: unknown; token: unknown; signal: unknown }[] = []
+  const client = configureHttp(axios.create({ adapter: async config => {
+    sent.push({ node: config.headers['X-SMA-Cache-Node'], process: config.headers['X-SMA-Cache-Process'], key: config.headers['Idempotency-Key'], token: config.headers.Authorization, signal: config.signal })
+    return { data: { code: 0, data: 'done' }, status: 200, statusText: 'OK', headers: { 'x-operation-id': 'receipt-1' }, config }
+  } }))
+  const headers = { 'X-SMA-Cache-Node': 'node-a', 'X-SMA-Cache-Process': 'process-a' }
+  const scoped = createApi(client, headers), plain = createApi(client), received = vi.fn(), abort = new AbortController()
+  headers['X-SMA-Cache-Node'] = 'node-b'
+  await scoped.put('/monitor/caches/config.preferences/policy', {}, { idempotencyKey: 'original-request-key', signal: abort.signal, onResponse: received })
+  await plain.get('/monitor/caches/tasks')
+  expect(sent[0]).toEqual({ node: 'node-a', process: 'process-a', key: 'original-request-key', token: 'Bearer scoped-test-token', signal: abort.signal })
+  expect(sent[1]).toMatchObject({ node: undefined, process: undefined, key: undefined })
+  expect(received).toHaveBeenCalledOnce()
 })
 it('keeps localized errors in binary downloads and activates the lock screen on HTTP 423', async () => {
   const locked = vi.fn()
@@ -133,4 +149,41 @@ it('does not clear a new login when an earlier identity receives a late unauthor
   } }))
   await expect(client.get('/probe')).rejects.toBeInstanceOf(ApiError)
   expect(getToken()).toBe('new-token')
+})
+it('rejects a queued authenticated or anonymous operation before dispatch if the identity changed', async () => {
+  const adapter = vi.fn(async config => ({ data: { code: 0, data: null }, status: 200, statusText: 'OK', headers: {}, config }))
+  const client = configureHttp(axios.create({ adapter })), api = createApi(client)
+  saveToken('old-session', false)
+  const logout = api.post('/auth/logout', undefined, { expectedIdentity: 'old-session' })
+  saveToken('replacement-session', false)
+  await expect(logout).rejects.toThrow(); expect(adapter).not.toHaveBeenCalled()
+  const login = api.post('/auth/login', { username: 'synthetic', password: 'not-a-real-secret' }, { expectedIdentity: null })
+  await expect(login).rejects.toThrow(); expect(adapter).not.toHaveBeenCalled(); expect(getToken()).toBe('replacement-session')
+})
+it('keeps a matching identity binding local and sends only the normal Authorization header', async () => {
+  saveToken('matching-session', false)
+  const client = configureHttp(axios.create({ adapter: async config => {
+    expect(config.headers.Authorization).toBe('Bearer matching-session')
+    expect(Object.keys(config.headers.toJSON()).some(name => /identity|smaExpected/i.test(name))).toBe(false)
+    expect(config.params).toBeUndefined(); expect(config.data).toBeUndefined()
+    return { data: { code: 0, data: null }, status: 200, statusText: 'OK', headers: {}, config }
+  } }))
+  await createApi(client).post('/auth/logout', undefined, { expectedIdentity: 'matching-session' })
+})
+
+it.each(['get', 'post', 'put', 'patch', 'remove'] as const)('captures the default identity before queued %s dispatch without caller opt-in', async method => {
+  const adapter = vi.fn(async config => ({ data: { code: 0, data: null }, status: 200, statusText: 'OK', headers: {}, config }))
+  const api = createApi(configureHttp(axios.create({ adapter })))
+  saveToken('captured-original', false)
+  const request = api[method]('/queued')
+  saveToken('different-current', false)
+  await expect(request).rejects.toThrow(); expect(adapter).not.toHaveBeenCalled()
+})
+
+it('captures an anonymous default without silently adopting a later login', async () => {
+  const adapter = vi.fn(async config => ({ data: { code: 0, data: null }, status: 200, statusText: 'OK', headers: {}, config }))
+  const api = createApi(configureHttp(axios.create({ adapter })))
+  const request = api.post('/anonymous-intent')
+  saveToken('newly-authenticated', false)
+  await expect(request).rejects.toThrow(); expect(adapter).not.toHaveBeenCalled()
 })

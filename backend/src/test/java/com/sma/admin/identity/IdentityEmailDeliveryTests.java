@@ -27,6 +27,11 @@ import org.springframework.transaction.support.*;
 
 @IntegrationTest
 class IdentityEmailDeliveryTests {
+    private static <T>T host(Supplier<T> action){
+        var request=org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        org.springframework.web.context.request.RequestContextHolder.resetRequestAttributes();
+        try{return action.get();}finally{org.springframework.web.context.request.RequestContextHolder.setRequestAttributes(request);}
+    }
     private static Path keyFile;
     @DynamicPropertySource static void keys(DynamicPropertyRegistry registry)throws Exception{
         byte[] value=new byte[32];new SecureRandom().nextBytes(value);keyFile=Files.createTempFile("sma-email-delivery-",".keys");
@@ -72,10 +77,10 @@ class IdentityEmailDeliveryTests {
         assertThat(challenge.getDeliveryId()).isEqualTo(task.getId());assertThat(challenge.getStatus()).isEqualTo("PENDING");assertThat(issued.expiresAt()).isEqualTo(task.getExpiresAt());
         String[] sentCode=new String[1];doAnswer(i->{
             var prepared=(MailWorkService.Prepared)i.getArgument(0);assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-            assertThat(ActorContext.tenantId()).isEqualTo(f.tenant);assertThat(prepared.payload().recipient()).isEqualTo("recipient@example.test");sentCode[0]=code(prepared.payload());return MailWorkService.Outcome.ACCEPTED;
-        }).when(sender).send(any());
-        assertThat(cycle.runTenant(f.tenant)).isEqualTo(1);assertThat(task(f.tenant).getState()).isEqualTo("ACCEPTED");assertThat(task(f.tenant).getPayloadEnvelope()).isNull();
-        assertThat(verify(f,issued,sentCode[0]).error()).isNull();org.mockito.Mockito.verify(sender,times(1)).send(any());
+            assertThat(ActorContext.tenantId()).isEqualTo(f.tenant);assertThat(prepared.payload().recipient()).isEqualTo("recipient@example.test");sentCode[0]=code(prepared.payload());i.getArgument(1,com.sma.admin.common.deployment.DeploymentWork.Permit.class).close();return MailWorkService.Outcome.ACCEPTED;
+        }).when(sender).send(any(),any());
+        assertThat(host(()->cycle.runTenant(f.tenant))).isEqualTo(1);assertThat(task(f.tenant).getState()).isEqualTo("ACCEPTED");assertThat(task(f.tenant).getPayloadEnvelope()).isNull();
+        assertThat(verify(f,issued,sentCode[0]).error()).isNull();org.mockito.Mockito.verify(sender,times(1)).send(any(),any());
     }
     @Test void outerRollbackAndUnavailableTemplateLeaveNeitherChallengeNorMail(){
         var f=fixture(1162);
@@ -117,10 +122,10 @@ class IdentityEmailDeliveryTests {
     @Test void configurationRevocationAndUnknownGateFailClosedAndOtherTenantCannotClaim(){
         var f=fixture(1166);issue(f,"revoked@example.test");
         admin(f.tenant,()->configurations.put(f.client.id(),"en-US",1,new IdentityEmailConfigurationService.Input(false,"registration","password-reset","email-binding")));
-        assertThat(cycle.runTenant(f.tenant)).isZero();assertThat(task(f.tenant).getState()).isEqualTo("CANCELLED");verifyNoInteractions(sender);
+        assertThat(host(()->cycle.runTenant(f.tenant))).isZero();assertThat(task(f.tenant).getState()).isEqualTo("CANCELLED");verifyNoInteractions(sender);
         var second=fixture(1167);issue(second,"missing-gate@example.test");var row=task(second.tenant);
         job(second.tenant,()->{row.setGuardOwner("uninstalled.owner");mailRows.updateById(row);return null;});
-        assertThat(cycle.runTenant(second.tenant)).isZero();assertThat(task(second.tenant).getState()).isEqualTo("CANCELLED");
+        assertThat(host(()->cycle.runTenant(second.tenant))).isZero();assertThat(task(second.tenant).getState()).isEqualTo("CANCELLED");
         assertThat(job(1168,()->work.claim("wrong-tenant"))).isEmpty();
         assertThat(job(second.tenant,()->profileRows.selectById(second.profile.id())).getPendingDeliveries()).isZero();
     }

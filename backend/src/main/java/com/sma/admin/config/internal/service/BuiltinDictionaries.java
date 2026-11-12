@@ -3,12 +3,15 @@ import java.util.List;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import com.sma.admin.common.security.PlatformTenantQuery;
+import com.sma.admin.common.security.TenantScope;
 @Component
 public class BuiltinDictionaries {
  private final DictionaryService service;
- public BuiltinDictionaries(DictionaryService service) { this.service=service; }
+ private final PlatformTenantQuery platform;
+ public BuiltinDictionaries(DictionaryService service,PlatformTenantQuery platform) { this.service=service;this.platform=platform; }
  @EventListener(ApplicationReadyEvent.class)
- public void initialize() { service.initialize(seeds()); }
+ public void initialize() { TenantScope.within(platform.platformTenantId(),()->{service.initialize(seeds());return null;}); }
  public static List<DictionaryService.SeedType> seeds() {
   return List.of(
    new DictionaryService.SeedType("options_boolean","选项 Boolean值","config.dict.options_boolean.name",false,List.of(

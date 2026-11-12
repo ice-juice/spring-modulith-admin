@@ -84,4 +84,19 @@ class GoogleHttpTransportTests {
             for(var request:pending)assertThat(request.get(3,TimeUnit.SECONDS).body()).isEqualTo("{\"keys\":[]}");
         }
     }
+    @Test void gracefulShutdownFinishesAcceptedRealRequestThenTerminatesItsClient()throws Exception{
+        try(var peer=new Peer(Duration.ofSeconds(8));var callers=Executors.newSingleThreadExecutor()){
+            peer.entered=new CountDownLatch(1);peer.release=new CountDownLatch(1);
+            var pending=callers.submit(peer.transport::fetchKeys);
+            try{
+                assertThat(peer.entered.await(3,TimeUnit.SECONDS)).isTrue();
+                peer.transport.shutdownTransport();peer.transport.shutdownTransport();
+                assertThat(peer.transport.snapshot().running()).isOne();assertThat(peer.transport.transportTerminated()).isFalse();
+                assertThatThrownBy(peer.transport::fetchKeys).isInstanceOf(BizException.class);
+            }finally{peer.release.countDown();}
+            assertThat(pending.get(3,TimeUnit.SECONDS).body()).isEqualTo("{\"keys\":[]}");
+            org.awaitility.Awaitility.await().atMost(Duration.ofSeconds(5)).until(peer.transport::transportTerminated);
+            assertThat(peer.transport.snapshot().quiescent()).isTrue();
+        }
+    }
 }

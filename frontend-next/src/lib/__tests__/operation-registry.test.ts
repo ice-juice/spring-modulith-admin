@@ -12,6 +12,32 @@ const create = (storage: () => Storage = () => localStorage, capacity = 100) => 
 beforeEach(() => { localStorage.clear(); owner = { scope: ['https://site.example/api', '10', 'admin', '20'], session: 'secret-token-one' } })
 afterEach(() => { vi.useRealTimers() })
 
+it('continues a restored native upload only once with its original identity and rejects late completion', async () => {
+  const registry = create(), ticket = registry.reserve({ ...local, protocol: 'NATIVE', nativeId: 'cmd-original' })
+  await registry.execute(ticket, async () => { throw new Error('lost') }, { success: () => 'completed' })
+  const restored = create(); let finish!: (value: number) => void
+  const send = vi.fn(async (row, options) => {
+    expect(row.operationId).toBe('cmd-original'); expect(options.idempotencyKey).toBe(ticket.key)
+    return new Promise<number>(resolve => { finish = resolve })
+  })
+  const pending = restored.continueNative(ticket.key, send, { success: () => 'completed' })
+  await expect(restored.continueNative(ticket.key, send, { success: () => 'completed' })).rejects.toThrow(OperationBlocked)
+  owner = { ...owner!, session: 'replacement-session' }; restored.invalidate(); finish(1)
+  expect((await pending).kind).toBe('stale'); expect(send).toHaveBeenCalledOnce()
+  expect(restored.list()[0]).toMatchObject({ key: ticket.key, operationId: 'cmd-original', state: 'UNKNOWN' })
+})
+it('serializes native lookups against explicit continuation and preserves uncertainty after lookup failure', async () => {
+  const registry = create(), ticket = registry.reserve({ ...local, protocol: 'NATIVE', nativeId: 'upload-original' })
+  await registry.execute(ticket, async () => 1, { success: () => 'pending' })
+  let finish!: () => void
+  const lookup = registry.lookupNative(ticket.key, () => new Promise<number>(resolve => { finish = () => resolve(1) }), () => ({ id: 'upload-original', state: 'PENDING' }))
+  const send = vi.fn(async () => 1)
+  await expect(registry.continueNative(ticket.key, send, { success: () => 'completed' })).rejects.toThrow(OperationBlocked)
+  finish(); await lookup
+  await registry.continueNative(ticket.key, async () => { throw new Error('query denied') }, { success: () => 'completed' })
+  expect(send).not.toHaveBeenCalled(); expect(registry.list()[0]?.state).toBe('UNKNOWN')
+})
+
 it('locks synchronously before confirmation, shares conflicting actions, and releases cancelled preparation', () => {
   const registry = create(), ticket = registry.reserve(local)
   expect(() => registry.reserve({ ...local, operation: 'users.delete' })).toThrow(OperationBlocked)

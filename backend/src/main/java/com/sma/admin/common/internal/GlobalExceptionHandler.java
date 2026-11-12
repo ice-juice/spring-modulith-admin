@@ -30,6 +30,8 @@ import com.sma.admin.common.ErrorCode;
  */
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    @ExceptionHandler(com.sma.admin.common.cache.CacheNodeSelectionRejected.class)
+    ResponseEntity<ApiResponse<Void>> handleCacheNodeSelection(com.sma.admin.common.cache.CacheNodeSelectionRejected ex){return status(ex.reason());}
     @ExceptionHandler(com.sma.admin.common.cache.CacheTaskRejected.class)
     ResponseEntity<ApiResponse<Void>> handleCacheTaskRejection(com.sma.admin.common.cache.CacheTaskRejected ex){return status(ex.reason());}
     @ExceptionHandler(com.sma.admin.common.cache.CacheControlConflictException.class)
@@ -38,13 +40,13 @@ class GlobalExceptionHandler {
     ResponseEntity<ApiResponse<com.sma.admin.common.request.RequestReceipt>> handleRequestState(com.sma.admin.common.request.RequestStateException ex) {
         var response = ResponseEntity.status(ex.reason().status());
         if (ex.reason().status() == 202) response.header("Retry-After", "2");
-        return response.body(errors.body(ex.reason(), new Object[0], locale(), ex.receipt()));
+        return response.body(errors.body(ex.reason(), new Object[0], locale(), ex.receipt(),ex.reason().status()));
     }
     @ExceptionHandler(com.sma.admin.common.request.RequestRejected.class)
     ResponseEntity<ApiResponse<Void>> handleRequestRejection(com.sma.admin.common.request.RequestRejected ex) {
         var response = ResponseEntity.status(ex.reason().status());
         if (ex.retryAfterSeconds() > 0) response.header("Retry-After", Long.toString(ex.retryAfterSeconds()));
-        return response.body(errors.body(ex.reason(), new Object[0], locale(), null));
+        return response.body(errors.body(ex.reason(), new Object[0], locale(), null,ex.reason().status()));
     }
     @ExceptionHandler(com.sma.admin.common.cache.CacheUnavailableException.class)
     ResponseEntity<ApiResponse<Void>> handleCacheBackpressure(Exception ex){return status(CommonErrorCode.SERVICE_UNAVAILABLE);}
@@ -107,8 +109,13 @@ class GlobalExceptionHandler {
 
 	@ExceptionHandler(NoResourceFoundException.class)
 	ResponseEntity<ApiResponse<Void>> handleNotFound(NoResourceFoundException ex) {
+        errors.unmapped(false);
 		return status(CommonErrorCode.NOT_FOUND);
 	}
+    @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+    ResponseEntity<ApiResponse<Void>> handleNoHandler(org.springframework.web.servlet.NoHandlerFoundException ex){
+        errors.unmapped(true);return status(CommonErrorCode.NOT_FOUND);
+    }
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
@@ -123,11 +130,11 @@ class GlobalExceptionHandler {
 
 	private ResponseEntity<ApiResponse<List<FieldViolation>>> validationFailed(List<FieldViolation> violations) {
 		return ResponseEntity.badRequest()
-				.body(errors.body(CommonErrorCode.VALIDATION_FAILED, new Object[0], locale(), violations));
+				.body(errors.body(CommonErrorCode.VALIDATION_FAILED, new Object[0], locale(), violations,400));
 	}
 
 	private ResponseEntity<ApiResponse<Void>> status(ErrorCode code) {
-		return ResponseEntity.status(code.status()).body(errors.body(code, new Object[0], locale(), null));
+		return ResponseEntity.status(code.status()).body(errors.body(code, new Object[0], locale(), null,code.status()));
 	}
 
 	private static String message(FieldError error) {

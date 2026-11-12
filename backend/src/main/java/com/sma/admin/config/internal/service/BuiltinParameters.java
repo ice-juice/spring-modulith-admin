@@ -3,12 +3,15 @@ import java.util.List;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import com.sma.admin.common.security.PlatformTenantQuery;
+import com.sma.admin.common.security.TenantScope;
 @Component public class BuiltinParameters {
  private final ParameterService service;
- public BuiltinParameters(ParameterService service){this.service=service;}
+ private final PlatformTenantQuery platform;
+ public BuiltinParameters(ParameterService service,PlatformTenantQuery platform){this.service=service;this.platform=platform;}
  @EventListener(ApplicationReadyEvent.class)
- public void initialize(){service.initialize(groups(),specs());}
- public void resetDefaults(){initialize();service.resetBuiltins(specs());}
+ public void initialize(){TenantScope.within(platform.platformTenantId(),()->{service.initialize(groups(),specs());return null;});}
+ public void resetDefaults(){service.initialize(groups(),specs());service.resetBuiltins(specs());}
  public List<ParameterService.SeedGroup> groups(){return List.of(
   new ParameterService.SeedGroup("basic","系统基础","config.group.basic"),
   new ParameterService.SeedGroup("security","系统安全","config.group.security"),

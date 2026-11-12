@@ -1,14 +1,16 @@
 # Springboot Modulith Admin
 
+安全S2a/b/c及d1/d2/d3/d4a已完成本地验证：统一拒绝采集、隔离查询、请求元数据、加密缓冲和有界保留维护已实现。文件名策略、图片类型/像素门禁和实际字节长度/摘要不匹配已接入固定事实；文件MVC/数据库54项及真实TLS文件持久闭环26项分轮全通过，覆盖故障后原ID补传、原回执/任务语义保持和到期容量回收。采集默认关闭，保留维护默认开启；QUEUED_VOLATILE不代表已持久化，文件拒绝不代表已确认恶意软件。持久扫描接线d4b依赖P09后续宿主，S2e及告警仍未完成。调用见[开发手册](docs/developer-manual.md)，配置与复跑见[安全运行说明](docs/security-defense-operations.md)，分轮证据和范围见[S2采集进度](docs/security-event-progress.md)。
+
 安全专项已按用户授权开始，密码策略保持当前 P07。已本地验证 `/api` 写来源/简单表单门禁、URL 语法校验与 Mapper SQL 插值门禁、新版安全富文本与页面 CSP 观察策略；开发代理、生产域名和静态响应头配置见[运行说明](docs/security-defense-operations.md)。前后端防重复操作、攻击监控和诱捕告警尚按[专项进度](docs/security-defense-progress.md)逐项实施，不代表当前运行服务已升级。
 
 请求治理已完成Config、IAM、消息与个人随手栏接口本地验收：写操作需要Idempotency-Key，同键重放只返回本人最小回执，快速换键还受默认500ms冷却限制。两套前端已补协议头；全站提交状态管理、UNKNOWN恢复与其他模块接入仍按专项计划推进，不能将此阶段当作全站防重复完成。
 
 新版前端C1/C2已本地验收：显式原键、同步预留、3秒慢响应、元数据恢复及身份隔离；FilterBar输入防抖/中文组合输入、通用资源编辑/删除和上传原任务查询已接入。业务输入不写入恢复记录，UNKNOWN不自动重传。其余页面和跨标签交互按[前端安全进度](docs/security-frontend-progress.md)C3～C4继续推进，不能声明所有按钮已治理。随手栏入口移到顶部工具栏以避免遮住表格操作。
 
-C3a已补配置维护、偏好/显示设置、个人资料、用户密码重置及角色授权/删除：同对象共享提交范围，未决表单保留内容并可查询，密码策略不变。消息、批量操作和模块原生任务仍按后续子项验收。
+阶段记录（安全前端）：C3a已补配置维护、偏好/显示设置、个人资料、用户密码重置及角色授权/删除：同对象共享提交范围，未决表单保留内容并可查询，密码策略不变。消息、批量操作和模块原生任务仍按后续子项验收。
 
-公告收件人纯读详情已提供`GET /api/message/notices/inbox/{id}`，只校验当前收件资格而不修改已读状态，供写操作回执确认后的安全重读。新版消息入口与批量目标保护已完成C3b本地验收；连点只发送原意图，未知正文冻结且仅查原键，已读确认后授权重读。工作台标签/便签也已补原键恢复且保留版本/创建键；品牌草稿与目录查LOCAL原回执，发布/域名检查查原生编号且支持刷新恢复；缓存任务已补刷新后的原预览/原键恢复与独立取消，排队/部分未知不当完成；规则模板发布和迁移批次已提供原键只读查询并通过43项后端验收；规则前端已补原键恢复、共享资产门禁及精确数值快照；插件、上传恢复与跨标签治理仍按C3c～C4推进。
+公告收件人纯读详情已提供`GET /api/message/notices/inbox/{id}`，只校验当前收件资格而不修改已读状态，供写操作回执确认后的安全重读。新版消息入口与批量目标保护已完成C3b本地验收；连点只发送原意图，未知正文冻结且仅查原键，已读确认后授权重读。工作台标签/便签也已补原键恢复且保留版本/创建键；品牌草稿与目录查LOCAL原回执，发布/域名检查查原生编号且支持刷新恢复；缓存任务已补刷新后的原预览/原键恢复与独立取消，排队/部分未知不当完成；规则模板发布和迁移批次已提供原键只读查询并通过43项后端验收；规则前端已补原键恢复、共享资产门禁及精确数值快照；插件与通用上传恢复已完成C3c本地验收；认证剩余入口与跨标签治理继续按C3d～C4推进。
 
 规则、运行监控及开放应用管理已按LOCAL/QUERY/NATIVE分类验收；独立事务和原生任务保留自己的回执，运行时效果不伪装成同库原子操作。协议、并发预算和重试边界见上述运行说明；本地整合通过不等于已部署或已验证生产多节点。
 
@@ -16,7 +18,7 @@ C3a已补配置维护、偏好/显示设置、个人资料、用户密码重置�
 
 Springboot Modulith Admin 是一套前后端分离的后台管理系统，产品能力参考 JBolt（组织权限、字典参数、日志审计、消息中心、开发平台），后端以 Spring Boot 4.1 + Spring Modulith 2.1 为底座。首版只支持 MySQL 8。
 
-租户/域名、品牌草稿、邮件账号/模板及应用身份后台配置已接入请求治理；平台目录继续校验部署指定的运维身份，品牌发布/回退与邮件取消保留原生回执。只写凭据参与输入指纹但不会返回或作为正文写入账本。后端接口接入B1～B6已按分轮快照本地验收，编译映射门禁拒绝未审查的新入口；当前[接口清单](docs/security-endpoint-inventory.md)及[客户端回执契约](docs/security-request-client-contract.md)供接入使用。前端统一交互正在实施，持续并行变化与生产部署边界见专项进度。
+租户/域名、品牌草稿、邮件账号/模板及应用身份后台配置已接入请求治理；平台目录继续校验部署指定的运维身份，品牌发布/回退与邮件取消保留原生回执。只写凭据参与输入指纹但不会返回或作为正文写入账本。后端接口接入B1～B6已按分轮快照本地验收，编译映射门禁拒绝未审查的新入口；当前[接口清单](docs/security-endpoint-inventory.md)及[客户端回执契约](docs/security-request-client-contract.md)供接入使用。P11 X3增加预算scope、所属模块/存储和多实例换算的受审目录与编译门禁；部署总量说明见[运行说明](docs/security-defense-operations.md#预算-scope-与多实例容量p11-x3)，验证状态见开发调度。前端统一交互正在实施，持续并行变化与生产部署边界见专项进度。
 
 本文是项目的总纲：第 1 节确定底座基调，第 2～11 节说明后端框架约束，其中标注“自动校验”的条目由测试强制执行。开发代理从 [AGENTS.md](AGENTS.md) 开始，按任务读取专项规则。
 
@@ -56,7 +58,7 @@ M1a一次性WebSocket票据已改为共享MySQL摘要/原子消费，租户与po
 
 M1b机器登录预算已改为共享MySQL预占：来源60次/5分钟、来源＋AppId10次/5分钟，成功/失败不退款。平台容量10000项，摘要密钥独立加密持久化，密钥故障拒绝而非重置预算；不受缓存provider和清理影响。8项数据库故障/并发/容量专项与原机器认证/签名回归通过，平台表/接口清单门禁分轮通过；详情见P08进度与运行说明。
 
-M1已完成14组真实双JVM互通验证：跨节点登录/锁屏/权限撤销、验证码/TOTP/WS票据一次消费、共享机器预算、八并发写入、停机与重启保持会话。验收同时修正了LOCAL受理容量锁的正常争用问题，保留有界等待和原幂等保护。共享主键机制及初次升级停写/回退约束见[补充方案](docs/proposals/P08-id-allocation.md)。正在实施M2跨节点推送、后台维护和共享文件；M3无粘性LB及完整multi部署仍未验收，不能直接据此部署集群。
+M1/M2、M3a节点定向管理及M3b部署配置/密钥/共享存储已完成本机独立双JVM验证：跨节点认证、一次消费、共享预算、并发写入、消息投递/REST恢复、A上传/B授权读取、重启保持会话和精确节点操作均有实际证据。缓存页面支持选节点。当前推进M3c接流/摘流/代理；最新轮显式使用Redis 1s及同机共享目录，不代表200ms负载、多主机挂载或无粘性LB验收。主键首次升级的停写/回退约束见[补充方案](docs/proposals/P08-id-allocation.md)，当前阶段与命令见[P08进度](docs/cache-governance-progress.md)。完整multi、M3d、S6及X5尚未交付。
 
 普通缓存失效纳入同业务事务的 `common_cache_revision`，各节点独立核对已提交版本并补偿漏掉的快速通知；回滚不发布失效。新增 Common Flyway 迁移只在升级后的应用/隔离测试启动时执行，当前运行服务不会因源码改变自动升级。基础数据扩展、治理界面与负载均衡验收继续按专项进度推进。
 
@@ -68,9 +70,9 @@ M1已完成14组真实双JVM互通验证：跨节点登录/锁屏/权限撤销�
 |---|---|
 | 商城 Controller | `backend/src/main/java/com/sma/business/shop/internal/web/`；`com/sma/business/` 与基座的 `com/sma/admin/` 同级 |
 | 商城管理页面 | `frontend-next/src/business/shop/`；`src/business/` 与基座的 `src/features/` 同级 |
-| 商城迁移与语言包 | `backend/src/main/resources/db/migration/shop/`、`backend/src/main/resources/i18n/shop/` |
+| 商城迁移与语言包 | 当前业务路由使用 `backend/src/main/resources/db/business/shop/`、`backend/src/main/resources/i18n/shop/`，声明BusinessSchemaCatalog |
 
-开发时复用现有的 Spring Boot 和 Vue 启动入口；打包时用同一个业务分支的提交，构建一个后端 JAR 和一套前端静态文件。部署沿用现有 MySQL、后端进程和静态站点，业务表由宿主启动时的 Flyway 迁移。单体业务不需要新增 Maven 子工程、前端工程或 Java 进程。真正需要零重启替换实现时，再单独采用 P05 插件模式。
+开发时复用现有的 Spring Boot 和 Vue 启动入口；打包时用同一个业务分支的提交，构建一个后端 JAR 和一套前端静态文件。当前业务Mapper通过BusinessLedger按租户存储组路由，业务表由正式资源开通流程执行独立Flyway；平台表仍由平台启动/部署迁移。可运行的最小接入例见[shop-storage](examples/shop-storage/README.md)，原空目录例保留历史布局标注。单体业务不需要新增 Maven 子工程、前端工程或 Java 进程。真正需要零重启替换实现时，再单独采用 P05 插件模式。
 
 具体约束见[二次开发与包管理](docs/agent-rules/secondary-development.md)、[数据与配置](docs/agent-rules/data-and-configuration.md)、[基座升级与兼容](docs/agent-rules/platform-upgrades.md)和[插件与零重启发布](docs/agent-rules/extension-hot-reload.md)。
 
@@ -132,10 +134,11 @@ spring Modulith/
 | iam | 组织与权限 | 用户、部门、岗位、角色、权限资源（菜单/按钮）、角色授权、顶部导航、数据范围、个人资料与头像 | common、common :: security、common :: persistence、file | P1 完成，P3 扩展 |
 | config | 系统配置 | 数据字典、全局参数、用户界面偏好 | common、common :: security、common :: persistence | P2 完成 |
 | audit | 审计 | 登录日志、操作日志（只消费事件） | common、common :: security、common :: persistence、auth | P2 完成 |
+| defense | 安全事件 | 平台/租户事件、容量/保留、只读查询、有界采集和节点加密缓冲 | common、common :: security、common :: persistence、common :: deployment、common :: request | S2c/d1/d2/d3/d4a本地通过；含文件现有入口的确定性拒绝，持久扫描d4b及告警待后续，见[采集进度](docs/security-event-progress.md) |
 | message | 消息中心 | 系统通知、已读、待办、私信、WebSocket 推送 | common、common :: security、common :: persistence、iam、file、auth | P3 完成 |
 | mail | 事务邮件 | 租户账号配置、模板发布、加密队列、TLS SMTP、有界调度、签名回执与抑制 | common、common :: security、common :: persistence | 本地协议/持久任务/回执桥接验收完成；真实送达与厂商原生适配边界见 P09 进度 |
 | identity | 应用身份 | 租户身份域、Google/邮箱身份、会话族、再认证与方式管理、公开主体/联系查询 | common、common :: security、common :: persistence、common :: cache、mail | HTTP/数据库/独立教学样例本地验收完成；真实Google/邮件待联调，见P09手册8.4～8.15及专项进度 |
-| file | 文件 | 文件元数据、租户存储配置/场景、上传任务与本地分片、受控下载、引用保护 | common、common :: security、common :: persistence、common :: request、common :: cache | P3原契约保留；P09配置/场景/Local分片及公开上传HTTP已本地验收，仅到SCANNING；扫描/云适配边界见专项进度与手册11 |
+| file | 文件 | 文件元数据、租户存储配置/场景、上传任务与本地分片、受控下载、引用保护 | common、common :: security、common :: persistence、common :: request、common :: cache | P3原契约保留；P09公开上传仅到SCANNING；内容检查/原生视频/worker制品/输出ACK握手/镜像上下文工具已本地验收，真实镜像/完整隔离/杀毒/发布未完成；详见专项进度与手册11.4～11.9 |
 | monitor | 运维监控 | 服务器指标、缓存管理、事件发布管理（失败重试）、数据库文档 | common、common :: security、common :: persistence | P3 完成 |
 | workspace | 操作台 | 权限内统计和个人事项；个人标签与便签随手栏 | common、common :: security、common :: persistence、iam | P4及随手栏实现/验收完成，范围见专项进度 |
 | devtools | 开发工具 | 数据库文档（P3，首版由 monitor 提供） | common、common :: security | 后续按规模独立 |
@@ -195,7 +198,7 @@ com.sma.admin.<module> / com.sma.business.<module>
 | R13 | 禁止字段注入（只用构造器注入）、`System.out/err`、`java.util.logging`、Joda-Time、`java.util.Date` 等旧时间类 | 自动：`generalCodingRules` |
 | R14 | 构建必须使用 JDK 21+、Maven 3.9+ | 自动：Maven Enforcer |
 | C1 | 一个模块只读写自己前缀的表；禁止跨模块 SQL、跨模块 join、跨模块外键；需要别的模块的数据时调用其 API，或在本模块保存快照字段 | 代码评审 |
-| C2 | 表结构只能通过 Flyway 变更：公共表放 `db/migration/__root`，模块表放 `db/migration/<模块id>`，版本号在模块内独立递增，禁止修改已发布的脚本 | 代码评审 + Flyway 校验和 |
+| C2 | 表结构只能通过 Flyway 变更：公共表放 `db/migration/__root`，平台模块表放 `db/migration/<模块id>`，当前路由业务表放 `db/business/<模块id>`；版本号在模块内独立递增，禁止修改已发布的脚本 | 代码评审 + Flyway 校验和 |
 | C3 | 对外 API 只返回 record DTO，不返回实体；DTO 不携带密码、盐等敏感字段 | 代码评审（R3 拦截引用实体的情况） |
 | C4 | 事件只携带标识和必要的快照数据，不携带实体或可变对象；监听器必须幂等（失败会被重新投递） | 代码评审 |
 | I1 | `BizException` 只接受 `ErrorCode` 与插值参数 | 编译期构造器签名 |
@@ -227,7 +230,7 @@ com.sma.admin.<module> / com.sma.business.<module>
 
 会话维护每分钟按可信租户清理最多 200 条过期会话，发布 EXPIRED 事件供实时连接关闭；默认注册首版租户 1，签发其他租户会话时登记。角色列表可跳转角色用户，用户分页同时支持角色/岗位筛选，仍与用户数据范围和租户过滤取交集。
 
-系统参数由 Config 模块的 `ParameterQuery` 提供类型化查询。数据库配置优先于认证属性默认值；会话时长只影响新签发的会话。缓存带租户和版本，保存提交后刷新；公开接口只返回 `public_readable=true AND secret=false` 的值，管理列表的敏感值返回空，编辑时空值表示保留。参数名称可翻译，参数值保持原始业务数据。
+系统参数由 Config 模块的 `ParameterQuery` 提供类型化查询。数据库配置优先于认证属性默认值；会话时长只影响新签发的会话。缓存带租户和版本，保存提交后刷新。原公开参数接口已移除，匿名入口仅暴露固定的品牌与登录投影；未登记私有参数的管理列表仍对敏感值脱敏，编辑时空值表示保留。参数名称可翻译，参数值保持原始业务数据。
 
 个人偏好由 Config 独立维护，认证通过 `PreferenceQuery` 返回有效设置，保存偏好不改变账号凭据版本。个人时区优先于 IAM 中的账号默认；可选 `system.timeZone` 参数提供租户默认，未设置时由前端使用浏览器时区再回退 UTC。国家不是时区的唯一依据，使用 IANA 时区以正确处理多时区国家和夏令时。
 
@@ -291,7 +294,7 @@ void on(UserCreatedEvent event) { /* 写操作日志，必须幂等 */ }
 - 数据库：MySQL 8.0+，`utf8mb4` / `utf8mb4_0900_ai_ci`，InnoDB。首版只写 MySQL 方言，SQL 只出现在 Mapper 中，便于以后扩展其他数据库。
 - 表名：`<模块id>_<实体>`，例如 `iam_user`、`config_dictionary`、`audit_login_log`；多对多关联表 `iam_user_role`。框架表（`EVENT_PUBLICATION`、`flyway_schema_history*`）除外。
 - 主键：`id BIGINT`，MyBatis-Plus `assign_id` 接入共享MySQL号段分配；现有 `IdWorker` 与公开 `IdentifierAllocation` 使用同一机制。ID不代表时间或跨节点提交顺序，“最近”列表按创建时间排序。JSON 中所有 Long 输出为字符串，防止前端精度丢失。首次升级的停写、迁移、旧版本回退限制和当前验收边界见[主键方案](docs/proposals/P08-id-allocation.md)及[P08进度](docs/cache-governance-progress.md)。
-- 通用字段：`tenant_id BIGINT`（租户，默认 1）、`created_at DATETIME(3)`、`created_by BIGINT`、`updated_at DATETIME(3)`、`updated_by BIGINT`、`deleted TINYINT(1)`（逻辑删除）。布尔一律 `TINYINT(1)`，不用 JBolt 的 `char(1)`。框架级、全局性的表（如权限资源同步表、事件表）可以不带 `tenant_id`，须在租户插件中显式列为忽略表。
+- 通用字段：`tenant_id BIGINT`（来自可信上下文）、`created_at DATETIME(3)`、`created_by BIGINT`、`updated_at DATETIME(3)`、`updated_by BIGINT`、`deleted TINYINT(1)`（逻辑删除）。布尔使用 `TINYINT(1)`。匿名未知归属不能回落租户1；只有[数据规则](docs/agent-rules/data-and-configuration.md)与`PlatformPersistenceIsolationTests`精确登记的全局元数据或平台安全事件可无租户字段。租户事件仍保持TenantEntity过滤，不能因表名含“事件”就申请免租户。
 - 时间：`DATETIME(3)` 一律存 UTC，Java 侧用 `Instant`；JDBC 连接固定会话时区为 UTC（`connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true`），与服务器时区无关。
 - 数据权限字段：需要数据范围控制的表带 `dept_id`（归属部门）与 `created_by`（归属人），由数据权限插件使用。
 - 多对多一律用关联表，不用 JBolt 的逗号分隔字符串；唯一性用唯一索引保证（如 username、权限 key、字典类型+编码）。
@@ -338,7 +341,7 @@ void on(UserCreatedEvent event) { /* 写操作日志，必须幂等 */ }
 
 1. 基座在 `com.sma.admin` 下、二开在 `com.sma.business` 下新建包 `<id>`（全局唯一的小写单词），写 `package-info.java`：`displayName` + `allowedDependencies`。
 2. 对外类型放根包：查询接口、record DTO、事件；实现放 `internal.service`。
-3. 表结构写在 `src/main/resources/db/migration/<id>/V1__init.sql`，表名以 `<id>_` 开头。
+3. 平台模块表结构写在 `src/main/resources/db/migration/<id>/V1__init.sql`；当前路由业务模块写在 `src/main/resources/db/business/<id>/V1__init.sql`并声明BusinessSchemaCatalog。表名以 `<id>_` 开头。
 4. 实体和 Mapper 放 `internal.persistence`；控制器放 `internal.web`，路径 `/api/<id>/...`，每个方法声明访问注解，权限 key 以 `<id>:` 开头。
 5. 编写模块业务/权限/租户集成测试，必要时增加 `@ApplicationModuleTest`，从仓库顶层运行第 13 节的验证脚本。
 6. 如被其他模块依赖，更新本文第 3 节的依赖表和对方的 `allowedDependencies`。
@@ -346,6 +349,10 @@ void on(UserCreatedEvent event) { /* 写操作日志，必须幂等 */ }
 ## 13. 开发环境与常用命令
 
 从项目总 `README.md` 所在的目录执行。后端需要 JDK 21；环境配置见 [docs/dev-environment.md](docs/dev-environment.md)，部署前先按[开发手册](docs/developer-manual.md#构建和运行后端)准备数据库。
+
+集成测试使用独占可清空测试库。安全事件小容量/完整闭环用例会在受限测试schema内重置本模块数据，并以JUnit Isolated隔离，不能同时让另一个JVM复用该库。相关单类与同JVM组合验证边界、临时证书/密钥清理要求见[安全采集进度](docs/security-event-progress.md)和[运行说明](docs/security-defense-operations.md#http采集闭环验证s2d3b)。
+
+安全采集和保留维护线程已补宿主类加载器绑定，保持请求上下文隔离；54项回归及实际Boot JAR探针前后对比通过。打包类加载器探针只验证这两个worker及加密缓冲/退出，不替代数据库或完整服务启动验收；具体制品与命令见[安全采集进度](docs/security-event-progress.md)。
 
 ```powershell
 # 后端：根 Maven reactor 验证与打包
@@ -409,11 +416,15 @@ P06 规则界面位于 `frontend-next/src/features/rule/`。有相应查看权�
 
 ## P10 租户平台扩展
 
+已完成[单实例稳定二开基线](docs/secondary-development-baseline-release.md)：业务存储/迁移、同库账本与Outbox、共享业务缓存及服务级样例已验收，可从固定源码包开始静态业务模块二开。完整根reactor为1394通过、71条件跳过、0失败/错误；两前端及实际品牌/审计重启另有通过证据。专用Redis多资源、SQL运维UI与多实例X5继续后补，当前并行工作树不自动等同于已验收制品。
+
 租户品牌、登录页模板、共享/租户独有配置、业务 MySQL/Redis 路由及按实际数据源统计 SQL 分阶段实施。完整设计见 [P10](docs/proposals/P10-tenant-branding-and-storage.md)，交付状态与验证边界见[专项进度](docs/tenant-platform-progress.md)。旧 `/api/config/parameters/public` 已删除，两套前端已切换新入口，不提供兼容别名，必须前后端同批升级。
 
 S1 已实现：平台池借出的 JDBC 连接携带 `sma.persistence.resource-id`（默认 `platform`）和 `resource-revision`（默认 `1`）；SQL 统计返回 `resourceId/resourceRevision`，未知源独立标记，统计仍限当前租户和本进程。通过实际 MySQL 双库、应用装配及架构专项。数据源管理/筛选/定向重置、租户路由尚在后续阶段，不能以这些新增字段宣称整套分库已交付。
 
 配置和隔离验证入口见[P10 运行说明](docs/tenant-platform-operations.md)，后端新增源码在 `common/persistence`、`common/internal/persistence` 与 `tenant`。平台运维身份、域名入口和生命周期按专项逐步接入，不自动扩大租户管理员权限。
+
+平台租户可在首次空库启动前用 `sma.tenant.platform-tenant-id` 指定；启动的管理员、权限与配置种子随该 ID 初始化。已有平台库更换 ID 需要单独迁移，具体边界和独立验证命令见运行说明。
 
 S2已通过本地契约及真实 MySQL/HTTP/WebSocket 专项：租户目录/域名登记 API、状态安全代次、部署运维名单、HTTP入口与会话/挑战/机器令牌一致性。未知域名拒绝、暂停恢复不复活旧材料；新增迁移要求重新登录/签发。尚未部署到当前运行服务，外部域名登记仍须验证；不能把这些基础能力当作整套租户平台完整交付。品牌公开入口和旧public接口删除的S3结果见下。
 
@@ -423,13 +434,124 @@ S3已实现类型化品牌、草稿版本、发布/回退与不可变PNG快照�
 
 S3验证包括真实MySQL发布/迁移/回退、旧库结构升级、旧映射删除、两套完整前端门禁（next 99单测、旧版53单测）、8项隔离浏览器/代理检查，以及正常登录上传发布后双前端读取实际品牌的独立后端联调。测试临时进程/库/账号已清理，本任务未替换用户服务；逐项命令和失败修正记录见专项进度。
 
+P11 X4公开品牌资产已本地验收：快照编码器固定JDK PNG/JPEG/GIF读取及PNG写出，限制可寻址输出缓存，第三方ImageIO插件不能扩大该发布路径。图片/URL与架构41项通过；独立MySQL的公开字段/租户/原件权限矩阵及真实Tomcat HEAD零正文最终10项HTTP通过，既有发布/回退/文件回归分轮证据见[安全进度](docs/security-defense-progress.md)，二开边界见[品牌契约](docs/tenant-branding-api.md)。这不替代P09完整恶意软件扫描或X5，未部署到用户服务。
+
 S4a/S4b已提供两端login1分栏、login2居中、login3背景布局与共用MFA流程，以及next的`/tenant/brand`编辑、上传、独立预览、发布/历史/回退和外观策略。预览不执行认证或改变个人偏好；禁止个人皮肤时仅合成有效显示，不毁掉原保存值。两端完整门禁、模拟浏览器及当前制品的真实品牌整页/双端兼容联调已通过，详见专项进度。
 
 S4c的域名验证后端已通过57项集成/回归及3项策略检查：TXT控制权、部署入口IP清单、固定IP/TLS验证、短事务回执、显式启停/主域名和最后平台入口保护。next新增`/tenant/tenants`和`/tenant/domains`；登记只创建目录，不自动开通业务数据库或账号。隔离真实目录联调与S4整阶段回归已通过：最终next116/旧版55项单测、30项模拟浏览器（另10项旧版不适用跳过），当前后端40项契约/结构检查及真实品牌整页/双端兼容2项。临时环境均已清理，未部署到用户服务。配置、接口和部署限制见[域名契约](docs/tenant-domain-api.md)。公网DNS/TLS、生产代理部署未经实际验收，不作已交付声明。
 
-共享配置、业务MySQL/Redis资源、SQL数据源筛选/定向重置、容量和完整发布验收仍在S5～S10。当前不是完整P10交付。
+业务MySQL/Redis资源、SQL数据源筛选/定向重置、容量和完整发布验收仍在S6～S10。当前不是完整P10交付。
 
-S5正在实施，详细契约见[共享配置设计](docs/tenant-shared-configuration.md)。S5a～S5c后端已验收：平台共享草稿/发布、参数继承、内置目录、旧值迁移、原ParameterQuery、分代缓存，以及`/api/config/effective-parameters`目录/详情/双版本覆盖/恢复继承；原`/api/config/parameters`继续管理未登记私有项。Config V7/V8已通过保留值、翻译与显示来源的升级检查。普通租户使用config:parameter:view/update，平台发布另需部署运维身份及shared权限；写入继续要求Idempotency-Key。字典与双前端适配仍待S5d～S5f，当前不能部署为完整共享配置能力。
+S6a～S6c已追加Tenant V6业务存储目录、宿主有界池与静态业务Mapper路由：`tenant_storage_resource`记录物理资源不可变修订、受控目标和secretRef，`tenant_storage_binding`记录租户＋存储组的`PENDING`绑定；平台库不保存密码或业务行。部署`allowed-hosts`默认空，未显式允许不能登记目标；无TLS只可显式允许回环测试目标。宿主凭据解析器未配置时拒绝建池；业务经`BusinessLedger.Session.executeLocal/query`在事务前固定物理源，同库业务写、账本和失效一起提交，SQL统计按实际资源修订归属。业务Mapper在会话外拒绝。正式开通激活按S7实施。V5→V6专项21项、S6b最终27项、S6c三库夹具及平台回归26项通过，细节见[租户进度](docs/tenant-platform-progress.md)。
+
+S6d已开放仅平台部署运维身份可用的资源目录HTTP：`GET/POST /api/tenant/storage-resources`和`GET/POST /api/tenant/storage-bindings`，分别用`tenant:storage:view/register/bind`授权；资源响应隐藏secretRef，登记只产生REGISTERED资源和PENDING绑定。当前无前端资源运维页，S9再接UI；S7负责迁移、激活和可恢复切换。S6d真实HTTP/端点策略/架构22项及三库/池故障11项通过，凭据解析器仍需部署提供，详情见[运行说明](docs/tenant-platform-operations.md)。
+
+S7a/S7b已提供内部业务库迁移与开通任务：平台部署身份在事务外选择登记资源，使用目标MySQL命名锁和独立`db/business-ledger` Flyway历史；V7持久任务保存状态、fence和原绑定版本。迁移失败保持PENDING并待人工核对，同键续跑成功且实际框架表完整后才原子激活。旧表/空库/并发及平台＋业务双库专项已通过；S7c换库、S7d运维入口与全量发布门禁仍待实施，详见[租户进度](docs/tenant-platform-progress.md)。
+
+S7c-1已在业务会话入口加入本节点停写与在途计数：维护窗口可以先阻止新会话，再等待本节点旧会话关闭；跨节点排空与持久换库任务仍按S7c-2/S7c-3实施。真实双库/架构21项通过，详见[租户进度](docs/tenant-platform-progress.md)。
+
+S7c-2已加入V8持久换库任务和会话租约：停写与新会话登记按绑定行串行化，宿主节点清单逐进程证明排空，备份/复制/最终同步从部署`StorageMigrationEvidence`核对。任务达到READY时绑定仍停写；实际切换、恢复与真实双进程验收归S7c-3。根reactor专项22项通过，操作边界见[运行说明](docs/tenant-platform-operations.md)。
+
+S7c-3已加入版本化切换与恢复：V9/V10保存切前恢复状态及READY时间，最终提交重新核对物理证明、成员租约和绑定版本；切后回退必须创建反向迁移任务。两套真实MySQL业务库的复制差异夹具及平台库状态机专项23项通过；部署仍需提供物理备份/复制核对器，真实双进程验收归X5。详情见[租户进度](docs/tenant-platform-progress.md)。
+
+S7d-1业务库Outbox已支持V2投递租约、fence和未知结果重投，宿主按已打开物理池有限轮询；消费者按稳定键实现幂等。业务代次按资源修订与可信租户汇聚，故障标记stale。两套真实业务库、架构和模块专项20项通过；生产消费者由业务/部署接入，详见[租户进度](docs/tenant-platform-progress.md)。
+
+S7d-2开放平台原生业务库开通与换库任务HTTP，要求部署平台操作者身份及`tenant:storage:provision/switch`显式权限；GET按原键或任务ID核对状态，缺凭据的失败任务保持NEEDS_REVIEW。真实HTTP、架构、模块和普通端点策略22项通过。接口与操作限制见[运行说明](docs/tenant-platform-operations.md)。
+
+分库前置P11 X1a～X1c已提供`common :: request`的`BusinessLedger`会话和`BusinessLedgerResourceFactory`：业务模块在事务前按可信租户及存储组打开会话，宿主把执行权、互斥、代次和Outbox固定到同一业务DataSource；缺绑定或缺租户/审计拦截器即拒绝。业务库独立Flyway脚本位于`backend/src/main/resources/db/business-ledger/`，只建四张所需框架表；平台请求仍走原平台库。`BusinessRevisionRollup`提供容量与年龄上限、故障stale报告，实际资源轮询及派发归S6/S7。最终真实双库/架构25项、平台回归17项通过，S6门禁已解除；接入、专用库和验证边界见[P11进度](docs/development-progress.md#p11-跨专项资源与账本归属)。
+
+S5已本地验收，详细契约见[共享配置设计](docs/tenant-shared-configuration.md)。平台共享草稿/发布、参数与字典的继承、租户覆盖/私有字典项、内置目录、旧值与旧树迁移、分代缓存和有效配置HTTP已实现；原参数/字典管理接口继续处理未登记的私有项。Config V6～V10均只追加迁移，共享代码全局归属摘要防止租户私有代码与后续平台发布冲突。普通租户需相应查看/更新权限，平台草稿和发布另需部署运维身份及shared权限；写入使用Idempotency-Key和固定版本。新版`/config/parameters`、`/config/dictionaries`、`/config/shared`提供有效层管理与平台发布；旧版在参数/字典页只读显示有效层，原私有管理入口保留。S5d迁移冲突边界31项、S5e双前端与隔离真实联调、S5f根reactor完整verify（backend 1124项、0失败/错误、57条件跳过）均已通过；S5f日志及旧库逐版证据见[租户专项进度](docs/tenant-platform-progress.md)。前后端须同批部署，外部环境和P10分库阶段仍待验收。
 
 
 S4b新版 `/tenant/brand` 已接入字段与继承/隐藏设置、图片上传、三模板选择、独立明暗/语言/尺寸预览、草稿、发布历史和回退。网络结果未知时仅查询核对，冲突保留本地编辑；预览不提交登录或修改偏好。Config的AppearancePolicy宿主SPI在原始偏好缓存之后合成已发布皮肤策略，禁止个人选择时保留原选择。实际管理整页上传/预览/发布/皮肤恢复/回退，以及双前端兼容补充复验均在最新隔离制品通过，S4b完成；并非S4或P10整体完成。域名登记至启用的后续细节见[域名验证设计](docs/tenant-domain-api.md)。
+
+
+并行验证可从根reactor指定`-Dsma.verify.directory=target/<专项>/target`，backend与extension各模块均输出到自身独立目录；不复制源码快照、不共用其他专项target。发布插件上传状态可通过受控代理GET `/uploads/{id}`查询，只限原发布会话与当前上传范围；本地45项验证见安全专项进度。
+
+插件上传响应丢失后，扩展管理保留原命令并提供“查询原动作”。仅服务端确认仍可恢复时显示原文件选择与“继续原上传”，名称/大小/摘要必须一致；已完成只核对结果。该环节已通过本地45项后端、8项浏览器及前端完整verify（171项单元）；真实发布服务、多节点与跨标签验收仍见专项进度。通用文件上传的C3c4验收见下文。
+
+通用上传组件现在要求显式scope，复用`useFileUpload`区分文件库、头像、品牌槽位和公告表单。仅查询为ACCEPTED且内存仍有原文件时提供“继续上传原文件”；刷新后只恢复原任务查询，不持久化文件正文。上传期间阻止头像/公告保存旧输入，旧表单迟到结果不会挂到新表单。C3c4本地verify 178项及分轮25个浏览器场景通过，具体命令与恢复边界见[前端安全进度](docs/security-frontend-progress.md)。
+
+阶段记录（安全前端）：C3d1已补认证竞态治理：登录/OTP同步门禁、请求发送前身份绑定、旧退出和权限读取迟到隔离，以及离开登录/MFA页面时清密和取消归属。未知OTP结果不复用挑战；正常MFA交接保持。22项定向单元、5项浏览器及完整verify191项通过；浏览器使用API夹具，账号安全/锁屏、会话撤销和跨标签恢复仍待后续验收。调用约束见[客户端契约](docs/security-request-client-contract.md)。
+
+阶段记录（安全前端）：C3d2a账号安全页已增加共享凭据门禁和仅元数据的待确认标记：查询当前设置或刷新页面不会解除未知写，存储失败则不发送；新会话使用新作用域，原请求不自动重放。33项定向单元、7项浏览器及完整verify198项通过；本人改密/锁屏/退出前确认、会话撤销及C4仍按后续阶段验收。详细证据见前端安全进度，未改变后端密码或认证规则。
+
+P08受控迁移入口：同一宿主JAR接受--sma-migration=migrate或validate，使用独立数据源/迁移上下文，不启动业务组件；服务节点可设置SMA_DEPLOYMENT_SCHEMA_MODE=validate只核对逐模块历史。默认单机行为不变，配置与DDL账号隔离见[部署说明](docs/deployment.md#p08-受控逐模块迁移与服务节点只校验)，实际验收状态见[P08进度](docs/cache-governance-progress.md)。此入口不开放multi，也不替代密钥/共享文件/LB及X5联合验收。
+
+P08部署一致性证据包含4个运行密钥域和8个配置域，比较实际加载的完整有效/保留环及活动key ID；字段清单要求新增配置显式审查。Common V14复用节点组/租约保存不可覆写的同代次基线，资格绑定process/epoch并有短有效期，独立有界worker续报。SMA_DEPLOYMENT_EVIDENCE_ENABLED默认关闭，开启要求schema validate及多节点清单；没有HTTP取钥或普通缓存清理入口。实际双JVM差异/恢复已通过，设计与当前边界见[部署一致性证据](docs/proposals/P08-deployment-evidence.md)和[P08进度](docs/cache-governance-progress.md)。
+
+阶段记录（安全前端）：C3d2b及本人安全控制d2已完成本地验收：本人改密原键核对、锁/解锁未知跨刷新遮挡、统一退出前确认及迟到身份隔离。完整verify210项、9安全/4布局/2工作流/1便签浏览器分轮通过；详细证据见[前端安全进度](docs/security-frontend-progress.md)。会话撤销入口清单、跨标签C4及S1d真实后端仍待验收；不是生产部署或P09整体交付。
+
+阶段记录（安全前端）：C3d3a会话撤销已完成本地治理：按目标防重复、确认前身份绑定、未知跨刷新保留、权限/锁屏变化清列表。34项定向、完整verify221项、2项会话浏览器和1项原工作流通过。在线列表仅显示当前状态，不能确认历史撤销结果；当前服务端没有原撤销回执。下一步继续入口覆盖清单及C4/S1d，详见[客户端契约](docs/security-request-client-contract.md)。
+阶段记录（安全前端）：C3d3b1已补SQL重置/失败事件重投的原生操作治理：未知跨刷新保留、同目标禁重发、不同事件独立、迟到确认不发送。4项新浏览器、原监控工作流和完整verify221项通过。当前统计/事件状态不能确认历史命令结果；未新增多节点统计路由或事件监听器完成保证。剩余消息票据和动态适配器仍在覆盖审查中。
+阶段记录（安全前端）：C3d3b2已修复同账号换会话时的消息连接竞态：旧票据/推送/迟到会话验证不再影响新连接，锁屏清计数，申请票据绑定原身份。33项定向、2项工作流和完整verify226项通过；真实消息集群联调未由这些夹具测试替代。
+阶段记录（安全前端）：C3d3b3普通API现默认固定调用时会话，避免排队请求在账号切换后借用新令牌；规则/缓存特殊适配已同步且保留精确数值和原键。定向33项、完整verify236项、认证5/缓存3/规则11浏览器分轮通过。C3d入口清单正在收尾，C4跨标签及S1d真实验收尚未完成。
+阶段记录（安全前端）：安全前端C3已完成本地接入与[写入口覆盖审查](docs/security-frontend-write-inventory.md)，最新完整verify为236项通过。下一项C4操作面板与跨标签协调，再进入S1d专用库慢网/断连/多进程验收；安全专项、P09及四线X5整体尚未交付。P09容器与外部服务仍缺真实环境，继续保持既定隔离边界。
+P08共享存储资格使用真实归属注册、进程/epoch绑定的一次写探针和V15固定锚点/双向确认，独立有界worker持续核对；未知写只验证，丢失见证不自动重建。SMA_DEPLOYMENT_STORAGE_ENABLED默认关闭且依赖配置证据。不可变见证读取使用shared锁，发布/退役仍exclusive；已验证本机独立JVM的错误目录、缺失根、探针丢失/恢复及健康peer连续访问，生产多主机挂载另验。
+
+阶段记录（安全前端）：安全C4a1/a2已完成普通操作的同浏览器跨标签协调：同对象/重叠批量互斥，不同对象并行；未知记录跨页保留并可按原键核对，关闭页面不会重发。需支持Web Locks的HTTPS/本机环境，不支持时明确暂停提交；服务端仍是最终授权和幂等边界。最新完整verify250项；双页/提交及工作台/规则/缓存/插件分轮回归通过，详见[前端进度](docs/security-frontend-progress.md)。独立凭据/认证协调C4a3、操作面板和旧版兼容仍未验收。
+
+阶段记录（安全前端）：C4a3a本人凭据跨标签协调已本地完成：同一会话的账号安全与本人改密共享UNKNOWN标记和浏览器门禁，旧单标签待确认标记保守迁移，密码/OTP/QR/token不进入共享记录；原键核对也受协调。完整verify261项、账号安全/双页场景和锁屏工作流通过，详见[安全前端进度](docs/security-frontend-progress.md)。下一项跨标签锁屏/解锁及登录/退出，面板/旧版兼容和真实后端验收仍待完成。
+
+阶段记录（安全前端）：C4a3b跨标签锁屏/解锁已本地完成：锁或未知状态同步遮挡，确认解锁后还需授权读回明确未锁状态；旧查询和新账号切换不会解除新锁或误退出新会话。完整verify278项、双页/账号安全及原锁屏/便签工作流通过，见[前端进度](docs/security-frontend-progress.md)。下一项登录/MFA/退出协调，操作面板、旧版兼容与真实后端S1d仍待验收。
+阶段记录（安全前端）：C4a3c1已修复跨标签令牌归属：本标签独立会话退出或401会保留另一标签的不同共享令牌，退出刷新也不会自动切换到共享账号。定向33项、完整verify283项及双页/认证6浏览器场景通过；登录/MFA跨标签准入和退出协调仍待后续，见[安全前端进度](docs/security-frontend-progress.md)。
+M3c1接流门禁已完成本地验收：默认关闭的SMA_DEPLOYMENT_TRAFFIC_ENABLED要求schema validate、节点/配置/存储资格及固定readiness/liveness配置。真实HTTP、同制品完整双JVM41组和启动后专项23组通过，并修复见证并发读锁及首次租户引导竞争。资格失效拒绝新请求而不删除会话，503不能证明历史写入未执行。配置、换代与证据见[部署说明](docs/deployment.md)及[P08进度](docs/cache-governance-progress.md)；下一项M3c2受控排空，可信代理、无粘性LB和S6/X5仍待完成，multi保持关闭。
+
+M3c2a/b1/b2已完成共享摘流状态、后台`DeploymentWork`契约及缓存/邮件任务接线：可信执行线程在事务外逐项申请许可，资格失效/摘流后拒绝新领取，已有工作保留计数直至收尾。邮件许可同时等待结果处理和发送线程真实退出，取消Future不冒充完成；UNKNOWN不自动重发。真实HTTP、MySQL队列和本机TLS专项通过，命令与边界见[P08进度](docs/cache-governance-progress.md)。其他worker/事件、WS和本机控制仍按[摘流方案](docs/proposals/P08-deployment-drain.md)继续接线；当前不提供用户停机HTTP接口，也不宣称整机已能受控排空。
+
+M3c2b3已完成会话/重加密、Identity登录/邮箱/重新认证和nonce维护准入：每个有界事务开始前检查，摘流时已开始事务正常结束，下一项停止，资格恢复后重新扫描。47项结构/目录与55项真实MySQL/身份协议分轮通过；原过期校验、批次上限和租户范围保持。下一项持久事件消费者，随后消息/存储池/独立定时器/WS；完整生产排空与multi尚未开放，具体证据见[P08进度](docs/cache-governance-progress.md)。
+
+M3c2b4持久事件已完成本地验收：七个监听方法通过专用有界执行器隔离请求身份，领域事务前检查准入，许可覆盖领域提交和框架完成记录。拒绝保留FAILED，恢复后仍经原权限按原ID重投；同时修复指定重投被较早失败记录挡住的问题。最终12项真实框架/MySQL/重投门禁通过，原审计/会话/WebSocket和结构验证分轮记录在[P08进度](docs/cache-governance-progress.md)。二开监听需显式选择deploymentEventExecutor，见[二开约束](docs/cache-secondary-development.md)；剩余消费者和实际整机排空尚待完成。
+
+M3c2b5消息信号准入已完成：读后或两条推送之间摘流会停止新推送，保留未观察信号与当前批次；已进入的同步推送收尾，清理另行准入。37项结构/调度与24项真实MySQL/Socket分轮通过，数据库信号仍保留、原通知/待办/私信/强退正常。下一项存储池/Outbox等剩余调度，连接缓冲/ping/正常关闭与整机停机仍待后续，multi保持关闭；详见[P08进度](docs/cache-governance-progress.md)。
+
+M3c2b6存储后台准入已完成：Outbox通过独立有界工作线程逐资源申请许可，摘流后停止新领取，当前消费者与结果提交、池租约释放仍收尾；定时回收与技术排空确认分别处理。41项单元/结构、最终22项独立业务MySQL/调度及默认宿主2项分轮通过，记录见[P08进度](docs/cache-governance-progress.md)。下一项插件独立定时器及WS生命周期；实际整机停机、负载均衡和multi开放仍待后续验收。
+
+阶段记录（安全前端）：C4a3c2登录/MFA跨标签准入已本地完成：并发认证请求受浏览器门禁保护，等待OTP期间不占锁；共享登录变化会让旧挑战和旧共享身份失效，旧页面取消不会清新会话。最终完整verify292项、认证及边界浏览器分轮通过，首轮销毁回调问题已修复复验，见[安全前端进度](docs/security-frontend-progress.md)。原会话退出去重、操作面板、旧版兼容与真实后端S1d仍待完成。
+
+阶段记录（安全前端）：C4a跨标签协调已完成本地验收，最新退出链路支持确认前门禁、原会话最多一次注销请求、匹配标签本地退出和旧token恢复阻止。网络/能力/存储故障仍可确认后本地退出；LOCAL_EXIT标记不代表后端注销成功。完整verify305项，退出/认证/便签回归通过，详见[安全前端进度](docs/security-frontend-progress.md)。下一步C4b操作状态面板和C4c旧版兼容，真实后端S1d及四线X5尚未完成。
+阶段记录（安全前端）：C4b1新增顶部“操作状态”面板，按当前身份汇总未决记录，支持LOCAL原编号核对；未知/原生任务不自动重发，锁屏隐藏且旧回执不更新新身份。完整verify312项及组合浏览器22项通过，支持中英文、键盘与320px窄屏。下一离页/刷新提示及业务恢复入口，真实后端S1d待验收，详见[前端进度](docs/security-frontend-progress.md)。
+
+阶段记录（安全前端）：C4b2已补齐未决操作的持续离页提示和授权业务恢复入口，路由切换/刷新仍保留原编号；常规上传可按文件原生任务核对，受理/处理中不解除，面板不会重建File或续传。完整verify315项、面板/恢复7项浏览器通过，小屏布局已复验。下一C4b3组合/C4c旧版兼容，S1d与X5仍待验收。二开接入见[开发手册](docs/developer-manual.md#前端未决操作与恢复入口)。
+
+阶段记录（安全前端）：C4b操作状态/离页恢复已本地验收：315项完整前端检查通过，64个安全浏览器场景分轮通过（首轮关页锁释放时序问题修正后连续3轮复验）、原流程20项及随手栏4项通过。首轮保留ResizeObserver通知告警，未宣称控制台零告警。二开接入见[开发手册](docs/developer-manual.md#前端未决操作与恢复入口)，完整证据见[安全前端进度](docs/security-frontend-progress.md)；下一C4c旧版独立兼容，S1d真实后端与X5仍待完成。
+
+安全前端S1c（C1～C4）现已完成本地验收：操作状态面板、离页/刷新恢复、同浏览器跨标签协调与旧版独立兼容可用。新版完整检查315项单元及构建/类型/lint/i18n通过；旧版标准55项与独立浏览器4项通过，其他分轮浏览器证据见[安全前端进度](docs/security-frontend-progress.md)。二开使用见[开发手册](docs/developer-manual.md#前端未决操作与恢复入口)。下一阶段S1d隔离真实后端；P09容器/外部服务与X5仍待验收，不代表整套基座已交付。
+
+阶段记录（安全S1d1）：真实单宿主已通过：在专项临时库/账号和18261/5206测试端口执行真实Java/MySQL四场景，验证20次UI触发只写一次、已提交丢响应的原键恢复与显式重放拒绝、不同对象独立提交、超时后404仍保留未知并处理原请求迟到。26项根reactor、3项隔离原语及新版315项完整门禁通过，result.json的passed/cleanupComplete均true；本轮进程/库/账号/生成钥文件清理已核验。重跑方法见[开发手册](docs/developer-manual.md#隔离真实请求治理验收)，证据与限制见[安全进度](docs/security-defense-progress.md)。下一S1d2双JVM及d3范围/原生协议，尚未完成整个S1d或P09/X5。
+
+安全S1d2同机双JVM与重启恢复已通过：当前制品前后6个真实Java/MySQL场景、26项根reactor门禁、5项隔离原语及新版315项完整门禁通过，临时进程/库/账号/生成钥清理完成。20请求压力保持唯一业务结果，含6个带1秒退避的503保护响应，均保留原键语义，不宣称全部请求受理。使用方法见[开发手册](docs/developer-manual.md#隔离真实请求治理验收)，完整失败/修正/制品与证据边界见[安全进度](docs/security-defense-progress.md)。下一S1d3范围与原生协议；S1d整体、P08生产multi/P09外部环境及X5仍待验收。
+
+安全S1d3a同租户操作者/撤权及文件原生回执已通过：四个真实Java/MySQL场景、26项根reactor及新版315项完整检查通过，临时服务/库/账号/密钥清理完成。回执保持本人隔离，撤权后新会话不能查询旧回执；上传丢响应跨刷新仅核对，已删除文件不能由历史成功回执或原键重放恢复。调用与重跑说明见[开发手册](docs/developer-manual.md#隔离真实请求治理验收)，证据见[安全进度](docs/security-defense-progress.md)。下一d3b真实Host跨租户配置验收，整体S1d/P09/X5尚未完成。
+
+安全S1d3b真实Host跨租户配置验收已通过：七个真实场景验证双向Bearer拒绝、业务/回执隔离，以及同等权限租户的Google、邮箱和LOCAL/OSS/S3/R2同编码配置独立、跨租户读写拒绝。6项隔离原语及新版315项完整检查通过，临时资源清理完成。所有外部服务配置停用，TEST目录不代表DNS/TLS或生产开通；真实提供方与容器验收仍待环境。重跑方式见[开发手册](docs/developer-manual.md#隔离真实请求治理验收)，下一S1d3c当前制品组合收尾。
+
+安全S1d已完成本地验收：最后基于新制品执行39项根reactor门禁与11个真实Java/MySQL组合场景，覆盖操作者/撤权/上传恢复和租户独立Google、邮箱、LOCAL/OSS/S3/R2配置；新版315项完整检查、隔离原语6项、旧版55项与四个兼容场景通过，临时资源清理完成。此前单宿主和双JVM证据保留各自制品边界，不视为生产multi/LB资格。下一S2安全事件采集；P09外部账号/容器和X5仍待验收。调用说明见[开发手册](docs/developer-manual.md#隔离真实请求治理验收)与[P09能力手册](docs/integration-services-developer-manual.md)，具体命令/失败历史/指纹见[安全进度](docs/security-defense-progress.md)。
+
+P08 M3c2b7插件同步与后台任务已完成本地验收：摘流后拒绝新控制周期与invokeJob，已进入的控制I/O、同步插件execute和结果提交保持工作许可；租约自然到期不卸载在途实例，UNKNOWN恢复不重复执行。真实JAR9项、宿主37项、MySQL7项及反向顺序5项分轮通过，范围和制品见[P08进度](docs/cache-governance-progress.md)。后台适配的事务外host要求及升级方式见[插件接入手册](docs/extension/backend-guide.md)；WS、实际有序停机、代理/LB及S6/X5仍待完成，multi保持关闭。
+
+P08 M3c2b8 WebSocket排空已完成本地验收：握手预留、实际连接及缓冲发送线程分别计数，摘流拒绝新握手/发送，等待在途后1001关闭，保留共享登录会话。客户端重新取一次性票据并刷新REST，原强退语义保持。真实Tomcat/MySQL14项、后端单元/结构分轮及新版完整verify318项通过；证据见[P08进度](docs/cache-governance-progress.md)，运行限制见[部署说明](docs/deployment.md)。下一调度/异步清单及整机有序停机，双JVM滚动重连和LB仍待验收，multi未开放。
+
+P08 M3c2b9a已建立编译后调度/异步入口清单门禁：80条来源及人工归属台账、23项专项/结构检查通过。新增线程池、异步提交、资源或调度参数需要显式审查，未解决的子线程/传输仍列为待办。范围和接入约束见[活动清单](docs/proposals/P08-deployment-activity-inventory.md)；清单登记不等于生命周期已排空，b9剩余项、整机关闭及LB仍待验收。
+
+P08 c2b9已推进公共子任务观察与本地文件传输接线：Future取消后仍运行的线程保持计数，真实文件锁/不可变对象保留到执行结束。该轮清单基线为81条；公共专项34项、本地文件专项34项通过（原符号链接权限夹具跳过1项），具体证据见[P08进度](docs/cache-governance-progress.md)。Google/Console/共享见证等其余活动及实际关闭仍待后续验收；multi继续关闭。
+
+P08 c2b9b2共享见证子线程已完成本地验收：探针超时或Future取消后，真实I/O和文件锁仍被观察到退出；原双向资格、摘要和共享读锁不变。46项专项（含独立JVM锁）及4项默认宿主/真实MySQL双runtime互证通过，证据见[P08进度](docs/cache-governance-progress.md)。后续仍需Google/Console/TLS、库/进程边界和整机有序关闭，生产多主机挂载/LB及multi门禁未开放。
+
+P08 c2b9b3-1 Google传输已完成本地验收：取消Future后仍运行的任务保留计数，受控关闭先完成已接受任务，再关闭JDK HttpClient并观察真实终止。34项公共契约、43项本地协议/生命周期、27项MySQL/应用HTTP分轮通过，该轮清单为82条；详情见[P08进度](docs/cache-governance-progress.md)与[活动台账](docs/proposals/P08-deployment-activity-inventory.md)。生产Google端点和登录协议保持，未验证真实供应商账号；Console/TLS及整机关闭/LB仍待完成，multi未开放。
+
+P08 c2b9b3-2 Console代理传输已完成本地验收：按会话交换到原代理动作的完整流程计数，关闭拒绝新调用，已接受流程继续收尾，最后单独核验JDK客户端终止。35项专项（含本地HTTPS、未知命令不重发和证书拒绝）及3项宿主/请求治理回归通过；活动清单现为85条，证据见[P08进度](docs/cache-governance-progress.md)。实际发布服务、TLS/NodeControl后续收口及整机关闭/LB仍待验收，multi未开放。
+
+P08 c2b9b3-3a TLS探测已完成本地验收：探测/Socket归属与截止关闭回调分别观察，优雅关闭保留在途截止任务，取消已启动回调不会提前清零。修复测试夹具后TLS/域名探测11项、域名MySQL/HTTP及默认宿主9项通过，首轮结构/清单证据见[P08进度](docs/cache-governance-progress.md)。清单现为86条；NodeControl和整机关闭/LB仍待验收，multi未开放。
+
+P08 c2b9b3-3b NodeControl客户端已完成本地验收：计数覆盖流读取/关闭、制品摘要核验与缓存落盘；已接受操作结束后才关闭客户端，JDK终止单独核对。宿主35项、插件9项及MySQL装配/账本7项分轮通过，证据见[P08进度](docs/cache-governance-progress.md)。30秒request超时不等于正文严格总时限，阻塞仍记未完成；规则/独立检查边界、实际整机关闭和LB待验收，multi未开放。
+
+P08 c2b9c规则/独立检查边界已本地验收：57项通过，覆盖真实LiteFlow阻塞执行/原线程及租约保护、worker-only宿主依赖门禁和本机检查子JVM退出。当前受限规则语法可沿父请求生命周期等待；生产容器/全部后代与隔离仍归P09/X5。后续b9d组合审计已本地完成，实际进程关闭仍待c2c，完整multi/LB仍未开放，范围见[活动清单](docs/proposals/P08-deployment-activity-inventory.md)。
+
+P08 c2b9d固定快照验收：宿主202项、插件9项和专用MySQL13项分轮通过。补齐缓存节点心跳/确认的严格host入口及线程隔离，真实宿主装配核对6个活动/4个传输/1个WS观察器；缓存、邮件、事件、维护和WS摘流结果保持原持久语义。验证仍从根`tools/dev/verify-backend.ps1 -Standard`进入，固定快照命令、制品摘要和失败修复见[P08进度](docs/cache-governance-progress.md)。下一步是c2c本机控制、HTTP异步与有序关闭及双JVM自然退出；不能据本轮组件组合通过开启`deployment-mode=multi`。
+
+P08 c2c1 HTTP父请求生命周期已本地验收：固定快照同构建50项全通过，覆盖真实Tomcat多轮异步/错误/转发/包含/断连与完整宿主。首次HTTP准入和摘流原子互斥；已进入请求允许完成，新请求拒绝，容器销毁及分派返回后才归还计数。跟踪随`traffic.enabled=true`启用，默认单机装配保持；它不授予业务异步身份传播，也不能替代子任务/执行器和库资源排空。下一c2c2资源生命周期及后续本机控制、双JVM自然退出；完整multi仍未开放，证据与命令见[P08进度](docs/cache-governance-progress.md)。
+
+P08 c2c2a已完成本地运行资源审查，并修复插件控制scheduler替换普通调度器、重复初始化遗留旧执行器的问题。真实宿主核对21项任务（含Modulith程序化维护和两个Moments Cron）、3个执行器及平台池/Redis资源；插件阻塞时普通调度仍推进，实际控制线程随对应执行器关闭。首轮未知Cron拒绝及修复后的分轮结果详见[P08进度](docs/cache-governance-progress.md)，运行报告随固定快照保存；资源装配通过不等于完整资源排空。下一c2c2b异步任务观察及后续有序停机，multi仍关闭。
+
+P08 c2c2b HTTP异步执行已本地验收：固定快照同构建80项通过。traffic开启时Servlet与MVC子任务分别观察；响应结束/Future取消不能清除仍运行的任务，容器异常与WebAsyncTask原回调保持。MVC借用原应用执行器，显式其他WebAsyncTask执行器会在运行前拒绝；默认单机装配保持，完整宿主已验证普通/异步原请求在摘流后完成。下一c2c2c执行器/资源停止与顺序验收，完整multi仍关闭，命令/失败修复/边界见[P08进度](docs/cache-governance-progress.md)。

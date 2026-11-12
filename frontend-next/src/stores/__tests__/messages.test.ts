@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
+import { createPinia, disposePinia, getActivePinia, setActivePinia } from 'pinia'
 import { flushPromises } from '@vue/test-utils'
 import { useAuth, type CurrentUser } from '@/stores/auth'
 import { useMessages } from '@/stores/messages'
-import { saveToken } from '@/lib/token'
+import { getToken, saveToken } from '@/lib/token'
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }))
 vi.mock('@/api/http', () => api)
 class Socket {
   static instances: Socket[] = []
   closed = false
   onopen: (() => unknown) | null = null
-  onclose: (() => unknown) | null = null
+  onclose: ((event?: { code: number }) => unknown) | null = null
   onerror: (() => unknown) | null = null
   onmessage: ((event: { data: string }) => unknown) | null = null
   constructor(public url: string) {
@@ -38,6 +38,7 @@ beforeEach(() => {
   Socket.instances = []
   localStorage.clear()
   sessionStorage.clear()
+  saveToken('original-message-session', false)
   useAuth().user = { ...actor }
   api.get.mockImplementation(async (path: string) =>
     path === '/auth/me'
@@ -48,6 +49,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   useMessages().stop()
+  disposePinia(getActivePinia()!)
   vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.clearAllMocks()
@@ -136,4 +138,80 @@ it('keeps polling authorized REST state while the socket is offline and ticket i
   expect(store.state).toBe('offline')
   expect(store.summary.unreadMessages).toBe('9')
   expect(useAuth().user?.id).toBe(actor.id)
+})
+
+it('rejects a late handshake from an older token of the same account and binds each request before dispatch', async () => {
+  let resolveOld!: (value: { ticket: string }) => void
+  api.post.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve }))
+  const store = useMessages(); store.start(); await flushPromises()
+  expect(api.post).toHaveBeenCalledWith('/message/socket-ticket', undefined, { expectedIdentity: 'original-message-session' })
+  saveToken('replacement-message-session', false); window.dispatchEvent(new Event('storage')); await flushPromises()
+  expect(Socket.instances).toHaveLength(1)
+  resolveOld({ ticket: 'obsolete-same-account-ticket' }); await flushPromises()
+  expect(Socket.instances).toHaveLength(1); expect(Socket.instances[0]!.url).not.toContain('obsolete-same-account-ticket')
+  expect(api.post).toHaveBeenLastCalledWith('/message/socket-ticket', undefined, { expectedIdentity: 'replacement-message-session' })
+})
+
+it('old forced-logout socket events cannot reset a replacement session for the same user', async () => {
+  const store = useMessages(); store.start(); await flushPromises()
+  const old = Socket.instances[0]!
+  saveToken('replacement-message-session', false); useAuth().user = { ...actor }; await flushPromises()
+  expect(old.closed).toBe(true); expect(Socket.instances).toHaveLength(2)
+  await old.onmessage?.({ data: JSON.stringify({ type: 'session-ended', reason: 'FORCED' }) })
+  expect(useAuth().user?.id).toBe(actor.id); expect(Socket.instances[1]!.closed).toBe(false)
+})
+
+it('late session-invalid validation cannot stop or close the new connection', async () => {
+  const store = useMessages(); store.start(); await flushPromises()
+  const old = Socket.instances[0]!
+  let complete!: (value: CurrentUser) => void
+  api.get.mockImplementationOnce(() => new Promise(resolve => { complete = resolve }))
+  const pending = old.onmessage?.({ data: JSON.stringify({ type: 'session-ended', reason: 'SESSION_INVALID' }) })
+  saveToken('replacement-message-session', false); useAuth().user = { ...actor }; await flushPromises()
+  complete({ ...actor }); await pending
+  expect(Socket.instances).toHaveLength(2); expect(Socket.instances[1]!.closed).toBe(false); expect(useAuth().user?.id).toBe(actor.id)
+})
+
+it('clears private counts on locking and rejects the old summary even after unlocking', async () => {
+  const store = useMessages(); store.start(); await flushPromises(); expect(store.summary.unreadNotices).toBe('1')
+  let complete!: (value: { unreadNotices: string; pendingTodos: string; unreadMessages: string }) => void
+  api.get.mockImplementationOnce(() => new Promise(resolve => { complete = resolve }))
+  const pending = store.refresh(); useAuth().user!.locked = true
+  expect(store.summary.unreadNotices).toBe('0'); expect(Socket.instances[0]!.closed).toBe(true)
+  useAuth().user!.locked = false; await flushPromises()
+  complete({ unreadNotices: '999', pendingTodos: '999', unreadMessages: '999' }); await pending
+  expect(store.summary.unreadNotices).toBe('1')
+  expect(api.get).toHaveBeenCalledWith('/message/summary', undefined, { expectedIdentity: 'original-message-session' })
+})
+
+it('synchronously gates twenty connection calls and never issues an anonymous ticket', async () => {
+  const store = useMessages(); store.start()
+  for (let i = 0; i < 20; i++) void store.connect()
+  await flushPromises(); expect(api.post).toHaveBeenCalledOnce()
+  useAuth().reset(); await store.connect(); expect(api.post).toHaveBeenCalledOnce()
+})
+
+it('keeps the shared login after deployment close 1001, obtains a new ticket and refreshes REST on reconnect', async () => {
+  const store = useMessages()
+  api.post.mockResolvedValueOnce({ ticket: 'before-drain' }).mockResolvedValueOnce({ ticket: 'after-drain' })
+  store.start(); await flushPromises()
+  const first = Socket.instances[0]!
+  first.onopen?.(); await flushPromises()
+  const reset = vi.spyOn(useAuth(), 'reset')
+  first.onclose?.({ code: 1001 })
+  expect(store.state).toBe('offline')
+  expect(getToken()).toBe('original-message-session')
+  expect(useAuth().user?.id).toBe(actor.id)
+  await vi.advanceTimersByTimeAsync(999)
+  expect(Socket.instances).toHaveLength(1)
+  await vi.advanceTimersByTimeAsync(1); await flushPromises()
+  expect(Socket.instances).toHaveLength(2)
+  expect(Socket.instances[1]!.url).toContain('ticket=after-drain')
+  expect(api.post).toHaveBeenCalledTimes(2)
+  expect(api.post).toHaveBeenLastCalledWith('/message/socket-ticket', undefined, { expectedIdentity: 'original-message-session' })
+  api.get.mockResolvedValue({ unreadNotices: '7', pendingTodos: '8', unreadMessages: '9' })
+  Socket.instances[1]!.onopen?.(); await flushPromises()
+  expect(store.state).toBe('connected'); expect(store.summary.unreadMessages).toBe('9')
+  expect(reset).not.toHaveBeenCalled()
+  reset.mockRestore()
 })

@@ -18,18 +18,23 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import com.sma.admin.common.deployment.SharedStorageWitness;
+import com.sma.admin.common.deployment.DeploymentActivity;
+import com.sma.admin.common.deployment.DeploymentTaskTracker;
 import com.sma.admin.common.security.TenantEntryScope;
 
 /** Small host witnesses for existing roots, never an alternative upload or file-read path. */
 @Component @EnableConfigurationProperties(FileClusterProperties.class)
-public class FileClusterStorage implements SharedStorageWitness,AutoCloseable {
+public class FileClusterStorage implements SharedStorageWitness,AutoCloseable,DeploymentActivity {
     private record Owned(String resource,Scope scope){}
     private final Map<String,Path> roots;private final FileClusterProperties settings;private final ExecutorService worker;
     private final Map<Owned,String> owned=new ConcurrentHashMap<>();
+    private final DeploymentTaskTracker activity=new DeploymentTaskTracker(2);
     @Autowired
     public FileClusterStorage(FileProperties legacy,StorageSettings managed,FileClusterProperties settings){
-        this(legacy,managed,settings,new ThreadPoolExecutor(2,2,0,TimeUnit.SECONDS,new SynchronousQueue<>(),Thread.ofPlatform().daemon().name("sma-storage-witness-",0).factory(),new ThreadPoolExecutor.AbortPolicy()));
+        this(legacy,managed,settings,new ThreadPoolExecutor(2,2,0,TimeUnit.SECONDS,new SynchronousQueue<>(),Thread.ofPlatform().daemon().inheritInheritableThreadLocals(false).name("sma-storage-witness-",0).factory(),new ThreadPoolExecutor.AbortPolicy()));
     }
+    @Override public String id(){return "file.shared-witness";}
+    @Override public DeploymentActivity.Snapshot snapshot(){return activity.snapshot();}
     FileClusterStorage(FileProperties legacy,StorageSettings managed,FileClusterProperties settings,ExecutorService worker){
         var map=new TreeMap<String,Path>();map.put("file.legacy",Path.of(legacy.directory()).toAbsolutePath().normalize());
         managed.localRoots().forEach((alias,directory)->map.put("file.local."+alias,Path.of(directory).toAbsolutePath().normalize()));
@@ -57,7 +62,7 @@ public class FileClusterStorage implements SharedStorageWitness,AutoCloseable {
     }
     @Override public boolean verify(String resource,Scope scope,String expectedDigest){
         validate(resource,scope);digestShape(expectedDigest);
-        return execute(()->{Path path=path(resource,scope,false);return path!=null&&Files.exists(path,LinkOption.NOFOLLOW_LINKS)&&matches(path,expectedDigest);});
+        return execute(()->{Path path=path(resource,scope,false);return path!=null&&Files.exists(path,LinkOption.NOFOLLOW_LINKS)&&matches(path,expectedDigest,true);});
     }
     @Override public void retire(String resource,Scope scope,String expectedDigest){
         validate(resource,scope);digestShape(expectedDigest);var key=new Owned(resource,scope);
@@ -97,10 +102,16 @@ public class FileClusterStorage implements SharedStorageWitness,AutoCloseable {
         }
     }
     private static boolean matches(Path path,String expected)throws IOException{
+        return matches(path,expected,false);
+    }
+    private static boolean matches(Path path,String expected,boolean readOnlyVerification)throws IOException{
         regular(path);
         try(var channel=FileChannel.open(path,StandardOpenOption.READ,StandardOpenOption.WRITE,LinkOption.NOFOLLOW_LINKS)){
-            FileLock lock;try{lock=channel.tryLock();}catch(OverlappingFileLockException busy){return false;}if(lock==null)return false;
+            // Immutable probes are read by every node. Readers must not invalidate each other by taking exclusive locks.
+            // Publication/reconciliation and retirement still require exclusive ownership.
+            FileLock lock;try{lock=channel.tryLock(0,Long.MAX_VALUE,readOnlyVerification);}catch(OverlappingFileLockException busy){return false;}if(lock==null)return false;
             try(lock){
+                if(readOnlyVerification&&!lock.isShared())return false; // No silent exclusive fallback on unsupported mounts.
                 if(channel.size()!=32)return false;var bytes=ByteBuffer.allocate(33);int count;
                 while(bytes.hasRemaining()&&(count=channel.read(bytes))!=-1){interrupted();if(count==0)Thread.onSpinWait();}
                 if(bytes.position()!=32)return false;regular(path);
@@ -119,15 +130,18 @@ public class FileClusterStorage implements SharedStorageWitness,AutoCloseable {
             throw new AccessDeniedException("Storage witnesses require trusted host execution");
         if(TransactionSynchronizationManager.isActualTransactionActive())throw new IllegalStateException("Storage witness I/O requires no database transaction");
     }
-    private <T>T execute(Callable<T> action){
-        Future<T> result;try{result=worker.submit(action);}catch(RejectedExecutionException busy){throw unavailable();}
+    /** Package-local transport seam; callers still must be trusted host execution. */
+    <T>T execute(Callable<T> action){
+        host();
+        Future<T> result;try{result=activity.submit(worker,action);}catch(RejectedExecutionException busy){throw unavailable();}
         try{return result.get(settings.probeTimeout().toMillis(),TimeUnit.MILLISECONDS);}
         catch(InterruptedException interrupted){result.cancel(true);Thread.currentThread().interrupt();throw unavailable();}
         catch(TimeoutException timeout){result.cancel(true);throw unavailable();}
+        catch(CancellationException cancelled){throw unavailable();}
         catch(ExecutionException failure){throw unavailable();}
     }
     private static void interrupted()throws InterruptedIOException{if(Thread.currentThread().isInterrupted())throw new InterruptedIOException("Storage witness interrupted");}
     private static String digest(byte[] value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));}catch(NoSuchAlgorithmException impossible){throw new IllegalStateException(impossible);}}
     private static IllegalStateException unavailable(){return new IllegalStateException("Shared storage witness unavailable");}
-    @Override @PreDestroy public void close(){worker.shutdownNow();}
+    @Override @PreDestroy public void close(){activity.close();worker.shutdownNow();}
 }

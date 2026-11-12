@@ -28,9 +28,18 @@ export class ApiError extends Error {
     super(message)
   }
 }
+type IdentityBoundConfig = AxiosRequestConfig & { smaExpectedIdentity?: string | null }
+/** Capture before Axios queues its interceptor chain. This property never becomes a transport header. */
+export function bindRequestIdentity(config: AxiosRequestConfig, identity: string | null = getToken()): IdentityBoundConfig {
+  return { ...config, smaExpectedIdentity: identity }
+}
 export function configureHttp(client: AxiosInstance) {
   client.interceptors.request.use((config) => {
     const token = getToken()
+    const expected = (config as IdentityBoundConfig).smaExpectedIdentity
+    if (expected !== undefined && expected !== token) {
+      throw new Error(i18n.global.t('common.operation.identity'))
+    }
     if (token) config.headers.Authorization = `Bearer ${token}`
     config.headers['Accept-Language'] = i18n.global.locale.value
     config.headers['X-Time-Zone'] = usePreferences().timeZone
@@ -93,15 +102,18 @@ export function configureHttp(client: AxiosInstance) {
 }
 export const http = configureHttp(axios.create({ baseURL: '/api', timeout: 15000 }))
 export interface RequestOptions extends Pick<AxiosRequestConfig, 'timeout' | 'signal'> {
+  /** Local-only dispatch guard. Null explicitly binds an anonymous request; never persisted or sent as a header. */
+  expectedIdentity?: string | null
   idempotencyKey?: string
   params?: unknown
   onResponse?: (meta: ResponseMeta) => void
 }
 /** Explicit original keys are supplied by the operation owner; this adapter never retries. */
-export function createApi(client: AxiosInstance) {
-  function config(options?: RequestOptions): AxiosRequestConfig {
-    return { timeout: options?.timeout, signal: options?.signal, params: options?.params,
-      headers: options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : undefined }
+export function createApi(client: AxiosInstance, scopedHeaders?: Readonly<Record<string, string>>) {
+  const capturedHeaders = scopedHeaders ? { ...scopedHeaders } : undefined
+  function config(options?: RequestOptions): IdentityBoundConfig {
+    return bindRequestIdentity({ timeout: options?.timeout, signal: options?.signal, params: options?.params,
+      headers: capturedHeaders || options?.idempotencyKey ? { ...capturedHeaders, ...(options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) } : undefined }, options?.expectedIdentity)
   }
   async function unwrap<T>(request: Promise<AxiosResponse<ApiResponse<T>>>, options?: RequestOptions): Promise<T> {
     const response = await request

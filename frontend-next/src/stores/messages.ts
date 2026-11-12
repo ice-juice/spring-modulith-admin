@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { onScopeDispose, ref, watch } from 'vue'
 import { get, post } from '@/api/http'
+import { getToken } from '@/lib/token'
 import { useAuth } from './auth'
 export const useMessages = defineStore('messages', () => {
   const auth = useAuth(),
@@ -14,12 +15,13 @@ export const useMessages = defineStore('messages', () => {
     delay = 1000,
     epoch = 0,
     refreshSequence = 0
+  const identity = () => JSON.stringify([getToken(), auth.user?.id, auth.user?.portal, auth.user?.locked, [...(auth.user?.permissions || [])].sort()])
   async function refresh() {
-    if (!auth.user || auth.user.locked) return
+    if (!auth.user || auth.user.locked || !getToken()) return
     try {
-      const owner = auth.user.id, current = epoch, sequence = ++refreshSequence
-      const result = await get<typeof summary.value>('/message/summary')
-      if (current === epoch && owner === auth.user?.id && !auth.user?.locked && sequence === refreshSequence) summary.value = result
+      const owner = identity(), current = epoch, sequence = ++refreshSequence, token = getToken()!
+      const result = await get<typeof summary.value>('/message/summary', undefined, { expectedIdentity: token })
+      if (current === epoch && owner === identity() && sequence === refreshSequence) summary.value = result
     } catch {
       /* Authentication and lock errors are handled centrally. */
     }
@@ -33,13 +35,14 @@ export const useMessages = defineStore('messages', () => {
     delay = Math.min(30000, delay * 2)
   }
   async function connect() {
-    if (!running || connecting || socket || !auth.user || auth.user.locked) return
+    if (!running || connecting || socket || !auth.user || auth.user.locked || !getToken()) return
     connecting = true
-    const current = epoch, owner = auth.user.id
+    const current = epoch, owner = identity(), token = getToken()!
+    const owns = () => running && current === epoch && owner === identity() && !auth.user?.locked
     state.value = 'connecting'
     try {
-      const ticket = await post<{ ticket: string }>('/message/socket-ticket')
-      if (!running || auth.user?.locked || current !== epoch || owner !== auth.user?.id) return
+      const ticket = await post<{ ticket: string }>('/message/socket-ticket', undefined, { expectedIdentity: token })
+      if (!owns()) return
       const connection = new WebSocket(
         (location.protocol === 'https:' ? 'wss://' : 'ws://') +
           location.host +
@@ -48,13 +51,13 @@ export const useMessages = defineStore('messages', () => {
       )
       socket = connection
       connection.onopen = () => {
-        if (socket !== connection || current !== epoch || !running || auth.user?.id !== owner) { connection.close(); return }
+        if (socket !== connection || !owns()) { connection.close(); return }
         state.value = 'connected'
         delay = 1000
         void refresh()
       }
       connection.onmessage = async (event) => {
-        if (socket !== connection || !running || current !== epoch || owner !== auth.user?.id) return
+        if (socket !== connection || !owns()) return
         let payload: { type?: string; reason?: string; id?: string }
         try {
           payload = JSON.parse(event.data)
@@ -68,11 +71,12 @@ export const useMessages = defineStore('messages', () => {
           }
           if (payload.reason === 'SESSION_INVALID') {
             try {
-              await auth.load(false)
+              const accepted = await auth.load(false)
+              if (!accepted || socket !== connection || !owns()) return
               if (auth.user?.locked) pause()
               else connection.close()
             } catch {
-              stop()
+              if (socket === connection && owns()) stop()
             }
             return
           }
@@ -83,19 +87,19 @@ export const useMessages = defineStore('messages', () => {
         }
         if (['notice', 'todo', 'private-message'].includes(payload.type || '')) {
           await refresh()
-          if (socket !== connection || current !== epoch || owner !== auth.user?.id) return
+          if (socket !== connection || !owns()) return
           window.dispatchEvent(new CustomEvent('sma:message', { detail: payload }))
         }
       }
       connection.onclose = () => {
-        if (socket !== connection || current !== epoch) return
+        if (socket !== connection || !owns()) return
         socket = undefined
         state.value = 'offline'
         schedule()
       }
       connection.onerror = () => connection.close()
     } catch {
-      if (current === epoch) { state.value = 'offline'; schedule() }
+      if (owns()) { state.value = 'offline'; schedule() }
     } finally {
       if (current === epoch) connecting = false
     }
@@ -131,5 +135,17 @@ export const useMessages = defineStore('messages', () => {
     pause()
     summary.value = { unreadNotices: '0', pendingTodos: '0', unreadMessages: '0' }
   }
+  let boundIdentity = identity()
+  function identityChanged() {
+    const next = identity()
+    if (next === boundIdentity) return
+    boundIdentity = next
+    pause()
+    summary.value = { unreadNotices: '0', pendingTodos: '0', unreadMessages: '0' }
+    if (running && auth.user && !auth.user.locked && getToken()) { void refresh(); void connect() }
+  }
+  watch(identity, identityChanged, { flush: 'sync' })
+  window.addEventListener('storage', identityChanged)
+  onScopeDispose(() => { window.removeEventListener('storage', identityChanged); stop() })
   return { summary, state, refresh, connect, pause, start, stop }
 })

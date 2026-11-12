@@ -18,5 +18,7 @@
   "preview": "Preview",
   "remove": "Remove attachment",
   "tooLarge": "File size must not exceed 20 MiB",
-  "selectExisting": "Select existing files"
+  "selectExisting": "Select existing files",
+  "resumeOriginal": "Resume original file",
+  "originalUnavailable": "The original file is no longer in this page. Keep checking the original task; select the file from the library once completed."
 }

@@ -9,8 +9,12 @@ class PlatformPersistenceIsolationTests {
         var global=ArchitectureRulesTests.CLASSES.stream().filter(type->type.isAnnotatedWith(TableName.class))
                 .filter(type->!type.isAssignableTo(TenantEntity.class)).map(type->type.getName()).toList();
         assertThat(global).containsExactlyInAnyOrder(
+                "com.sma.admin.defense.internal.persistence.PlatformEventEntity",
+                "com.sma.admin.defense.internal.persistence.CapacityEntity",
                 "com.sma.admin.tenant.internal.persistence.TenantRecordEntity",
                 "com.sma.admin.tenant.internal.persistence.DomainEntity",
+                "com.sma.admin.tenant.internal.persistence.StorageResourceEntity",
+                "com.sma.admin.tenant.internal.persistence.StorageBindingEntity",
                 "com.sma.admin.config.internal.persistence.SharedHeadEntity",
                 "com.sma.admin.config.internal.persistence.SharedRevisionEntity",
                 "com.sma.admin.config.internal.persistence.DictionaryCodeEntity",

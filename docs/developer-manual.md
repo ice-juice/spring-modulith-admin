@@ -90,6 +90,8 @@ Invoke-RestMethod http://127.0.0.1:5173/actuator/health
 
 模块根包只放对外接口、record DTO 和事件；实现放在 `internal/web`、`internal/service`、`internal/persistence`。控制器不能直接调用 Mapper，其他模块不能引用对方的 `internal`。跨模块只读查询调用公开 API，有副作用的联动通过模块事件。
 
+需要让多个租户继承同一参数或字典定义时，静态模块实现 `ConfigurationCatalog` 登记所属模块的键、类型、默认值和覆盖策略。业务参数用 `<bizid>.`、字典类型用 `<bizid>_` 前缀；运行读取使用 `ParameterQuery`、`DictionaryQuery` 或 `EffectiveConfigurationQuery`。平台运维人员管理共享草稿与发布，租户管理员按定义权限覆盖或恢复继承；版本和原请求键必须由管理客户端保留。具体 API、旧库切换与验证边界见[共享配置设计](tenant-shared-configuration.md)、[运行说明](tenant-platform-operations.md)和[专项进度](tenant-platform-progress.md)。二开不得访问 Config 内部表或把凭据写入共享参数。
+
 各模块 `package-info.java` 必须声明名称和 `allowedDependencies`；公共命名接口如 `common :: security`、`common :: persistence` 需明确依赖。禁止循环依赖、跨模块 SQL、跨模块 join 和外键。
 
 ## 4. 数据与事务
@@ -105,6 +107,8 @@ Invoke-RestMethod http://127.0.0.1:5173/actuator/health
 ### Flyway
 
 公共迁移在 `backend/src/main/resources/db/migration/__root/`，模块迁移在对应模块目录。模块版本独立递增。已发布迁移不可编辑，应新增迁移修正。
+
+上述默认启动迁移属于平台模块。当前`com.sma.business`业务Mapper使用租户存储组路由，需实现`BusinessSchemaCatalog`，把脚本放`db/business/<module>`；正式开通在业务物理库执行独立历史后才激活。不要把业务脚本留在平台默认迁移目录。业务写/失效/Outbox使用同一BusinessLedger会话，跨请求读缓存用BusinessCache；完整样例见[shop-storage](../examples/shop-storage/README.md)，交付状态见[单实例基线](secondary-development-baseline-progress.md)。
 
 权限声明启动时补充缺失项。仅对旧版自动发现、仍以权限 key 命名且未自定义位置/名称的内置逻辑项，允许升级为显式声明；必须保留 ID、已有授权、翻译、排序和启停设置。不能用启动同步覆盖管理员配置。
 
@@ -219,3 +223,85 @@ pwsh -NoProfile -File tools/dev/verify-backend.ps1 -MavenArgs '-Dtest=Permission
 ## 10. 文档维护
 
 新增能力同步更新用户入口说明、开发约束和验收证据。问题记录至少写明页面、步骤、现象、根因、修复位置和验证方式。未经实际操作的场景标明未执行，不以构建成功替代浏览器检查。
+
+### 前端未决操作与恢复入口
+
+新版管理壳顶部“操作状态”汇总当前可信API、租户、入口与用户的未决记录。页面切换或刷新后，已发送的操作仍可能完成；正文、密码和所选File不会从记录恢复。面板当前覆盖普通OperationRegistry，不合并登录、MFA、改密和锁屏的特殊协议。当前本地验证范围见[前端进度](security-frontend-progress.md)，服务协议见[客户端契约](security-request-client-contract.md)。
+
+二开页面按以下方式接入：
+
+1. 普通写入使用`useSubmission`，提供稳定的`operation`、对象级`resource`与服务端实际支持的`LOCAL/NATIVE`协议；同一对象的编辑/删除/授权共用范围，批量目标在异步确认之前固定。输入快照仅留在内存，把回调收到的原`idempotencyKey`传给已有API客户端。不要自己写localStorage恢复条目。
+2. `LOCAL`可由面板按原键核对权威回执。回执成功只证明原事务完成，业务仍须通过授权GET重读；不要把回执当业务DTO。NOT_FOUND/超时/畸形结果不允许清UNKNOWN或换键重发。
+3. 常规文件上传使用`useFileUpload`/`UploadButton`并提供业务独有scope。面板使用原上传任务协议核对，ACCEPTED/RUNNING保持未决；刷新后没有原File，面板不提供续传、下载或自动绑定。文件当前读取权限仍由后端决定。P09后续云分片上传以[能力开发手册](integration-services-developer-manual.md)的交付状态为准。
+4. NATIVE任务在业务页面保留原生适配器。需要“前往业务页面”时，在业务分支为`lib/operation-recovery.ts`登记明确的本地目的地，并确保实际路由的权限声明正确；禁止从恢复记录读取URL或把业务正文、令牌、原键拼到URL。无映射或无当前权限时不显示跳转按钮，原记录仍保留。
+5. 页面自行负责草稿/未保存内容的离页守卫。管理壳的持续提示只告知离页和刷新后果，不替业务确认丢弃输入；成功核对后应重新读取业务数据。新增入口同步登记[写入口清单](security-frontend-write-inventory.md)，运行对应单元、真实浏览器夹具与`npm run verify`，真实后端验收另记。
+
+旧版兼容边界：`frontend/`继续独立构建。其HTTP客户端只在缺少Idempotency-Key时生成UUID，已有显式键与原生operationId/version均保留；治理错误通过ApiError.key/details传递，不自动重试。需要显式请求键时使用该工程自己的`http`配置headers。旧版没有新版完整的操作状态面板和跨标签意图门禁，不能把随机请求键当作用户动作去重。验证入口为根`tools/dev/verify-frontend.ps1`与新版工程测试工具内的`playwright.security-legacy.config.ts`（实际启动旧工程5197）；S1c本地完成，真实后端S1d仍单独验收。
+
+### 隔离真实请求治理验收
+
+安全来源元数据可注入`common :: security`的`RequestSourceQuery`，在同步HTTP处理期间调用`current()`；非HTTP线程返回空。`RequestSource`只表示网络观测，不可用于构造`SmaPrincipal`/`AppUserPrincipal`、切换租户或授予访问。需要异步诊断时显式捕获不可变值并按隐私规则处理；请求结束不再从工作线程推断来源。受信代理和错误依据见[安全运行说明](security-defense-operations.md#请求来源观测s2a1)，事件落库与告警按后续S2/S3验收。
+
+可信模块观察到确定性拒绝时可注入同一命名接口内的`SecuritySignalCapture`，调用`capture(SecuritySignal.Fact.AUTHORIZATION_REJECTED)`得到当时归属快照。它不会落库或发送告警，不能当作审计已持久化的回执；后台采集使用下方SecuritySignals契约。不要让HTTP调用者提供Fact/Attribution或自行绑定认证来上报事件。匿名Host解析不赋予事件TENANT归属，旧上下文退出后也不能靠提交旧tenantId重建身份。
+
+需要交给有界后台采集时，注入`common :: security`的`SecuritySignals`，在确定事实、原认证上下文尚有效时调用`observe(SecuritySignal.Fact.AUTHORIZATION_REJECTED)`。仅使用代码确定的Fact，不从请求绑定枚举或直接提交捕获DTO；部署默认禁用。返回QUEUED_VOLATILE不代表持久化，REJECTED/DISABLED不改变原业务拒绝响应，也不得通过反复调用或新事件ID自动重试。该接口适用于尽力而为的检测信号，不能代替要求与业务原子提交的强制审计；后者需自己的审计事务契约。启用、节点密钥及监控指标见[运行说明](security-defense-operations.md#有界采集与节点故障缓冲s2c)，实际验证以[S2进度](security-event-progress.md)为准。
+
+宿主统一错误响应已接入固定错误码的拒绝观察，覆盖范围见[运行说明](security-defense-operations.md#统一拒绝响应观测s2d1)。业务使用原`BizException`/权限拒绝时不必为同一错误再手工`observe`。统一响应映射只对自身路径做请求级去重，不会去重业务对公开`observe`的主动调用；二开新增确定事实须选择唯一观察点。自定义错误key不会自动推断分类，不能用伪造宿主key或传客户端Fact注册检测。普通404/幂等完成不采集；原HTTP200＋非零业务code仍保留，客户端继续按既有协议处理。
+
+需要保留自己的业务错误码、同时说明确定拒绝事实时，使用`common :: security`的`ObservedRejection`：`throw new ObservedRejection(YourError.INVALID_INPUT, SecuritySignal.Fact.REQUEST_INPUT_REJECTED)`。`YourError`代表业务自己实现的ErrorCode；Fact必须由可信代码分支固定，不能从HTTP字段绑定。该类型是BizException子类，只有宿主MVC最终处理它时才尝试观察，原HTTP200、业务code、错误key和本地化参数保持；不要为同一异常另行observe。构造/抛出异常、事务回滚、传输worker执行本身都不会发送信号，也不保证持久化。
+
+异步操作只有在原调用方收到这个确定异常并经MVC响应时，才使用当时仍有效的身份；超时或取消后晚到的结果不会借旧请求上下文补报。被业务吞掉、改包装或在后台任务中处理的异常不自动采集，不能据此替代任务终态事件或审计。部署需要包含此新增API的宿主版本；旧业务的BizException用法不变，新业务不能向旧宿主直接投放依赖该新类的制品。`FILE_INSPECTION_REJECTED`表示文件门禁拒绝、NO_ATTACK_INFERENCE，不证明文件有病毒或请求人是攻击者；接入与验收边界见[S2进度](security-event-progress.md)。
+
+安全事件只读Java契约为`defense.SecurityEvents`，模块显式依赖`defense`后可注入：`tenant(20)`读取当前后台租户最近20条，`tenant(eventId)`按原UUID读取；不存在或跨租户返回空。调用者必须有`defense:event:view`。`platform(...)`还须部署运维身份和`defense:platform:view`，不能用tenant superAdmin代替。返回View保存当时fact/category/severity/outcome/assessment/ruleVersion和发生/接收/到期时间；不要用当前枚举规则重算并覆盖历史判断。不要调用defense内部Store/Mapper或向其传HTTP反序列化事件；有界采集及故障缓冲已按S2c验证，下述只读HTTP查询已按S2d2a本地验收；请求元数据已按S2d2b、自动清理已按S2d3a本地验收。最终HTTP采集持久闭环以[S2进度](security-event-progress.md)的d3b记录为准。
+
+后台HTTP消费者使用`GET /api/defense/events?limit=20`和`GET /api/defense/events/{eventId}`；平台运维使用独立`/api/defense/platform-events`及UUID详情。返回`ApiResponse`，必须同时检查HTTP状态与业务code；跨租户/不存在详情沿用HTTP200＋非零code，不可据此重试任何写入。limit只能1～100，没有tenantId切换参数；平台权限不授予遍历租户数据。权限、投影、预算及缓存边界见[查询说明](security-defense-operations.md#安全事件查询-apis2d2a)，验收状态见[S2进度](security-event-progress.md)。同进程业务继续依赖公开`SecurityEvents`，不要直接依赖`internal.web`的HTTP投影类；本阶段不提供导出或修改证据API。
+
+需要请求方法、声明路由模板、响应决定状态或观察节点时，为安全事件列表/详情附加`includeMetadata=true`。默认响应字段保持原样；旧记录或非HTTP观察可能缺少metadata或http，不要从当前页面URL补猜旧事件信息。`UNMAPPED_REQUEST_OBSERVED`仅为低级未匹配/缺失资源观察，普通业务404不会因为状态码自动产生该事实。Java消费者保留原SecuritySignal对象与eventId；六字段旧构造仍可用，但复制会丢新增metadata，等值/直接JSON消费者须按新字段适配。schema1/2升级与回退限制见[运行说明](security-defense-operations.md#请求元数据与缓冲升级s2d2b)，当前验收范围见[S2进度](security-event-progress.md)。
+
+安全事件到期维护由宿主负责，业务继续使用公开observe/查询契约，不调用defense内部prune/hold或直接改容量表。maintenance默认开启，独立于默认关闭的collection；它包含停用租户且跳过held记录。关闭维护不改变已有expiresAt。配置、每节点预算、工作许可和关闭语义见[维护说明](security-defense-operations.md#保留期维护s2d3a)，交付状态以[S2进度](security-event-progress.md)为准。
+
+采集和维护worker固定使用宿主类加载器，避免Boot打包后丢失宿主类/资源可见性；同时禁止继承调用者的线程局部变量或类加载器。这不传递租户或权限，业务仍通过原公开契约和可信身份范围调用。二开代码不能依赖在请求线程更换TCCL来影响后台执行，也不调用内部线程工厂；具体回归和打包探针边界见S2进度。
+
+本地真实HTTP到持久化、故障补传及自动保留回收已按S2d3b验证；S2d4a另通过真实TLS multipart/App分片到采集器、加密缓冲和MySQL的文件组合验证。二开复跑方式与独占测试库/临时证书密钥清理要求见[闭环验证](security-defense-operations.md#http采集闭环验证s2d3b)。它不改变公开observe的尽力而为语义，也不代表持久扫描宿主、恶意软件检查、告警或外部Google/SMTP/云服务已经验收。
+
+S1d专项复用`frontend-next/scripts/run-real-e2e.mjs`，使用`SMA_E2E_SUITE=security`。此模式要求明确提供已验证的宿主JAR和独立后端/前端端口；不得使用8080、5173或5174。脚本只使用现有本地MySQL/JDK，创建本轮专属`sma_security_e2e_<时间戳>`库和随机账号，保留普通runner的默认命名空间。真实浏览器不需要Google、SMTP或云存储测试账号。
+
+在仓库根目录按根reactor构建、验证当前宿主后，从`frontend-next/`执行；以下JAR路径应替换为本轮已验证的实际绝对路径：
+
+```powershell
+$env:SMA_E2E_SUITE = 'security'
+$env:SMA_E2E_BACKEND_JAR = 'E:/juiceProgram/spring Modulith/backend/target/security-s1d/target/springboot-modulith-admin-0.0.1-SNAPSHOT.jar'
+$env:SMA_E2E_BACKEND_PORT = '18261'
+$env:SMA_E2E_PEER_BACKEND_PORT = ''
+$env:SMA_E2E_FRONTEND_PORT = '5206'
+$env:SMA_E2E_OUTPUT_DIR = 'test-results-security-real'
+node scripts/run-real-e2e.mjs request-governance.spec.ts
+```
+
+运行结果保存在`.e2e-runtime/security-<时间戳>/result.json`：`passed`表示浏览器用例通过，`cleanupComplete`表示自己的进程已确认退出、库/账号删除并查询确认不存在、生成钥文件已删除；两者必须都为true才算本轮成功。`artifactSha256`绑定实际复制并启动的JAR。清理超时不能当作进程停止，不能继续删除仍被进程使用的资源。启动观察超时但进程仍存活时继续查该进程和迁移日志，不重启用户服务。
+
+当前四个单宿主场景验证真实业务提交、20次UI触发、已提交丢响应后的原键回执/显式重放拒绝、不同对象独立操作及15秒客户端超时后404仍保留未知。网络故障由浏览器传输层注入，业务响应与结果查询均来自真实Java/MySQL；延迟响应不等于服务端事务仍在执行。这些证据不替代双JVM、跨租户/权限完整矩阵或真实外部服务验收，阶段以[安全进度](security-defense-progress.md)为准。
+
+双JVM验收在同样的security scope下增加独立端口，再运行专用用例：
+
+```powershell
+$env:SMA_E2E_PEER_BACKEND_PORT = '18262'
+$env:SMA_E2E_OUTPUT_DIR = 'test-results-security-dual'
+node scripts/run-real-e2e.mjs request-governance-cluster.spec.ts
+```
+
+runner先用一个临时实例完成迁移/初始化，然后让两个实例以`schema-mode=validate`运行；`before-restart`通过后才确认两者退出并重新启动，再执行`after-restart`。两实例使用同一复制JAR、部署钥及临时库，保持single部署模式；不是P08生产multi/LB验收。每轮独立保存JSON报告，最终`processes`记录端口/进程/退出，`phases`记录新鲜报告的通过/失败/跳过数；没有实际通过用例时不能成功。
+
+测试worker每个节点正常登录一次，在内存中复用合法会话，不写storage-state/token文件；重启后的新worker重新登录。这样不会为了测试去清除或放宽既有登录预算。跨阶段仅保存原操作键、业务ID和回执ID。压力响应只记录节点、状态码、错误key、Retry-After及策略；精确的`503 common.request.unavailable`/`Retry-After: 1`仍需原键权威核对，不能当失败后重发，也不能据此声称所有并发请求都已受理。完整验收状态仍以安全进度为准。
+
+同租户操作者与上传原生协议使用`request-governance-scope.spec.ts`，同上指定security制品/独立端口，并设置`SMA_E2E_PEER_BACKEND_PORT=''`后执行`node scripts/run-real-e2e.mjs request-governance-scope.spec.ts`。夹具通过正常IAM接口创建SELF范围角色/成员，正常登录后持有内存会话；撤权后重新登录，避免将旧会话失效误当作当前权限检查。测试不改生产预算，顺序写入间隔遵守默认500ms约束。验收结果以专项进度为准。
+
+二开处理回执时遵守以下边界：
+
+- `POST /api/common/requests/lookup {key}`或`GET /api/common/requests/{operationId}`仅允许原操作者并重查保存的动作权限；超管对业务对象的管理权限不等于读取他人回执的权限。换账号后不能接管旧未决操作。
+- 常规上传的响应为`X-Request-Policy: NATIVE`和`X-Upload-Id`。通过`POST /api/file/uploads/lookup {key}`或`GET /api/file/uploads/{uploadId}`核对原生任务；不能用common内部受理成功代替文件上传完成。上传回执只含任务/文件ID、状态、可续传标记与时间。
+- 原生`SUCCEEDED`保留历史完成证据，文件详情和下载仍走当前授权接口。文件逻辑删除后，即使旧任务仍成功，同键原文件重放也不能恢复文件；不能把历史回执当作永久下载凭证。同键更换文件名、类型、大小或内容也不是合法重试。
+
+跨租户配置专项沿用上述security制品和端口，加上`$env:SMA_E2E_SECURITY_TENANTS='1'`，运行`node scripts/run-real-e2e.mjs request-governance-tenant.spec.ts`。runner只在本轮生成库建立`tenant-security.test`的TEST目录、不同ID的第二租户管理员、权限目录和验证码测试覆盖；通过数据库内复制本轮密码hash准备账号，随后仍走真实Host和正常登录。TEST目录不是实际DNS/TLS验证或生产开通方式，不能复制到业务环境。此开关拒绝普通next或任意已有数据库。
+
+测试生成独立租户配置加密环，随机虚拟Google/SMTP/云凭据只在内存；Google客户端、邮箱和存储读写均停用，不做外部登录、发信或对象传输。双租户具备相同管理权限后再检查同编码独立配置、跨租户读写及关联拒绝、列表隔离和单租户编辑不影响另一租户。清理额外包含`tenant-credentials.keys`，仍须检查`passed`与`cleanupComplete`。结果与未验证边界见[安全进度](security-defense-progress.md)。

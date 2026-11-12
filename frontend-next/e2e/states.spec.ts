@@ -13,7 +13,7 @@ test('business list routes display request errors and recover into explicit empt
     ['/iam/users', '/iam/users', paged], ['/iam/roles', '/iam/roles', array],
     ['/iam/departments', '/iam/departments', array], ['/iam/posts', '/iam/posts', paged],
     ['/iam/permissions', '/iam/permissions', array], ['/iam/navigation', '/iam/navigation', array],
-    ['/config/dictionaries', '/config/dictionaries/types', array], ['/config/parameters', '/config/parameters', array],
+    ['/config/dictionaries', '/config/effective-dictionaries', paged], ['/config/parameters', '/config/effective-parameters', paged],
     ['/auth/sessions', '/auth/sessions', paged], ['/audit/logins', '/audit/logins', paged],
     ['/audit/operations', '/audit/operations', paged], ['/file/files', '/file/files', paged],
     ['/message/notices', '/message/notices', paged], ['/message/todos', '/message/todos/managed', paged],

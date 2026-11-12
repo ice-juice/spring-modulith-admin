@@ -19,12 +19,15 @@ import ErrorNotice from '@/components/business/ErrorNotice.vue'
 const { t } = useI18n(), route = useRoute(), router = useRouter(), auth = useAuth(), branding = useBranding()
 const form = reactive({ username: '', password: '', captcha: '', captchaId: '', remember: false, portal: '' })
 const busy = ref(false), error = ref(''), captchaImage = ref(''), captchaBusy = ref(false)
-let captchaAttempt = 0
+let captchaAttempt = 0, submission = 0, live = true, handoff = false
+let cancelAuthentication: (() => void) | undefined
 watch(() => branding.generation, () => {
   captchaAttempt++; captchaBusy.value = false; captchaImage.value = ''; form.captchaId = ''; form.captcha = ''
-  if (busy.value) { auth.reset(); form.password = '' }
+  if (busy.value && !handoff) { submission++; cancelAuthentication?.(); busy.value = false; form.password = '' }
 }, { flush: 'sync' })
-onUnmounted(() => { captchaAttempt++ })
+const invalidated = () => { submission++; busy.value = false; form.password = ''; form.captcha = ''; error.value = t('auth.verificationExpired') }
+window.addEventListener('sma:authentication-invalidated', invalidated)
+onUnmounted(() => { live = false; submission++; captchaAttempt++; if (busy.value && !handoff) cancelAuthentication?.(); form.password = ''; form.captcha = ''; window.removeEventListener('sma:authentication-invalidated', invalidated) })
 async function refreshCaptcha() {
   if (!branding.ready || !branding.captchaEnabled || captchaBusy.value) return
   const current = ++captchaAttempt, entryVersion = branding.generation
@@ -42,15 +45,23 @@ async function submit() {
   error.value = ''
   if (!form.username.trim() || !form.password || (branding.captchaEnabled && !form.captcha)) { error.value = t('auth.required'); return }
   busy.value = true
+  handoff = false
+  const current = ++submission, entryVersion = branding.generation
+  const owns = () => live && current === submission && entryVersion === branding.generation
   try {
-    const status = await auth.login({ ...form, portal: branding.portal })
+    const pending = auth.login({ ...form, portal: branding.portal })
+    cancelAuthentication = auth.captureAuthentication()
+    const status = await pending
+    if (!owns()) return
     form.password = ''
+    handoff = true
     await router.replace(status === 'MFA_REQUIRED' ? { path: '/login/totp', query: { redirect: safeRedirect(route.query.redirect) } } : safeRedirect(route.query.redirect))
-  } catch (cause) { error.value = (cause as Error).message; await refreshCaptcha() }
-  finally { busy.value = false }
+  } catch (cause) { if (owns()) { error.value = (cause as Error).message; await refreshCaptcha() } }
+  finally { if (owns()) { busy.value = false; form.password = ''; form.captcha = '' } }
 }
 async function loadEntry() {
-  if (await branding.load()) { form.portal = branding.portal; await refreshCaptcha() }
+  const loaded = await branding.load()
+  if (live && loaded) { form.portal = branding.portal; await refreshCaptcha() }
 }
 onMounted(loadEntry)
 </script>

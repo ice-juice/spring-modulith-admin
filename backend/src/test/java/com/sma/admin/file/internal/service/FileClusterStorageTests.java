@@ -56,6 +56,41 @@ class FileClusterStorageTests {
             assertThatThrownBy(()->a.retire("file.legacy",scope,hash)).isInstanceOf(IllegalStateException.class);assertThat(Files.size(file)).isEqualTo(33);
         }
     }
+    @Test void independentJvmReadersCanShareImmutableWitnessButPublicationAndRetirementStillNeedExclusivity()throws Exception{
+        var scope=scope();
+        try(var adapter=adapter(temp)){
+            String digest=adapter.publish("file.legacy",scope,new byte[32]);Path file=probe(temp);
+            String java=Path.of(System.getProperty("java.home"),"bin",System.getProperty("os.name").startsWith("Windows")?"java.exe":"java").toString();
+            String classpath=System.getProperty("surefire.test.class.path",System.getProperty("java.class.path"));
+            var peer=new ProcessBuilder(java,"-cp",classpath,LockPeer.class.getName(),file.toString()).start();
+            try{
+                var ready=CompletableFuture.supplyAsync(()->{
+                    try{return new java.io.BufferedReader(new java.io.InputStreamReader(peer.getInputStream())).readLine();}
+                    catch(java.io.IOException error){throw new java.io.UncheckedIOException(error);}
+                });
+                assertThat(ready.get(10,TimeUnit.SECONDS)).isEqualTo("SHARED");
+                for(int i=0;i<12;i++)assertThat(adapter.verify("file.legacy",scope,digest)).as("Concurrent immutable read %s",i).isTrue();
+                assertThatThrownBy(()->adapter.retire("file.legacy",scope,digest)).isInstanceOf(IllegalStateException.class);
+                assertThatThrownBy(()->adapter.publish("file.legacy",scope,new byte[32])).isInstanceOf(IllegalStateException.class);
+                assertThat(file).exists();
+                peer.getOutputStream().write(1);peer.getOutputStream().flush();
+                assertThat(peer.waitFor(5,TimeUnit.SECONDS)).isTrue();assertThat(peer.exitValue()).isZero();
+            }finally{
+                peer.getOutputStream().close();
+                if(peer.isAlive()){peer.destroyForcibly();assertThat(peer.waitFor(5,TimeUnit.SECONDS)).isTrue();}
+            }
+            adapter.retire("file.legacy",scope,digest);assertThat(file).doesNotExist();
+        }
+    }
+    /** Separate JVM is essential: Java itself rejects overlapping same-JVM FileChannel locks. */
+    public static class LockPeer {
+        public static void main(String[] args)throws Exception{
+            try(var channel=FileChannel.open(Path.of(args[0]),StandardOpenOption.READ,StandardOpenOption.WRITE);
+                var lock=channel.lock(0,Long.MAX_VALUE,true)){
+                System.out.println(lock.isShared()?"SHARED":"EXCLUSIVE");System.out.flush();System.in.read();
+            }
+        }
+    }
     @Test void undeclaredUnknownHttpAndTransactionUseFailBeforeFilesystemEffects(){
         var scope=scope();var legacy=new FileProperties(temp.toString(),1024);var managed=new StorageSettings(Map.of("default",temp.toString()));
         try(var undeclared=new FileClusterStorage(legacy,managed,new FileClusterProperties(null,null));var declared=adapter(temp)){

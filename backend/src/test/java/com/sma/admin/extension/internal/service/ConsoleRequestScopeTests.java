@@ -11,6 +11,8 @@ class ConsoleRequestScopeTests {
     private final ExtensionConsoleController controller=new ExtensionConsoleController(mock(ConsoleProxyService.class));
     @Test void onlyActualAllowlistedReadsAreQueriesAndDistinctChunksHaveDistinctScopes() {
         assertThat(controller.readOnlyRequest("request",input("GET","/console/jobs"))).isTrue();
+        assertThat(controller.readOnlyRequest("request",input("GET","/uploads/upload-one"))).isTrue();
+        assertThatThrownBy(()->controller.readOnlyRequest("request",input("POST","/uploads/upload-one"))).isInstanceOf(BizException.class);
         assertThat(controller.readOnlyRequest("request",input("POST","/commands"))).isFalse();
         assertThatThrownBy(()->controller.readOnlyRequest("request",input("GET","/commands"))).isInstanceOf(BizException.class);
         assertThatThrownBy(()->controller.readOnlyRequest("request",input("GET","https://evil.test/groups"))).isInstanceOf(BizException.class);

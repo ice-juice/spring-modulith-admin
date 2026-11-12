@@ -1,4 +1,4 @@
-import { http, type ApiResponse, type RequestOptions } from "@/api/http";
+import { bindRequestIdentity, http, type ApiResponse, type RequestOptions } from "@/api/http";
 import { responseMeta } from '@/api/request-meta';
 import { parseExact, printExact } from "./exact";
 export async function ruleGet<T>(
@@ -22,7 +22,7 @@ export async function ruleWrite<T>(
   method: "POST" | "PUT" = "POST",
   options?: RequestOptions,
 ): Promise<T> {
-  const response = await http.request<ApiResponse<T>>({
+  const response = await http.request<ApiResponse<T>>(bindRequestIdentity({
       url: "/rule" + path,
       method,
       data: printExact(body),
@@ -31,7 +31,7 @@ export async function ruleWrite<T>(
       transformResponse: [
         (text) => (typeof text === "string" ? parseExact(text) : text),
       ],
-    });
+    }, options?.expectedIdentity));
   options?.onResponse?.(responseMeta(response));
   return response.data.data;
 }

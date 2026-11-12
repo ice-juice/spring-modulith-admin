@@ -26,6 +26,7 @@ import com.sma.admin.support.*;
 @AutoConfigureMockMvc @Import({RulePlatformTests.Bindings.class, TenantMockMvcConfiguration.class})
 @org.springframework.test.context.TestPropertySource(properties="sma.security.requests.fingerprint-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
 class RulePlatformTests {
+    private static final String NETWORK_HOST="127.0.0.51";
     @TestConfiguration(proxyBeanMethods = false)
     static class Bindings {
         @Bean RuleBindingPolicy ruleTestBindings() { return new RuleBindingPolicy() {
@@ -525,7 +526,7 @@ class RulePlatformTests {
         record NetworkLogin(com.sma.admin.iam.AccountView account,String token){}
         var owner=new SmaPrincipal(1099,"network-fixture",5199,"admin",null,true,DataAccess.unrestricted(),Set.of(),"UTC");
         var login=Users.as(owner,()->{
-        var domain=new com.sma.admin.tenant.internal.persistence.DomainEntity();domain.setOwnerTenantId(5199L);domain.setHostname("127.0.0.3");domain.setPortal("admin");
+        var domain=new com.sma.admin.tenant.internal.persistence.DomainEntity();domain.setOwnerTenantId(5199L);domain.setHostname(NETWORK_HOST);domain.setPortal("admin");
         domain.setStatus("ACTIVE");domain.setPrimaryDomain(false);domain.setVerificationStatus("VERIFIED");domain.setTlsStatus("READY");domain.setDnsStatus("READY");domain.setVerifiedAt(java.time.Instant.now());domain.setTlsValidUntil(java.time.Instant.now().plusSeconds(86400));domain.setProvenance("TEST");domains.insert(domain);
         permissions.sync(catalog.permissions());
         var role = roles.save(null, new com.sma.admin.iam.internal.service.RoleService.Input(0L, "Rule network role", "rule-network-role", 0, true, DataScope.ALL, Set.of(), null));
@@ -561,7 +562,7 @@ class RulePlatformTests {
                         .anyMatch(log -> log.getAction().equals("rule:instance:publish") && log.getResultCode() == 0));
     }
     private tools.jackson.databind.JsonNode network(java.net.http.HttpClient client, String token, String path, Object body) throws Exception {
-        var request = java.net.http.HttpRequest.newBuilder(java.net.URI.create("http://127.0.0.3:" + port + "/api/rule" + path))
+        var request = java.net.http.HttpRequest.newBuilder(java.net.URI.create("http://" + NETWORK_HOST + ":" + port + "/api/rule" + path))
                 .timeout(java.time.Duration.ofSeconds(20)).header("Authorization", "Bearer " + token)
                 .header("Idempotency-Key",java.util.UUID.randomUUID().toString())
                 .header("Content-Type", "application/json").POST(java.net.http.HttpRequest.BodyPublishers.ofString(json.write(body))).build();

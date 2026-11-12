@@ -8,6 +8,8 @@
 
 支持目标为本地、OSS、AWS S3、R2。Google 应用 ID/凭据、邮件账号、存储空间均由各租户独立配置；配置缺失不使用其他租户或全局账号代替。前端传来的 tenantId、Bucket、SMTP 地址和 secret 引用都不能成为可信调用上下文。
 
+配置隔离已有S1d3b真实HTTP验收：两个具有相同管理权限的测试租户，通过各自Host和正常登录保存同编码的Google、邮箱及LOCAL/OSS/S3/R2配置；跨租户列表、详情、更新和realm关联被拒绝，修改一方不改变另一方。测试使用停用配置和随机虚拟凭据，不访问Google/SMTP/对象存储，不能代替供应商联调。重跑入口与回执权限见[开发手册](developer-manual.md#隔离真实请求治理验收)，制品指纹与清理证据见[安全进度](security-defense-progress.md)。
+
 ## 2. 身份类型与方法授权
 
 以下代码已经加入 `common :: security`，当前是身份安全基础，尚不代表 Google 登录/应用会话端点已上线：
@@ -230,6 +232,8 @@ sma:
 ```
 
 开关和并发预算在启动时读取，修改后按部署流程重启/滚动发布。并发 1～16、单轮每租户任务 1～100、目录页大小 1～100。调度使用有界线程池和队列，不会为每个租户永久创建线程；同实例同租户不重复并发，跨实例通过数据库租约协调。网络发送在事务之外进行。
+
+P08部署准入接线要求实例已就绪；启用traffic时还须配置/存储资格有效。目录发现、恢复及每个新领取单位分别申请许可，资格丢失或摘流后停止新领取；在途邮件继续原状态/fence协议。许可同时等待领域结果处理和SMTP线程真实退出，超时返回或取消Future不等于排空；可能已发送的UNKNOWN不能自动重发。普通业务仍通过MailSendApi入队，不调用内部Dispatcher/SmtpMailSender或提供部署许可；内部入口不是二开兼容API。当前验证为本机TLS与专用MySQL，其他消费者/整机停机与LB状态见[P08进度](cache-governance-progress.md)。
 
 租户列表从 `TenantWorkQuery` 分页读取平台权威目录，重新启动会从头发现并恢复持久任务，不依赖 JVM 中的“见过哪些租户”集合。该公开契约仅供受信后台调度；带用户/机器认证的调用不能枚举租户，也不能把它包装成匿名 HTTP 接口。tenant 模块拥有目录表，mail 不跨模块查表。
 
@@ -834,6 +838,95 @@ JSON最多64KiB；分片尺寸头、摘要头、Idempotency-Key不允许重复�
 C4d1的内部FileContentProbe已通过本地单元/架构验证；它以固定64KiB缓冲检查完整源字节的大小/SHA256，检查常见二进制签名，并对声明文本做严格增量UTF-8及控制字符校验。WebP核对RIFF长度，MP4限制初步容器品牌，PDF限制头版本；Office只识别ZIP候选。它尚未接最终发布，仍不能把SCANNING变为READY。
 
 预检Candidate不是“已解码”或“无病毒”：只含PNG头的残缺文件仍可能通过初步签名，合法UTF-8并不证明JSON结构、CSV公式安全或没有恶意内容。后续必须在隔离worker内完成各格式结构检查，图片重编码，再由受控扫描器扫描完整冻结副本和必要衍生物。预检循环检查截止/中断并关闭输入，但不能强行中断任意阻塞InputStream，调用它的传输/worker必须另有限时与资源隔离。该类是内部实现，二开不能自行调用后把结果当放行凭证。
+
+### 11.4 独立内容检查worker（C4d2a/b已本地验收）
+
+`file.internal.inspection`是宿主内部协议与独立worker入口，不是业务SPI，也不能在Controller中直接调用。协议请求/响应各最多16KiB，报告绑定schema、处理器版本、原格式、源大小/SHA256和衍生预算；图片PASS必须带白名单命名的衍生图回执。PASS仅表示内容处理通过，后续必须完整扫描原冻结副本与衍生图并复核摘要，才能发布READY。
+
+TEXT/JSON/CSV当前处理上限16MiB。JSON严格拒绝重复键、尾随第二个文档、非法结构，并限制嵌套64层、单字符串262144字符和100万token；CSV限制字段65536字符、每行4096列、100万行，检查引号边界并拒绝公式前缀（包括隐藏空白/格式字符后的公式）；普通负数/正数允许。业务不能把文本候选当作JSON或CSV结构已检查。
+
+图片worker只选择已验证的JDK PNG/JPEG/GIF解码器及锁定TwelveMonkeys 3.15.3的WebP解码器；不按任意上传文件自动加载插件。WebP库当前只作为独立worker测试依赖，不进入宿主生产运行时；d2d受控worker镜像须单独打包该库，缺解码器返回ERROR，不扩大旧上传入口的ImageIO能力。完整容器检查拒绝尾随字节/截断、PNG CRC和不连续IDAT、JPEG异常结尾、GIF帧数超限及WebP RIFF边界异常，再逐帧解码。上限为输入32MiB、单边8192像素、单帧1600万像素、累计3200万像素、32帧；这些处理器上限与场景/租户限制取交集，并不扩大业务场景。
+
+输出固定为新的`normalized.png`，复制像素重新编码，默认丢弃EXIF/GPS/文本/ICC等原始元数据。GIF逐帧检查，静态衍生图取首帧；不宣称保留动画预览。APNG及动画WebP当前明确拒绝，不能只解第一帧后放行。原件后续若保留需走独立扫描及授权。衍生图最多为请求给定输出预算与64MiB中的较小者，排他创建且不覆盖已有文件；输出不足、目录/存储故障返回ERROR，不能当作内容安全通过，也不能误判为木马。部分衍生物保留隔离证据由宿主管理清理，尚不提供普通下载。
+
+`BoundedInspectionProcess`是内部进程传输，限制并发、总截止、输入输出，清除继承的Java/Docker选项环境，异常终止子进程。无法确认子进程退出时保留名额，确认退出后才能回收。真实独立JVM已验证内存/超时/超量输出及故障回收；这**不是OS/网络容器隔离验收**。生产隔离执行器仍在d2d阶段，届时必须以受控镜像、只读源挂载、受限输出盘、禁网、低权限和CPU/内存/PID限制启动；缺少环境保持ERROR，不能退回宿主JVM解析。此阶段未把worker接进任务发布，上传仍停在SCANNING。
+
+### 11.5 ZIP与Office结构门禁（C4d2c1/c2a已本地验收）
+
+`ArchiveInspection`只返回内部结构清单，不返回clean或READY。先检查实际中央目录条目数量和边界，再解析ZIP属性；逐个核对本地头、中央目录、数据描述符、真实解压字节、CRC及SHA-256。拒绝前置/尾随载荷、重叠范围、名称不一致、重复或Unicode/大小写别名、文件与目录冲突、路径穿越、Windows设备/ADS路径、符号链接及非普通文件类型、加密、多卷和未登记扩展字段。解压内容只进入固定缓冲，不按条目路径写到业务文件系统。
+
+当前资源配置是压缩包64MiB、单项32MiB、累计展开256MiB、最多1000项、最大100倍压缩比、路径最多16层。ZIP64和无法解释的供应商扩展不在此处理配置内；需要扩大范围必须先确认隔离资源及扫描器能力，不能只调大上传限额。实际读取同时有界，伪造“小条目数/小解压大小”不能绕过检查。支持stored/deflate及合法数据描述符，但不保证支持任意压缩算法。
+
+`OfficePackageInspection`检查DOCX/XLSX/PPTX的OPC结构，必须有内容类型、根officeDocument关系与对应主XML；相同ZIP改后缀不能作为另一类Office文件。内部关系必须指向真实部件，拒绝外部目标、越根路径、重复关系ID和未知关系类型。拒绝宏、ActiveX、OLE/嵌入对象、外部链接、危险Word域、PowerPoint执行动作和未登记公式函数；普通SUM/IF等常用公式与PAGE/DATE等受审域可以继续检查。未知高级Office功能不静默放行，当前不承诺完整Office兼容或渲染。
+
+XML使用命名空间感知SAX，禁止DOCTYPE、外部实体和stylesheet指令，限制单XML8MiB、64层、10万节点以及属性数量/长度。Office结构检查返回的媒体清单还必须由ArchiveContentInspection逐项解码；通用ZIP内每个文件按扩展名白名单、真实类型和相应结构检查，危险双后缀/伪图片/非法JSON/CSV公式等会拒绝整包。
+
+C4d2c2b已通过本地验证：根包与所有嵌套共用最多1000项、256MiB及请求outputBudget中较小的累计展开预算，最多允许根包之下再嵌套2层，不能每层重置额度。预算先传给容器检查器，伪造元数据不能绕过。需要随机访问的叶子文件只写worker私有临时目录，使用随机名称、NOFOLLOW_LINKS和流式大小/摘要核验，不使用ZIP条目名拼路径；逐项完成/拒绝后删除本人临时文件，进程被强杀的残留由宿主后续清理流程接管。outputBudget在包处理中同时约束临时展开空间，宿主扫描准入必须实际预留，不能假定上传任务三倍原始字节永远足够。
+
+所有已支持叶子及Office媒体通过才给内容PASS；图片在包内完整解码但不自动改写原文档或产出公开预览。PDF成员使用11.6同一完整检查，MP4成员使用11.7同一容器与受控探测；缺少任一处理器返回ERROR/PROCESSOR_UNAVAILABLE，不允许整包部分通过。PASS仍只是内容处理门禁，尚未接上传发布，完整杀毒和扫描报告绑定仍为必需条件，业务不能绕过。
+
+### 11.6 PDF内容检查（C4d2c3已本地验收）
+
+独立worker锁定PDFBox3.0.8并以strict模式解析，要求真实PDF头和最后EOF边界；拒绝加密（包括空用户密码）、JavaScript、自动/附加动作、外部文件、嵌入附件、交互表单/XFA、富媒体和其他未允许的活动内容。当前交叉引用索引中的对象都检查，不只遍历主文档可达内容；使用解析后的COS键名判断，避免简单字符串搜索被PDF转义绕过。全文件扫描仍负责覆盖原始字节，不能用对象图遍历替代杀毒。
+
+当前上限为输入32MiB、交叉引用1万项、对象节点5万、深度64、单字符串1MiB/累计字符串16MiB、单解码流16MiB/累计64MiB、1000页和100万页内容token。检查页尺寸、内联图片及图像对象声明尺寸；只接入已登记过滤器，未知或缺少解码能力返回ERROR，不按clean处理。索引、对象流或复杂解码器可能在返回流之前分配内存，独立worker的硬堆限制/进程截止及后续容器资源隔离是必需条件，循环计数不是PDFBox内部内存分配的替代防线。
+
+这是受限PDF内容策略，不是完整渲染、打印兼容验收、CDR或杀毒。含表单/外部链接等文档可能按本策略拒绝；需要其他功能须单独设计并验证受控策略，不能为“打不开某个PDF”关闭扫描。根PDF和ZIP内PDF执行相同检查，报告仍绑定原始冻结摘要，没有生成可公开PDF或让任务提前READY。
+
+### 11.7 MP4容器与原生探测（C4d2d1已本地原生验收）
+
+首先检查非分片ISO-BMFF容器：ftyp/moov/mdat及各盒长度必须闭合，拒绝尾随数据、重叠/越界/截断、分片/DRM等未受审布局。moov最多16MiB、容器层数12、盒数量10万、轨道8；每轨必须只有一份self-contained URL数据引用、无实际URL/URN字串，所有sample data reference index必须指向该自含引用。它不只检查MP4魔数；fragmented MP4等其他布局尚不支持，不能当普通MP4静默放行。
+
+通过后仅调用部署控制的ffprobe绝对路径（worker默认`/usr/bin/ffprobe`，测试可显式设置`sma.file.worker.ffprobe`），租户/HTTP不能指定命令或原生选项。固定mov格式、file协议、禁外部data reference及绝对引用、最多8流、32MiB probe、5秒分析范围、1线程、64MiB单次内存申请上限，外层30秒截止及stdout/stderr各16KiB；不继承代理/调试/Java选项环境。单次内存申请限制不是进程总内存限制，仍须隔离执行器限制总内存/CPU/PID与禁网。
+
+报告必须为受限JSON且源大小一致；策略只接受一个H264/HEVC/AV1/VP9视频轨、最多两个AAC/Opus音轨，拒绝字幕/数据/附件图片轨。视频最多4096×2160、60fps、6小时；音频最多8声道、8kHz～192kHz。帧率/时长未知或非法、解码器/探测器缺失不算通过。输入20GiB是准入上限，不是容量实测；本地仅用1秒64×48合成视频验证原生行为。
+
+ffprobe这里执行元数据/容器探测，不逐帧证明整段视频可播放、不转码、不生成HLS；完整冻结字节仍由SHA256与后续恶意软件扫描覆盖。根MP4和ZIP成员走同一门禁。真实ffprobe测试用`-Dsma.file.test.ffprobe=<已核验工具绝对路径>`运行`NativeVideoInspectionTests`；未提供工具的标准环境会明确跳过这组原生验收，缺工具拒绝行为仍由普通测试验证。工作区临时工具来自已记录版本的Maven Central制品，生产worker镜像须自行固定并审计原生版本，不把该临时路径部署出去。此阶段还没有容器运行证据，不据原生/JVM测试声称OS隔离已完成。
+
+### 11.8 独立worker制品（C4d2d2a已本地验收）
+
+从根reactor用Java21打包，显式启用`file-inspection-worker` profile。制品生成在该次专用输出下的`inspection/`目录，包含一个`*-inspection.jar`与`lib/`；它是内部检查worker，不是新业务服务或热插件。
+
+```powershell
+$env:JAVA_HOME = [Environment]::GetEnvironmentVariable('JAVA21_HOME', 'User')
+& backend/mvnw.cmd -B -ntp -f pom.xml -pl backend -am `
+  '-Dsma.verify.directory=target/inspection-build/target' `
+  -Pfile-inspection-worker -DskipTests package
+python tools/dev/verify-inspection-bundle.py `
+  --bundle backend/target/inspection-build/target/inspection `
+  --java "$env:JAVA_HOME/bin/java.exe" `
+  --ffprobe '替换为已核验的原生ffprobe绝对路径'
+```
+
+使用新的专用构建输出，避免旧版本JAR残留。`-DskipTests package`本身不代表验收，须先完成对应Java专项，再运行独立制品验证；无ffprobe时省略该参数，视频用例不会计入本次制品验证。Linux改为实际Java可执行路径。
+
+worker JAR按白名单只含inspection、文件预检/文件名helper及少量纯Java契约；不含Spring宿主、业务模块、application.yml或数据库驱动。依赖白名单复制Jackson3与annotations、PDFBox、Commons及TwelveMonkeys等受审解析库，不复制JUnit/Spring/宿主依赖；WebP仍不进入普通宿主生产依赖。不要把旁边生成的普通宿主JAR当worker制品。
+
+验证脚本逐项检查JAR内容、库归属/重复版本、必需库，再使用**制品自己的类路径**启动全新JVM，检查文本/JSON/CSV/PNG/WebP/PDF/DOCX/XLSX/PPTX/ZIP、拒绝场景和可选真实视频。`verification.json`保存实际用例及所有JAR的SHA-256。它证明制品能运行，不证明容器镜像、OS禁网、低权限或部署隔离；镜像须另外固定Java/ffprobe版本和镜像digest，隔离执行器按后续阶段验收。二开应用继续只调用公开FileUploadApi，不直接启动该内部worker。
+
+worker支持内部`--hold-output`模式：stdin为最多16KiB的单行JSON＋LF，stdout为同样有界的报告行；报告后保持进程和临时输出存活，宿主核验取回的固定衍生文件后发送单字节`0x06`。收到ACK退出0，错误ACK或EOF退出2；90秒watchdog覆盖整个等待过程。旧两参数EOF模式继续用于独立制品验证。ACK仅表示可以结束输出存活期，不是安全发布授权；取回后仍须完整杀毒和持久报告门禁。真实JVM握手及14用例独立制品已验证，尚无容器tmpfs/禁网/限额真实性证据。
+
+### 11.9 镜像构建上下文（本地工具已验收，镜像未验收）
+
+部署维护者使用`tools/dev/prepare-inspection-image.py`从11.8的**已验证独立制品**生成新上下文。工具不联网、不构建/运行容器、不安装Docker或WSL。共用`inspection_artifacts.py`固定17个解析库的坐标和版本；依赖升级须同步白名单并重新验收。拒绝额外宿主类/配置、未审版本、过期或缺失的验证报告、链接/reparse/硬链接和已有输出目录。复制后再次核验SHA-256，只有全部成功才生成Dockerfile；失败留下的目录不应构建，下次选择新目录。
+
+先准备受审的`runtime-pins.json`（部署文件，不是租户配置），仅含`javaImage`和`ffprobeImage`。值分别为`docker.io/library/eclipse-temurin@sha256:<64位摘要>`、`docker.io/mwader/static-ffmpeg@sha256:<64位摘要>`。占位符不可直接使用；须从真实注册表核对linux/amd64制品及供应链来源，保存审查依据。工具只验证来源/摘要引用格式，**不证明镜像存在、签名可信或无漏洞**。当前没有可交付的真实pin文件，不使用测试中的合成digest部署。
+
+```powershell
+python tools/dev/prepare-inspection-image.py `
+  --bundle backend/target/inspection-build/target/inspection `
+  --pins '<受审runtime-pins.json绝对路径>' `
+  --output backend/target/inspection-image-context-new
+# 在已准备好的隔离Linux容器构建环境中执行；本项目当前未完成此步。
+docker build --network=none --platform=linux/amd64 `
+  -t sma-content-inspection:reviewed backend/target/inspection-image-context-new
+```
+
+模板在构建时要求实际Temurin `21.0.10+7`和静态ffprobe `8.1.2`，不匹配就失败；不执行apt/curl等浮动安装。基础镜像和原生镜像须预先按digest准备，`--network=none`限制构建RUN，不表示镜像拉取离线。输出只含18个JAR、Dockerfile、dockerignore和审计manifest，构建上传白名单仅为Dockerfile与JAR。manifest状态明确为`prepared-not-built-or-isolation-tested`，不得改成已隔离。
+
+运行入口固定低权限65532:65532、256MiB堆/16MiB direct memory、一个逻辑CPU及hold-output；这些仅是镜像默认值。宿主执行器还必须设置只读冻结源、禁网、只读rootfs、cap-drop/no-new-privileges、OS硬内存/CPU/PID限制和有硬容量的output/scratch tmpfs；取回输出后ACK，异常与超时必须对账真实容器状态。Dockerfile本身不能强制这些运行参数，也不能替代恶意软件扫描或READY门禁。当前尚未实现/验收完整执行器，二开不得自行运行镜像绕过FileUploadApi。
+
+本地工具验证：`python tools/dev/test_inspection_image.py -v`；设置`SMA_INSPECTION_CONTEXT_TEST_BUNDLE`为当前已验证制品目录可额外测试真实JAR复制（本次14项全通过）。该测试使用合成镜像digest，临时上下文自动清理，不拉取或构建镜像。完整Linux构建、静态ffprobe镜像兼容和OS隔离仍待真实环境，不能从这些测试推断已经可生产部署。
 
 ## 12. 后续随实现补充的调用章节
 

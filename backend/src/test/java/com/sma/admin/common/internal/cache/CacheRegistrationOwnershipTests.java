@@ -17,6 +17,9 @@ class CacheRegistrationOwnershipTests {
         try(var fixture=fixture()){
             var catalog=fixture.catalog("com.sma.business.shop.internal.ShopCatalog");
             assertThat(new CacheRegistry(List.of(catalog),ownership).require("shop.items").owner()).isEqualTo("shop");
+            ownership.validateBusiness(catalog,descriptor("shop.items","shop:cache:manage"));
+            assertThatThrownBy(()->ownership.validateBusiness(new com.sma.admin.config.internal.service.ConfigCacheCatalog(),
+                    descriptor("config.items","config:cache:manage"))).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("business module");
             var proxy=new ProxyFactory(catalog).getProxy();
             ownership.validate(proxy,descriptor("shop.items","shop:cache:manage"));
             assertThatThrownBy(()->ownership.validate(proxy,descriptor("config.items","config:cache:manage"))).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("another module");
@@ -39,6 +42,18 @@ class CacheRegistrationOwnershipTests {
         var registry=new CacheRegistry(List.of(proxy),ownership);
         assertThat(registry.regions()).hasSize(3);
         ownership.validateLoader(catalog,registry.require("config.dictionary-options"));
+    }
+    @Test void independentlyCompiledBusinessCacheCatalogIsSeparateFromPlatformRegions()throws Exception{
+        try(var fixture=fixture()){
+            var catalog=(BusinessCacheCatalog)fixture.loader().loadClass("com.sma.business.shop.internal.ShopBusinessCatalog").getConstructor().newInstance();
+            var platform=new CacheRegistry(List.of());
+            var registry=new BusinessCacheRegistry(List.of(catalog),ownership,platform);
+            assertThat(registry.require("shop.items").storageGroup()).isEqualTo("shop");
+            assertThat(platform.regions()).isEmpty();
+            assertThatThrownBy(()->new BusinessCacheRegistry(List.of(catalog,catalog),ownership,platform)).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(()->new BusinessCacheRegistry(List.of(catalog),ownership,
+                    new CacheRegistry(List.of(()->List.of(descriptor("shop.items","shop:cache:manage")))))).isInstanceOf(IllegalArgumentException.class);
+        }
     }
     private CacheDescriptor descriptor(String id,String permission){return new CacheDescriptor(id,id.substring(0,id.indexOf('.')),id.substring(0,id.indexOf('.'))+".cache.items","catalog","read",CacheDescriptor.Kind.DATA,CacheDescriptor.Scope.TENANT,1,CachePolicy.defaults(),Set.of(CacheDescriptor.Operation.CLEAR),Set.of("save"),permission);}
     private record Fixture(URLClassLoader loader) implements AutoCloseable {
@@ -64,6 +79,14 @@ class CacheRegistrationOwnershipTests {
                 Files.writeString(info,"@org.springframework.modulith.ApplicationModule(displayName=\"Business fixture\",allowedDependencies={\"common :: cache\"}) package com.sma.business."+module+";");sources.add(info.toString());
             }
         }
+        var business=directory.resolve("src/com/sma/business/shop/internal/ShopBusinessCatalog.java");
+        Files.writeString(business,"""
+            package com.sma.business.shop.internal;
+            import java.util.*;import com.sma.admin.common.cache.*;
+            public class ShopBusinessCatalog implements BusinessCacheCatalog {
+                public Collection<Region> regions(){return List.of(new Region("shop",new ShopCatalog().regions().iterator().next()));}
+            }
+            """);sources.add(business.toString());
         var args=new ArrayList<>(List.of("-proc:none","-classpath",System.getProperty("java.class.path"),"-d",directory.toString()));args.addAll(sources);
         assertThat(ToolProvider.getSystemJavaCompiler().run(null,null,null,args.toArray(String[]::new))).isZero();
         return new Fixture(new URLClassLoader(new java.net.URL[]{directory.toUri().toURL()},getClass().getClassLoader()));

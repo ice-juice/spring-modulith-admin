@@ -32,7 +32,7 @@ import static com.sma.admin.common.request.RequestRejected.Reason.*;
 /** Only local, single-resource DB work belongs here. A failed receipt is never silently rerun. */
 @Service
 @EnableConfigurationProperties(RequestGovernanceProperties.class)
-public class RequestExecutionService implements RequestExecution, RequestAdmission {
+public class RequestExecutionService implements RequestExecution, RequestAdmission, com.sma.admin.common.deployment.DeploymentEvidenceSource {
     private final RequestExecutionMapper executions;
     private final RequestMutexMapper mutexes;
     private final RequestBudgetMapper budgets;
@@ -64,6 +64,12 @@ public class RequestExecutionService implements RequestExecution, RequestAdmissi
         var tx = new TransactionTemplate(manager);
         tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         tx.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED); tx.setTimeout(timeout); return tx;
+    }
+
+    @Override public String id() { return "common.request-fingerprint"; }
+    @Override public com.sma.admin.common.deployment.DeploymentEvidence.Proof collect(
+            com.sma.admin.common.deployment.DeploymentEvidence.Challenge challenge) {
+        return fingerprintKeys.deploymentEvidence(challenge);
     }
 
     @Override public <T> T execute(Work<T> work) {

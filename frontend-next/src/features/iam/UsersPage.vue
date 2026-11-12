@@ -20,10 +20,10 @@ const { t } = useI18n(), auth = useAuth(), resetOpen = ref(false), target = ref<
 function editPassword(row: Row) { action.resetView(); action.bind('iam.users.' + row.id); target.value = row; password.value = ''; error.value = ''; resetOpen.value = true }
 async function save() {
   if (busy.value || !target.value) return
-  const id = target.value.id
+  const id = target.value.id, input = { password: password.value }
   const result = await action.run({ operation: 'users.password', resource: 'iam.users.' + id, protocol: 'LOCAL' }, () => {
-    if (!validPassword(password.value)) { error.value = t('iam.passwordRule'); return }
-    const input = { password: password.value }; return options => put('/iam/users/' + id + '/password', input, options)
+    if (!validPassword(input.password)) { error.value = t('iam.passwordRule'); return }
+    return options => put('/iam/users/' + id + '/password', input, options)
   })
   if (result.kind === 'success' || result.kind === 'completed') { password.value = ''; resetOpen.value = false; notify(t('common.saved')) }
 }

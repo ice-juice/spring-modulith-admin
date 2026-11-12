@@ -69,9 +69,13 @@ async function save() {
   if (saving.value || optionsBusy.value || optionsFailed.value) return
   error.value = ''
   const endpoint = props.resource.endpoint, rowId = props.row?.id, resourceId = props.resource.id, editorGeneration = generation
+  const snapshot = JSON.stringify(values)
   const result = await submission.run({ operation: resourceId + '.save', resource: endpoint.slice(1).replaceAll('/', '.') + '.' + (rowId || 'new'), protocol: 'LOCAL' }, async () => {
+    // Do not validate or send a different edit after asynchronous browser admission.
+    if (snapshot !== JSON.stringify(values)) return
     let send: ((options: OperationSend) => Promise<unknown>) | undefined
     await handleSubmit(validated => {
+      if (snapshot !== JSON.stringify(values)) return
       if (resourceId === 'users' && !rowId && !validPassword(validated.text.password || '')) { error.value = t('iam.passwordRule'); return }
       const payload = JSON.parse(JSON.stringify({ ...payloadFor(props.resource, validated, !!rowId), ...props.preset }))
       if (resourceId === 'parameters' && props.row?.secret && !validated.text.value) payload.value = null

@@ -36,7 +36,7 @@ spring Modulith/                         # 实际二开所在的业务分支
 │       │   │               ├── web/    # Controller
 │       │   │               ├── service/
 │       │   │               └── persistence/
-│       │   ├── resources/db/migration/shop/
+│       │   ├── resources/db/business/shop/  # 当前业务Mapper路由基线，独立业务库迁移
 │       │   └── resources/i18n/shop/
 │       └── test/java/com/sma/business/shop/
 └── frontend-next/                     # 一个管理前端工程
@@ -45,14 +45,14 @@ spring Modulith/                         # 实际二开所在的业务分支
         └── business/shop/              # 二开管理页面和业务 API 封装
 ```
 
-在 [main 的空目录示例](../../examples/shop-layout/README.md) 中，同样的路径放在 `examples/shop-layout/` 下面供查看。示例不加入 Maven 或 Vite 构建，不注册模块和路由，也不创建数据库表。
+在 [main 的空目录示例](../../examples/shop-layout/README.md) 中可查看包根布局；其旧db/migration/shop占位仅为历史同库示意。当前路由接入以[shop-storage](../../examples/shop-storage/README.md)的BusinessSchemaCatalog、db/business与会话示例为准。两个示例均不加入main的Maven或Vite构建。
 
 ## 开发、构建与部署
 
 1. **开发**：在业务分支沿用基座启动类和开发配置。宿主在 `com.sma.business` 下发现独立的 `shop` 模块，模块声明依赖白名单，通过基座公开 Query/API 或 SPI 协作。基座不引用具体业务类；需要业务实现时由基座定义扩展接口。前端在原有路由中显式接入 `src/business/shop/`、权限和语言包。
 2. **管理**：按包和目录审查业务差异，基座修复单独合回 `main`。升级基座时把指定基座版本引入业务分支，复验业务接口、迁移、权限和前端路由。
 3. **打包**：使用同一个业务提交，在项目顶层用 `pwsh -NoProfile -File tools/dev/verify-backend.ps1 -Standard` 验证并构建现有后端 JAR；在 `frontend-next/` 用 `npm ci` 和 `npm run verify` 构建现有管理前端。后端产物仍在 `backend/target/`，前端在 `frontend-next/dist/`。实际项目如选用旧版前端，沿用其现有构建流程。
-4. **部署**：按 [部署说明](../deployment.md) 部署同版本的后端 JAR 和前端静态文件。只启动一个后端 Java 进程，前端仍用现有静态站点及 API 代理；商城表由同一个宿主的 Flyway 按 `shop` 模块迁移。商城无需专用 JAR、服务端口、npm 工程或部署流程。
+4. **部署**：按 [部署说明](../deployment.md) 部署同版本的后端 JAR 和前端静态文件。只启动一个后端 Java 进程，前端仍用现有静态站点及 API 代理。当前`com.sma.business` Mapper使用显式业务存储会话：业务声明`BusinessSchemaCatalog`，脚本在`db/business/<module>`，平台操作者开通绑定时由宿主迁到业务库；不能沿用旧同库示例把业务脚本放进平台`db/migration/<module>`。无需拆独立应用进程；实际物理库与凭据由部署管理。
 
 ## 包名与资源命名
 
@@ -63,13 +63,17 @@ spring Modulith/                         # 实际二开所在的业务分支
 | 热插件 Java 包与 ID | Java 包用 `<组织反向域名>.business.<bizid>.plugin`，如 `com.acme.business.acmeorder.plugin`；不得占用 `com.sma.*`。清单中的 `implementationClass` 必须与入口类全名一致。新插件 ID 优先用 `<bizid>`，同业务多插件用 `<bizid>-<用途>`；入口 ID 独立，例如 `quote`。插件和入口 ID 仍须通过协议校验。 |
 | Maven / npm | 普通单体业务沿用基座坐标和前端包，路由名、菜单标识、翻译和本地存储 key 带业务 ID。仅独立制品使用独立 Maven 坐标。 |
 | 路由与权限 | 单体业务如 `/api/shop/orders`、`shop:order:read`。热插件走宿主分发路由，调用权限如 `extension:invoke:shop-quote`。 |
-| 表与迁移 | 表名如 `shop_order`；迁移如 `backend/src/main/resources/db/migration/shop/V1__create_orders.sql`，使用自己的迁移版本序列。 |
+| 表与迁移 | 表名如 `shop_order`；当前业务路由基线使用 `backend/src/main/resources/db/business/shop/V1__create_orders.sql`，声明BusinessSchemaCatalog，由开通流程执行独立历史；平台模块仍用db/migration。 |
 | 语言包 | 后端用 `backend/src/main/resources/i18n/shop/messages.properties` 与 `messages_en.properties`；前端用 `frontend-next/src/locales/{zh-CN,en-US}/shop.json`。 |
 | 配置与缓存 | 属性用 `business.<bizid>.*`，如 `business.shop.max-items`；按业务环境显式加载，不覆盖基座默认配置。缓存键包含业务、可信租户及需要的 portal/契约版本。详见[数据与配置](data-and-configuration.md)。 |
 
 ## 接入检查
 
 跨请求缓存遵守[二开缓存契约](../cache-secondary-development.md)。生产Catalog/预热加载器按解代理后的真实模块核验归属，业务管理权限使用自己的前缀；禁止借用基座owner或绕过`common :: cache`直接使用Redis/Caffeine/Spring Cache。例外运行对象须走所属模块适配，不能自建免租户全局表。验证`CacheRegistrationOwnershipTests`、`CacheBoundaryTests`及业务自己的失效/权限/事务专项；P08阶段交付以进度文档为准。
+
+静态业务模块需要共享参数或字典时，在自己的模块中实现公开 `com.sma.admin.config.ConfigurationCatalog`，参数键使用 `<bizid>.` 前缀，字典类型键使用 `<bizid>_` 前缀；由宿主核对实际模块归属、类型、覆盖策略及容量。运行读取使用 `ParameterQuery`、`DictionaryQuery` 或 `EffectiveConfigurationQuery`，租户覆盖和平台发布走配置管理契约；业务不得直连 Config 的 Mapper/表，也不得把连接密码、令牌或可执行校验器放进共享配置。定义的稳定键、类型、范围和覆盖策略变更须附迁移与共存验证。当前 S5 交付状态见[租户专项进度](../tenant-platform-progress.md)，业务数据库路由与 Redis 多资源仍按 S6～S8 阶段验收。
+
+业务分库的幂等/互斥与缓存失效使用`common :: request`的`BusinessLedger`，以已登记的业务存储组在事务前打开并用try-with-resources关闭会话；缺绑定时宿主拒绝。业务Mapper只在`Session.executeLocal`或`Session.query`作用域内运行，前者与账本/失效/Outbox在同一物理资源事务提交；会话外或异源事务拒绝，SQL统计归实际资源。业务不得实现`BusinessLedgerProvider`、直接复用平台`RequestExecution`保存业务写入回执，或操作Common内部账本表。X1a～X1c及S6a～S6d已通过本地边界、HTTP权限和真实三库夹具；正式开通、迁移、激活仍按S7验收，状态见[租户进度](../tenant-platform-progress.md)。
 
 1. 在业务接入说明记录：归属、后端包和前端路径、依赖的公开契约、命名占用、迁移与配置清单，以及已验证的版本组合。实际开发时只创建用到的目录。
 2. 业务依赖公开 Query/API/SPI、公开 REST 或 SDK。引用基座对象保存稳定 ID 或必要快照，并在所属模块查权限；不要新增跨模块 SQL、外键、扫描配置、路由特例或全局 Jackson/MyBatis 修改。

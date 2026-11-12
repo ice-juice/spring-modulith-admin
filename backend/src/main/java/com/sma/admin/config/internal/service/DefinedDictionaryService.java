@@ -49,9 +49,11 @@ public class DefinedDictionaryService {
     /** Null fields inherit; hidden=false is an explicit restoration of a platform-visible item. */
     public record ItemChange(ConfigurationLabel label,Integer sort,Boolean hidden) {}
     public record PrivateItem(String code,String parentCode,ConfigurationLabel label,int sort,boolean enabled) {}
+    /** The tenant's explicit layer values for editing; null fields inherit the platform publication. */
+    public record LayerEntry(String kind,String code,String parentCode,ConfigurationLabel label,Integer sort,Boolean hidden,Boolean enabled) {}
     public record State(DictionarySnapshot snapshot,DictionaryDefinition definition,boolean enabled,ConfigurationLabel label,
-            Long layerId,Set<String> overriddenCodes,Set<String> privateCodes) {
-        public State { overriddenCodes=Set.copyOf(overriddenCodes);privateCodes=Set.copyOf(privateCodes); }
+            Long layerId,Set<String> overriddenCodes,Set<String> privateCodes,List<LayerEntry> layer) {
+        public State { overriddenCodes=Set.copyOf(overriddenCodes);privateCodes=Set.copyOf(privateCodes);layer=List.copyOf(layer); }
     }
     private record Layer(DictionaryLayerEntity row,List<DictionaryEntryEntity> rows) {}
     /** Authoritative versions only; no mutable entity or customer text. */
@@ -163,6 +165,7 @@ public class DefinedDictionaryService {
             row.setSort(item.getSort());
             var sharedItem=sharedItems.get(item.getItemValue());
             if(sharedItem!=null) {
+                if(!Boolean.TRUE.equals(item.getBuiltin()))throw new IllegalArgumentException();
                 if(!Objects.equals(sharedItem.parentCode(),parent))throw new IllegalArgumentException();
                 // Existing presentation remains explicit even when it equals the old default.
                 row.setEntryKind(OVERRIDE);row.setHidden(!Boolean.TRUE.equals(item.getEnabled()));
@@ -187,10 +190,11 @@ public class DefinedDictionaryService {
     }
     private State compose(Entry entry,Layer layer,Optional<SharedConfigurationService.Published> publication,long tenantRevision,String language,boolean writing) {
         var definition=entry.dictionary();var overlays=new ArrayList<ItemOverride>();var privates=new ArrayList<DictionaryDefinition.Item>();
-        var overridden=new HashSet<String>();var privateCodes=new HashSet<String>();
+        var overridden=new HashSet<String>();var privateCodes=new HashSet<String>();var raw=new ArrayList<LayerEntry>();
         try {
             if(layer!=null)for(var row:layer.rows()) {
                 var label=row.getLabelJson()==null?null:decode(row.getLabelJson());
+                raw.add(new LayerEntry(row.getEntryKind(),row.getCode(),row.getParentCode(),label,row.getSort(),row.getHidden(),row.getEnabled()));
                 if(OVERRIDE.equals(row.getEntryKind())){overlays.add(new ItemOverride(row.getCode(),label,row.getSort(),row.getHidden()));overridden.add(row.getCode());}
                 else if(PRIVATE.equals(row.getEntryKind())){
                     privates.add(new DictionaryDefinition.Item(row.getCode(),row.getParentCode(),Objects.requireNonNull(label),Boolean.TRUE.equals(row.getEnabled()),Objects.requireNonNull(row.getSort())));
@@ -203,7 +207,7 @@ public class DefinedDictionaryService {
             if(!enabled)snapshot=new DictionarySnapshot(snapshot.key(),snapshot.mode(),snapshot.revision(),snapshot.entries().stream()
                     .map(value->new DictionarySnapshot.Entry(value.code(),value.parentCode(),value.label(),value.enabled(),value.hidden(),false,value.sort(),value.origin())).toList(),List.of());
             var label=layer==null||layer.row().getLabelJson()==null?publication.map(value->value.dictionary().label()).orElse(definition.label()):decode(layer.row().getLabelJson());
-            return new State(snapshot,definition,enabled,label,layer==null?null:layer.row().getId(),overridden,privateCodes);
+            return new State(snapshot,definition,enabled,label,layer==null?null:layer.row().getId(),overridden,privateCodes,raw);
         } catch(IllegalArgumentException|NullPointerException invalid) {
             throw new BizException(writing?ConfigErrorCode.SHARED_INVALID:ConfigErrorCode.SHARED_UNAVAILABLE);
         }

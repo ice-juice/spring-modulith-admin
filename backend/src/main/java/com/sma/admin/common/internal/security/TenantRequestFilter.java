@@ -53,7 +53,10 @@ public class TenantRequestFilter extends OncePerRequestFilter implements org.spr
         }
     }
     private void reject(HttpServletRequest request,HttpServletResponse response,ErrorCode error) throws IOException {
-        response.setHeader("Cache-Control","no-store"); errors.write(request,response,error);
+        response.setHeader("Cache-Control","no-store");
+        if(error==CommonErrorCode.BAD_REQUEST||error==CommonErrorCode.NOT_FOUND||error==CommonErrorCode.FORBIDDEN)
+            errors.writeObserved(request,response,error,SecuritySignal.Fact.TENANT_ENTRY_REJECTED);
+        else errors.write(request,response,error);
     }
     private ExternalRequest external(HttpServletRequest request) {
         String host=single(request,"Host"), scheme=request.getScheme();

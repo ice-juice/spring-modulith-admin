@@ -1,5 +1,7 @@
 # P10 租户中心实施进度
 
+跨线安全补记（2026-11-12）：P11 X4品牌公开资产本地验收已完成。file的公开快照编码器固定JDK PNG/JPEG/GIF及PNG writer，输入/可寻址缓存/输出有界；图片/URL/架构41项通过，专用`sma_test_p11_x4_20261112`库的公开字段、权限/租户/Host注入矩阵和真实Tomcat HEAD最终10项HTTP通过，发布/回退/预览/旧文件/头像分轮回归通过。未修改tenant表/迁移或本线在建S5代码，不改变S5～S10状态，不替代P09完整扫描及X5；完整失败和复验记录见[安全进度](security-defense-progress.md)及[开发调度](development-schedule.md)。
+
 方案：[P10](proposals/P10-tenant-branding-and-storage.md)。2026-11-11 用户授权设计落盘并开始实施；删除旧公共参数接口，不做兼容代理；SQL 统计按实际配置/执行的数据源隔离。
 
 ## 顺序与门禁
@@ -13,9 +15,9 @@
 | S2 | 租户/域名登记、可信匿名入口与认证一致性 | S1 | MySQL 迁移；Host/代理/未知/停用；跨租户登录、MFA、WS、P09 身份拒绝 | 完成（本地专项） |
 | S3 | 品牌草稿/发布/回退、素材、公开白名单入口，删除旧 public API | S2 | 归属/权限/发布原子性/缓存；旧映射消失；两前端消费者迁移 | 完成（本地＋隔离联调） |
 | S4 | login1/login2/login3、品牌与域名租户 UI | S3 | 前端 verify；明暗/双语/移动/键盘；真实隔离登录和发布回退 | 完成（本地＋隔离联调） |
-| S5 | 平台共享参数/字典、租户覆盖和发布/缓存语义 | S4 | 旧数据迁移；继承/覆盖/隐藏/恢复/树约束；全租户失效与权限 | 进行中（S5a～S5c完成，S5d～S5f待实施） |
-| S6 | 资源登记、业务双持久化边界与路由/连接池预算 | S5 | 独立业务夹具、真实两个 MySQL 库、事务固定、错库拒绝、池回收/耗尽 | 待实施 |
-| S7 | 业务库 Flyway、Outbox/失效、开通/迁移/切换任务 | S6 | 空库/旧库、共享库仅迁移一次、失败续跑、提交/回滚/重复/并发、换库恢复 | 待实施 |
+| S5 | 平台共享参数/字典、租户覆盖和发布/缓存语义 | S4 | 旧数据迁移；继承/覆盖/隐藏/恢复/树约束；全租户失效与权限 | 完成（本地，S5a～S5f验收；外部部署另验） |
+| S6 | 资源登记、业务双持久化边界与路由/连接池预算 | S5、P11 X1 | 独立业务夹具、真实两个 MySQL 库、事务固定、错库拒绝、池回收/耗尽 | 完成（本地，2026-11-12；生产开通归S7） |
+| S7 | 业务库 Flyway、Outbox/失效、开通/迁移/切换任务 | S6 | 空库/旧库、共享库仅迁移一次、失败续跑、提交/回滚/重复/并发、换库恢复 | 进行中（S7a/S7b完成，下一S7c） |
 | S8 | Redis 多资源与缓存归属、故障隔离 | S7 | 真共享/独立 Redis、切换/冷启动/失效、配额/熔断；P08 协同回归 | 待实施 |
 | S9 | SQL 数据源目录/筛选/定向重置、资源运维 UI | S8 | 实际双库/旧连接修订/未知源/越权/重置竞争；前端真实操作与迟到响应 | 待实施 |
 | S10 | 容量与故障评估、全量回归、部署/二开文档 | S9 | 根 reactor 标准 verify、双前端、浏览器、1/10/100租户冷热/故障矩阵、恢复演练 | 待实施 |
@@ -385,3 +387,117 @@ S3c按依赖细分：先接类型化entry及已发布图片HTTP读取并验证�
 
 - S5d-2首轮p10-s5d2.log未进入测试：并行file/internal/inspection的InspectionProtocol.java与TextContentInspection.java正在编辑，缺少JsonFactory符号导致主编译失败。未修改他人文件；待其源码稳定后用同一专用库复跑，本轮不计为S5d-2验证证据。
 - 复查并行文件模块已在05:42:28补齐JsonFactory导入（晚于本任务05:41:52编译）；未改其源码，以同一专用库/输出复跑S5d-2，日志p10-s5d2-rerun.log。
+
+### S5d-2验收（按开发调度推进）
+
+- 自2026-11-12起按[开发调度](development-schedule.md)执行：本线位于第1组“租户S5d～S5f”，完成后才可配合X3进入X1（阻塞S6）。每个子项通过后同时更新调度表与本进度。
+- p10-s5d2-rerun.log：47项中46通过。DefinedDictionaryTests6（新租户继承、覆盖/隐藏/恢复、私有代码历史与回滚不留归属、LOCKED/TENANT_ONLY、平台停用不可被租户重启且发布使旧版本失效、旧树ID/翻译/排序/缺项隐藏保全及冲突无部分状态）、V9→V10保留升级1、代码归属5、原字典2、参数层10与V8/V10锁查询2、SQL结构2、模块2通过。
+- 唯一失败为ArchitectureRulesTests.generalCodingRules：并行file模块ContentInspectionWorker使用System.out；当前提交已由其负责人显式豁免，不属本线改动，未修改其代码。S5d-3组合包含ArchitectureRulesTests作为当前源码复验。保留升级库现为Config V10，不能重跑需V9前置的升级用例。S5d-2完成。
+- S5d-3已实现：13个内置字典改为纯静态EXTENDABLE目录（不再复制到新租户）、-175逐租户迁移、DictionaryQuery/EffectiveConfigurationQuery有效读取、定义指纹＋平台发布ID＋租户版本＋语言缓存键、原私有接口拒绝已登记键、预热loader v2先枚举已登记定义再接旧私有类型（含对应P08预热测试计数调整）。旧管理页面暂不显示内置字典，有效字典管理HTTP在S5d-4、前端在S5e，期间不可部署。
+
+- S5d-4已实现/api/config/effective-dictionaries：GET目录（≤50，先筛定义元数据）/详情（有效项、来源、可提交性与租户显式层），PUT item-overrides、POST item-overrides/restore、PUT private-items、PUT enabled四个LOCAL写入；均同平台库、无网络/跨库/独立提交，需config:dictionary:view/update与平台/租户双版本，精确代码只走JSON正文，LOCAL重放重验原动作权限。旧/api/config/dictionaries对已登记键创建/修改/读取明细拒绝。
+- 策略审查p10-s5d4-policy.log：23/23 BUILD SUCCESS（review开关）。注意：该运行07:15编译时恰好包含X3负责人07:14～07:15正在修改的SecurityEndpointInventoryTests/EndpointBudgetCatalog，因而07:18写出的security-endpoint-policies.txt及docs/security-endpoint-inventory.md同时采用X3新增的预算scope列与BUDGET行（文件约710行格式变化）。本线只审查了6条DefinedDictionaryController映射；X3预算行与格式由当前代码确定性生成，但不代表X3审查结论，须X3负责人复核或重新生成，未回滚以免覆盖其后续工作。普通无review门禁待X3稳定后复验。
+
+### S5d-3验收完成
+
+- 新专用库sma_test_p10_s5d3_20261112组合76/76、0失败/错误/跳过、BUILD SUCCESS（p10-s5d3.log）：DefinedDictionaryStartupTests2（真实ApplicationReady前旧数据、未开通租户迁移、旧显示/私有代码/停用类型保全、DictionaryQuery与EffectiveConfigurationQuery、版本缓存命中、事务回滚不污染、预热v2覆盖无租户行的共享定义）、DefinedDictionaryTests6、原字典2、预热单元4（含新增已登记定义先行枚举）、P08 CacheWarmupExecutionTests7（共享定义纳入计数）、本地/none基础缓存各5、参数启动2、共享存储8、缓存契约/注册/预热契约、平台持久化白名单、普通策略门禁、架构17（当前提交已闭环S5d-2唯一并行失败）、语言3、模块2。
+- 该运行在S5d-4的State.layer补充前编译；S5d-4 HTTP组合与S5f整阶段回归覆盖当前源码。S5d-3完成，S5d-4后端HTTP在sma_test_p10_s5d4_20261112运行（p10-s5d4-http.log）。
+- S5e已开始：next新增EffectiveParametersPanel（共享与内置参数：来源/双版本/覆盖/显式null/恢复继承）、EffectiveDictionariesPanel（树形有效项、覆盖/隐藏/恢复、私有项、启停，代码只在JSON正文）、/config/shared平台页（草稿/已发布代码稳定/发布绑定草稿与指针/历史快照）及typed layers.ts；未知结果只按原键核对。next类型检查、专项lint、i18n键/占位符一致、layers单元3/3通过（backend/target/p10-s5e/*.log）。旧版frontend新增只读EffectiveConfigView页签说明覆盖在新版完成，类型检查通过；旧版基线哈希、完整verify及浏览器验收待执行。
+- S5d-4后端HTTP（p10-s5d4-http.log）：DefinedDictionaryHttpTests3/3（view/update权限、目录≤50与明细不含平台草稿、覆盖/恢复/私有非ASCII代码/启停、LOCAL重放最小回执与权限撤销、陈旧版本、共享代码冲突、锁定拒绝、旧私有接口拒绝已登记键）、DefinedParameterHttpTests4、原字典2通过；组合其余用例待结束。
+- S5e浏览器首轮（任务专用5281，不复用5174开发服务）：新增config-layers 4项中3项通过（共享参数来源/显式null/恢复继承与固定双版本、字典覆盖/非ASCII私有代码只在正文、平台草稿与发布双版本）。未知结果用例暴露真实缺陷：弹窗保留输入但页面级“查询”按钮被模态遮挡；已在参数与字典编辑弹窗内显示错误及原键查询入口，复验运行中。
+
+### S5d-4验收完成
+
+- 新专用库`sma_test_p10_s5d4_20261112`的后端HTTP组合`p10-s5d4-http.log`为15/15、0失败/错误/跳过、BUILD SUCCESS，覆盖有效字典HTTP3、有效参数HTTP4、旧字典2、请求治理4、共享配置HTTP2。
+- 策略审查`p10-s5d4-policy.log`为23/23；在并行X3预算目录更新稳定后，普通无review门禁`p10-s5d4-strict.log`为6/6、BUILD SUCCESS（预算目录5、端点策略1）。两次运行的用途分开记录。S5d-4完成；S5e前端仍需浏览器及双工程最终验收，S5f未开始。
+
+- 后续审查发现S5d迁移对`builtin=false`且与已发布共享代码同名、父级恰好相同的旧私有项仍按覆盖合并，违反设计的冲突停止规则。已补拒绝判断、保留数据回滚用例和旧字典删除前归属检查；在专项复验前暂撤销S5d-4完成状态。S5e前端本地验证：新版完整verify 179/179、旧版标准verify 55/55，配置浏览器6/6、联合搜索/工作流回归合计18/18（测试与修复见各日志）；隔离真实双前端联调正在使用当前已构建制品运行，结果另记，不把它当作本次后端补丁验证。
+
+### S5d最终复验完成
+
+- `sma_test_p10_s5d4_20261112`专用库、根reactor独立输出`target/p10-s5d-correction/target`的`s5d-correction.log`为31/31、0失败/错误/跳过、BUILD SUCCESS：DefinedDictionaryHttpTests3、StartupTests2、DefinedDictionaryTests6（含同父级非builtin撞码拒绝且不留层）、原DictionaryTests2、ArchitectureRulesTests17、普通SecurityEndpointInventoryTests1。验证覆盖了上条修复后的源码；原V8→V9/V9→V10保留库升级证据仍以先前各只运行一次的专项日志为准。S5d-4和S5d完成。
+- S5e最终本地前端复跑：next`next-verify-final2.log`为180/180单元、类型/lint/i18n/构建/发布检查通过；旧端`legacy-verify-final.log`为55/55且构建/i18n通过；`browser-final.log`20/20通过（配置6、统一搜索4、工作流10）。后续清空无结果字典详情和身份切换草稿内存两处小修仍需当前源码复验。隔离真实联调首轮`real-e2e.log`因runner旧SQL更新0行导致验证码仍启用、测试在登录页超时；测试库/账号/进程已清理。runner已改为任务自有租户的显式覆盖并重启自己的后端，待当前JAR复跑，不把首轮写作通过。
+
+### S5e 双前端验收完成
+
+- 当前源码的next `next-verify-label.log`：180/180单元、类型、lint、i18n、构建、发布检查通过；旧端 `legacy-verify-label.log`：55/55单元、lint、构建、i18n通过。两处页面修正（空字典详情清理、身份切换草稿内存清理）已由 `browser-config-current.log` 6/6 和当时源码浏览器回归 `browser-final.log` 20/20覆盖；新增显示占位只避免页面初始化期间对未就绪字段拼接缺失语言键。
+- 隔离真实双前端 `real-e2e-contract.log` 1/1通过：任务专用8093/5281/5188和随机MySQL库，入口验证码显式租户覆盖核对后重启本任务子进程，next覆盖/恢复继承与平台页、旧端有效来源均通过；新增响应断言确认共享详情的类型/模式和旧端参数来源字段存在。`frontend-next/.e2e-runtime/1794445901578/result.json`记录通过、账号及库清理、凭据未保留。Vite初始化仍打印两类短暂缺失标签警告，显示层已用占位处理；没有因此声称生产部署或X5验收。首轮失败日志保留原样。
+- S5e完成，开始S5f整阶段回归、旧库/启动和部署/二开说明。S6仍受P11 X1账本归属门禁阻塞，不能把S5前端验收当作分库路由或SQL数据源目录交付。
+
+### S5f 整阶段回归进行中
+
+- 已新建专用可清空库`sma_test_p10_s5f_20261112`，根reactor标准`verify`写入`backend/target/p10-s5f/verify.log`。首轮在后端约135个测试类后停止，**不是通过**：`DeploymentEvidenceAssemblyTests`执行的是09:25编译的旧类，源码09:44由并行P08工作修正；`SharedConfigurationTests`发现HTTP用例先发布同一`config.s5.draft`，已将HTTP夹具改用独立`config.s5.http`。后续连接数达到291/300，多个应用上下文因共享号段连接不可用连锁失败；仅停止本次S5f的Surefire子进程，连接数回落至11。原失败日志不改写，也不将连接耗尽误判为业务拒绝。
+- 当前源码在同一专用库以独立输出目录`target/p10-s5f-recheck/target`复验S5相关22类与部署证据类，测试上下文缓存限定8，`backend/target/p10-s5f/recheck.log`为92项中91通过、1项旧结构升级因缺一次性前置而跳过、0失败/错误、BUILD SUCCESS。共享HTTP2与服务8同轮通过，部署证据1通过，现有品牌迁移/入口、参数/字典、缓存预热、结构/权限/语言均通过；连接数观测81，未再次触顶。V5→V10逐版保留数据升级已在S5b～S5d的专用库各验一次，不借本轮跳过项重跑已升级旧库。二开接入和部署说明已补充至`docs/agent-rules/secondary-development.md`、`docs/developer-manual.md`及`docs/tenant-platform-operations.md`。完整标准verify正以`-Dspring.test.context.cache.maxSize=8`、独立输出`target/p10-s5f-full/target`运行，未结束前S5f、S5及X1均不标完成。
+
+### S5f 与 S5 本地验收完成
+
+- 根reactor完整`verify`在专用库`sma_test_p10_s5f_20261112`、独立输出`target/p10-s5f-full/target`、`-Dspring.test.context.cache.maxSize=8`下通过，日志`backend/target/p10-s5f/full-capped.log`，2026-11-12 11:31:52结束，7个reactor模块均SUCCESS，backend 1124项、0失败/错误、57跳过，`BUILD SUCCESS`，总耗时1小时21分。共享配置HTTP2、服务、字典/参数、缓存与Modulith结构均包含在本轮；两个先前冲突用例同轮通过。跳过项包含需独立旧库形状或外部Redis条件的专项，不把本轮跳过记为通过；V5→V10保留数据升级与前端双端证据仍以各子项的独立记录为准。
+- `git diff --check`针对本线进度、调度、README及运行说明返回0；换行规范提示不影响检查。S5a～S5f本地完成，允许按P11先启动X1账本归属，S6仍须等X1通过。真实外部DNS/TLS、外部Redis、业务双MySQL路由及S6～S10、X5联合验收尚未完成，不能声明P10整体交付或生产部署。
+
+### P11 X1前置进度
+
+- X1a本地完成：`BusinessLedger`公开会话和宿主provider边界新增后，缺业务资源绑定即拒绝，旧平台账本不承接业务执行。新边界/架构/模块22项及独立`sma_test_p11_x1a_20261112`库的平台启动、请求账本、缓存代次、新边界、模块24项均0失败/跳过；日志`backend/target/p11-x1a.log`和`backend/target/p11-x1a-integration.log`。X1b/X1c真实双库同事务/Outbox/汇聚尚未验收，S6继续阻塞；具体分项见[开发进度](development-progress.md)。
+- X1b本地完成：`BusinessLedgerResourceFactory`将业务库Mapper、账本/互斥/失效与同一DataSource事务管理器绑定，缺租户/数据范围/全表/审计拦截器拒绝装配，跨源事务不能失效。双MySQL轻量夹具`sma_test_p11_x1b_platform_20261112`＋`sma_test_p11_x1b_business_20261112`的`backend/target/p11-x1b-lean.log`为24/24、0失败/跳过、BUILD SUCCESS，覆盖提交/回滚、回执重放、并发互斥与平台库账本不变。各轮夹具问题及失败日志单独记录于P11进度，未把早期失败组合写作通过。X1c仍待实施，S6继续阻塞。
+- X1c本地完成：业务库独立Flyway框架账本只建执行权/互斥/代次/Outbox；同库事件稳定键与字节一致性、回滚不留事件、事务外权威代次及过期/故障stale汇聚经真实双库验证。最终`backend/target/p11-x1c-schema-recheck.log`为25/25、平台`backend/target/p11-x1c-platform.log`为17/17，均0失败/跳过、BUILD SUCCESS。测试账号不可新建数据库，改用精确命名的专用X1b业务库，测试前清空并按独立脚本重建；详细失败轮次和边界见[开发进度](development-progress.md)。X1前置通过，S6可开工；实际资源目录、池、路由、轮询与迁移任务仍待S6/S7。
+
+### S6 业务MySQL资源与路由计划（2026-11-12）
+
+拟改路径及影响：`tenant`新增平台资源目录/租户业务组绑定与只对平台运维开放的登记接口；`common :: request`已有业务账本工厂由宿主资源运行时接入；`common :: persistence`补最小物理身份工厂，业务Mapper继续按独立工厂/事务管理器装配。追加tenant迁移，不改已交付V1～V5；README、运行说明和本规则同步。业务源码仍在业务分支，基座只给通用接入点。连接配置只留受控secretRef和受限目标字段，不通过普通参数、URL或前端泄露凭据。
+
+| 子项 | 内容与边界 | 依赖 | 验证 | 状态 |
+| --- | --- | --- | --- | --- |
+| S6a | 平台资源记录、租户＋存储组绑定及版本/状态约束；内部登记服务仅部署运维身份可写，目标受控且密钥仅引用，HTTP权限入口归S6d，不建池 | X1 | 旧库V5→V6迁移、越权、无效目标/版本/重复绑定拒绝、兼容架构门禁 | 完成（本地，2026-11-12） |
+| S6b | 宿主按物理资源＋修订懒建有界池，固定DataSourceIdentity并装框架账本Mapper/事务/BusinessLedgerProvider；旧修订持租约排空后关闭，业务Mapper归S6c | S6a | 真实双库同租户/跨租户、缺绑定拒绝、池上限/耗尽/排空与连接身份 | 完成（本地，2026-11-12） |
+| S6c | 静态二开业务读写事务接入与资源修订固定，禁止事务内切换、跨源嵌套与默认库回落 | S6b | 独立业务夹具两库写读/回滚/重放、变更绑定时在途连接仍归旧源 | 完成（本地，2026-11-12） |
+| S6d | 资源API/目录完整隔离与故障矩阵、SQL真实连接身份复核；文档、部署与二开接入收口 | S6c | 根reactor相关测试、真实双库并发/故障/池回收和平台回归 | 完成（本地，2026-11-12） |
+
+S6a验收：追加Tenant V6平台目录`tenant_storage_resource`和`tenant_storage_binding`，两者是明确审查的全局平台元数据例外，只保存物理资源非机密描述/secretRef及ownerTenantId＋storageGroup指针，不存业务行或密码。新绑定只能`PENDING`，S7完成迁移前不能作为可用业务源。资源修订只新增不可覆盖，注册目标必须命中部署`allowed-hosts`，无TLS仅显式允许回环目标；默认白名单为空。`StorageDirectory`只提供内部登记/绑定，不含HTTP管理入口、实际连接池和资源激活。`StorageDirectoryMysqlTests`在精确专用可清空`sma_test_p11_x1b_platform_20261112`先跑Tenant V1～V5、保留旧租户行再升V6，并验证无资源表旧形状、平台运维身份、坏目标/跳号/重复绑定和PENDING状态。根reactor独立输出`target/p10-s6a/target`、日志`backend/target/p10-s6a.log`为架构17、平台豁免1、模块2、真实迁移/目录1，共21/21、0失败/错误/跳过、BUILD SUCCESS。未验证空库全模块启动、HTTP权限、真实池/路由与S7开通；继续S6b。
+
+S6b验收：宿主`StorageLedgerProvider`按可信租户及业务组查平台目录，只接ACTIVE且schemaCompatibility=v1的绑定；`StoragePoolRegistry`按物理ID/修订复用池、设置每资源/节点/物理主机预算及短等待、拒绝原修订配置漂移，租约关闭后才回收池。`BusinessLedgerResourceFactory.preparePhysical`在Common内为真实Hikari池固定`DataSourceIdentity`、审查过的MyBatis拦截器、审计和本地事务，不让Tenant访问Common内部Mapper。凭据通过`tenant :: storage`的宿主`StorageCredentialResolver`按secretRef获取；默认无resolver时拒绝建池，数据库目录不存密码。S6b只有框架账本Mapper，业务Mapper和业务写同事务由S6c接入，S7负责正式激活而非手改状态。根reactor`target/p10-s6b/target`的`backend/target/p10-s6b-unit.log`为20/20，最终`backend/target/p10-s6b-final.log`为真实平台/业务双MySQL、跨租户/缺绑定/PENDING拒绝、执行权/代次/Outbox归属、身份/SQL统计、池预算与模块架构共27/27，均0失败/跳过、BUILD SUCCESS。测试仅在已迁移的任务双库中手动激活夹具绑定；未证明生产开通/密钥适配器或业务Mapper写入。
+
+S6c验收：平台Mapper继续使用平台工厂，静态业务Mapper由独立工厂和`BusinessRoutingDataSource`装配；业务通过公开`BusinessLedger.Session.executeLocal/query`进入固定物理资源，MyBatis业务写与框架账本共享本地事务，离开会话不能借默认库。跨资源嵌套及已有异源事务拒绝；原会话在绑定变化后仍固定原物理库，新会话读取新绑定。两个Mapper工厂和物理业务工厂均接SQL执行统计，业务Statement按实际连接的resourceId/revision归属。真实平台库＋业务A/B三库夹具`BusinessMapperRoutingMysqlTests`在精确专用库运行，业务B先清空再重建；最终`backend/target/p10-s6c-switch.log`为1/1、0失败/错误/跳过、BUILD SUCCESS，含提交/回滚/切换/错源拒绝/SQL归属。平台启动、请求账本、缓存代次、SQL与连接身份回归`backend/target/p10-s6c-platform-final.log`为26/26、0失败/错误/跳过、BUILD SUCCESS。此前三库与架构夹具`backend/target/p10-s6c-telemetry.log`为20/20；该轮尚未包含最后补充的切换场景，后者以上述最终三库结果为准。HTTP资源管理、正式迁移激活及生产凭据解析器仍归S6d/S7；进入S6d。
+
+S6d执行顺序：先开放仅平台部署运维身份＋显式权限可用的资源修订/租户绑定目录API，读写分权，响应不含secretRef/密码，写入仍只创建REGISTERED资源与PENDING绑定；以真实HTTP核对跨租户、缺权限、重放与无效目标。再补池故障/竞争/回收和真实连接统计矩阵，最后同步部署、二开、README与规则并运行相关根reactor回归。S7前不开放人工直接激活或切库动作。
+
+S6d验收：新增`GET/POST /api/tenant/storage-resources`与`GET/POST /api/tenant/storage-bindings`，目录读取仅返回平台运维可见的资源元数据与PENDING绑定，资源响应不含secretRef；登记/绑定分别要求`tenant:storage:register`/`tenant:storage:bind`，读取要求`tenant:storage:view`，全部叠加部署平台操作者身份。写入使用原LOCAL幂等治理，重复键返回原操作回执，不自动激活。原V5→V6迁移目录单项`backend/target/p10-s6d-directory.log`为1/1、0失败/跳过；首次HTTP轮因夹具租户仍处PROVISIONING，入口解析先返回404，改为ACTIVE后最终`backend/target/p10-s6d-http-final.log`为HTTP/普通端点策略/架构/模块22/22、0失败/错误/跳过、BUILD SUCCESS。策略审查前后差异仅新增4条资源端点，审查轮`backend/target/p10-s6d-policy-review.log`为21/21；最终轮未打开审查开关。三库切换、实际连接SQL归属、PENDING拒绝、池预算/缺凭据/装配失败与关闭排空`backend/target/p10-s6d-matrix.log`为11/11、0失败/跳过、BUILD SUCCESS；同库并发执行权/互斥及Outbox仍沿用已通过的X1c真实双库证据。实际生产凭据适配、迁移任务、ACTIVE激活与切库恢复尚未交付，全部进入S7；S6的本地资源登记/路由阶段完成。
+
+近期优先级（2026-11-12）：用户授权按[单实例稳定二开基线](secondary-development-baseline-progress.md)先收敛S7d-3真实缺陷与回归，再做X2a归属契约/共享缓存接入和业务样例。专用Redis与SQL运维UI等延后；完整X2/X5状态不因缩小近期范围而改变。
+
+### S7 业务库开通与迁移计划（2026-11-12）
+
+拟改路径及影响：`tenant/internal/service`新增资源迁移执行器、持久任务与状态机，`tenant/internal/persistence`新增任务Mapper和Tenant V7追加迁移；`tenant/storage`只保留部署凭据SPI，业务模块不接触物理连接。`common :: request`既有同库账本/Outbox协议不变。平台目录和业务库迁移分开提交：领取/完成任务在平台短事务，Flyway和复制在事务外，最终绑定切换必须在停写/排空/核对后单独提交。新HTTP动作需独立权限、原生任务回执和端点基线；不改已发布V1～V6。
+
+| 子项 | 内容与边界 | 依赖 | 验证 | 状态 |
+| --- | --- | --- | --- | --- |
+| S7a | 物理资源迁移执行权、独立Flyway历史与共享库仅执行一次；凭据/目标/池预算失效时拒绝 | S6 | 空库/旧库/重复/并发、失败后验证再续跑、双租户同物理源 | 完成（本地，2026-11-12） |
+| S7b | 持久开通任务和PENDING→ACTIVE受控激活，平台/业务代次与Outbox核对 | S7a | 提交/回滚/重复键/并发、故障续跑、失败不得提供连接 | 完成（本地，2026-11-12） |
+| S7c | 维护窗口迁移与换库：预检、备份证据、复制核对、停写排空、最终同步、切换、恢复 | S7b | 旧/新库双写拒绝、在途会话、未知结果核对与切后回退限制 | 完成（本地，S7c-1/2/3；真实多进程留X5） |
+| S7d | 资源Outbox轮询/失效汇聚、默认租户初始化与平台任务HTTP/文档收口 | S7c | 真实双库事件重投、stale/故障、非默认平台租户引导、根reactor | 进行中（S7d-1/2及S7d-3独立引导通过；完整回归待复验） |
+
+S7开工门禁：S6d本地验证通过。S7a不得直接把PENDING行改ACTIVE，也不得为迁移加载平台全套Common表。共享库执行权以物理资源ID＋修订为键；迁移结果必须以真实Flyway历史和实际schema验证，任务记录不能代替物理库校验。测试账号无CREATE DATABASE权限，仅用精确专用可清空库。
+
+S7a首轮验收：内部`StorageMigrationService`只接受平台部署运维身份、已登记资源及部署`StorageCredentialResolver`；拒绝已有平台事务，以单节点一个迁移名额和目标MySQL命名锁串行，临时连接执行`db/business-ledger`独立Flyway，旧业务表按版本0建立历史而不清空，迁移后validate。真实旧库/重复执行/命名锁竞争/越权、池故障及架构/模块`backend/target/p10-s7a-final.log`为23/23、0失败/错误/跳过、BUILD SUCCESS。补测期间并行Mail接口签名不匹配使当前工作树根reactor编译失败，日志`backend/target/p10-s7a-final2.log`；未修改Mail文件，改以已通过的S6d输出做任务专用冻结复验。
+
+S7a最终复验：从已通过的S6d独立输出复制主类/测试类到`target/p10-s7a-frozen/target`，在该冻结快照上仅编译`StorageJdbcUrl`、`StorageMigrationService`与补充的`StorageMigrationMysqlTests`，再以精确专用`sma_test_p11_x1b_business_20261112`运行单项。首次补测发现测试所持MySQL命名锁关闭连接时未及时释放，显式`RELEASE_LOCK`后`backend/target/p10-s7a-frozen-final.log`为1/1、0失败/错误/跳过、BUILD SUCCESS；同时覆盖旧表保留、空库重建、重复/续跑与锁竞争。先前完整源码/架构/模块23/23结果与本轮冻结补测合并构成S7a本地证据；冻结快照不等于当前并行工作树全量可编译，后续S7b根reactor仍须单独复验。S7a完成，进入S7b。
+
+S7b验收：Tenant V7追加平台租户拥有的`tenant_storage_operation`持久回执，保留目标绑定ID、物理资源/修订、原绑定版本、fence、租约与运行状态，不保存凭据或业务数据。`StorageProvisionState`用平台短事务领取、同键重放/意图核对、RUNNING拒绝、失败置NEEDS_REVIEW、同键续跑提升fence，只有原fence与PENDING版本匹配才能在同一事务写ACTIVE绑定及SUCCEEDED回执。`StorageProvisionService`在事务外调用物理库迁移，失败不激活；迁移时额外核对执行权/互斥/缓存代次/Outbox实际表和关键列，Flyway历史存在但表缺失仍拒绝。根reactor主源码编译`backend/target/p10-s7b-compile.log`成功；全量测试编译被并行Auth/Identity/OpenAPI维护构造器变更阻断，日志`backend/target/p10-s7b.log`，未修改这些专项。任务专用冻结主类与测试支持类上的平台＋业务双库/服务编排`backend/target/p10-s7b-final.log`为3/3、0失败/错误/跳过、BUILD SUCCESS；物理锁及缺Outbox表拒绝`backend/target/p10-s7a-physical-lock-final.log`为1/1。S7b完成于本地冻结验证；当前全量测试编译仍需并行专项收敛后再跑，不能作为生产发布门禁通过。迁移操作HTTP、跨库切换/备份/停写与轮询仍待S7c/S7d。
+
+S7c拟改路径与子项：`tenant/internal/service/StorageLedgerProvider`及新增会话门禁先提供按目标租户＋存储组的本节点在途统计；平台迁移任务/绑定状态由Tenant追加V8持久化跨节点排空证据和停写代次；目标数据库的复制、行数/摘要、业务Outbox代次与备份证据由受控外部迁移执行器提交，不能凭布尔请求字段宣称完成。切换事务只读任务/绑定原版本和目标修订，核对停写、所有节点排空、最终同步及证据后执行，旧修订保持在途租约到关闭。首版维护窗口，目标接受新写后回退须作为反向迁移任务核对数据，禁止仅改绑定。分项S7c-1会话计数与停写拒绝、S7c-2持久任务和跨节点排空/复制证据、S7c-3版本化切换/恢复与真实双库故障矩阵；每项单独验证后记进度。
+
+S7c-1本地完成：`StorageSessionTracker`按可信租户＋存储组记录本节点在途会话，`block`先拒绝新会话并返回旧会话数，最后一次关闭后归零；调用方在资源池打开后、返回业务会话前登记，阻断与登记同键原子，拒绝时释放已借物理租约。`StorageLedgerProvider`使用该跟踪器，既有三参数测试构造保持兼容。根reactor真实平台/业务双库、架构与模块`backend/target/p10-s7c1-dual.log`为21/21、0失败/错误/跳过、BUILD SUCCESS。此计数只代表本节点，不授予跨节点排空资格；S7c-2须追加持久停写代次、成员证明和跨节点聚合后才能切库。
+
+S7b续跑协议收紧（2026-11-12）：`NEEDS_REVIEW`或已过期RUNNING不能由普通`provision`同键重放自动续跑；只允许平台运维在核对原操作与目标物理库后调用独立`retryAfterReview`，递增fence再迁移。当前工作树根reactor平台＋业务双库状态/编排、S7c本节点门禁及架构/模块`backend/target/p10-s7b-review.log`为23/23、0失败/错误/跳过、BUILD SUCCESS，覆盖失败保留PENDING、普通重放拒绝、审查后续跑及重放已完成结果。此前冻结快照为开发期证据，本轮根reactor结果优先；全量标准verify仍未运行。
+
+S7c-2本地完成（2026-11-12）：Tenant V8追加绑定`DRAINING`状态、持久业务会话租约、换库任务及逐节点排空证明。会话登记与停写共用绑定行锁，新会话在停写提交后拒绝；物理关闭失败保留租约供核对。`common :: deployment`新增宿主只读节点清单/本节点身份契约，按部署清单、进程ID和租约epoch冻结成员；每节点只可由本进程host worker证明排空，未知/离线/替换成员拒绝。外部`StorageMigrationEvidence`须从实际备份及源/目标库返回摘要、行数、Outbox水位；缺部署实现拒绝，不接受HTTP布尔证明。最终同步须在全部排空之后，任务才进入READY；绑定仍DRAINING，尚未切换。首次`backend/target/p10-s7c2.log`中V8实际迁移、S7b/MySQL、模块通过，架构旧Timestamp调用及最终证明转换失败；修复后根reactor`backend/target/p10-s7c2-final.log`为22/22、0失败/错误/跳过、BUILD SUCCESS（V6～V8真实MySQL、停写后登记拒绝、在途租约/缺节点证明/旧同步时间拒绝、架构及模块）。本项用模拟的两节点受控清单和物理证明测试状态机；真实双进程、真实源/目标业务数据复制与最终切换归S7c-3验收。S7c-3下一步，不把READY当已切库。
+
+S7c-3本地实现与验收（2026-11-12）：Tenant V9允许仅切换前ABORTED恢复，V10记录READY时间。`commit`在平台短事务内锁定任务与绑定，复核ACTIVE目标、停写状态/旧版本、无持久会话租约、全部节点证明、成员未替换及READY后新鲜的源/目标摘要、行数与Outbox水位；同事务提升绑定版本、切向目标并记SWITCHED。切后`abort`拒绝，回原库需以当前目标为源创建新任务，重新复制和证明；切前ABORTED可恢复原库但提升版本。宿主节点成员变更在提交时由`DeploymentNodes.requireCurrent`共享锁核对。状态机使用两个独立节点实例共享平台库模拟排空，物理数据夹具使用两套真实独立MySQL业务库，验证缺行、最终增量未复制、目标损坏均拒绝。最终根reactor`backend/target/p10-s7c3-final-dual.log`为23/23、0失败/错误/跳过、BUILD SUCCESS（真实V6～V10迁移、物理夹具、架构/模块）。新增双实例夹具复验见`backend/target/p10-s7c3-peer-final.log`。该测试只核对`s7c_copy_probe`，并不声称已复制任意业务表；生产仍须部署实现`StorageMigrationEvidence`及备份执行器，且真实双进程完整验收归X5。S7c本地完成，进入S7d。
+
+S7d子项（依赖S7c，逐项验收）：S7d-1补业务库Outbox的受控领取/投递/重投接口及跨资源失效汇聚，使用真实双库验证提交、失败重投和stale；S7d-2平台开通/切换任务HTTP、显式权限、原生回执与端点策略，验证授权/重放/未知状态；S7d-3非默认平台租户引导、运行说明和根reactor回归。三个子项依序推进；S7d-1完成前不开始HTTP。拟改`common :: request`资源轮询公开契约及内部资源工厂、`tenant/internal/service`调度与目录、租户控制器/权限/i18n/策略，数据库迁移只追加，业务模块仍不触碰Common内部Mapper。
+
+S7d-1本地完成（2026-11-12）：业务框架V2追加Outbox投递fence、租约和尝试次数，资源内短事务以`FOR UPDATE SKIP LOCKED`领取后在事务外用持久行租户恢复工作身份，成功仅原fence可置DONE；失败留UNKNOWN并在租约过期后重投相同事件，消费者必须按稳定键幂等。宿主只轮询已打开的有限物理池，缺消费者/歧义拒绝完成；业务库授权代次可按物理资源＋可信租户汇聚到有界`BusinessRevisionRollup`，故障保留旧值且标stale。首次专项`p10-s7d1.log`触发事件命名架构规则与测试旧键重放，后续`p10-s7d1-jdbc.log`发现宿主领取被租户拦截器过滤，改为Common资源内JDBC受控领取；`p10-s7d1-tenant.log`发现共享测试库残留其他租户待投递事件。最终仅清空两套精确可清空业务测试库重建业务框架V1/V2，根reactor`backend/target/p10-s7d1-final.log`为20/20、0失败/错误/跳过、BUILD SUCCESS；覆盖真实双库隔离、失败UNKNOWN/原字节重投、租户工作身份、资源代次stale与架构/模块。没有外部事件消费者默认实现，生产无消费者时留待处理。下一S7d-2。
+
+S7d-2本地完成（2026-11-12）：新增`StorageOperationsController`原生开通/审查后重试/换库领取及逐阶段执行、按原键/任务ID只读核对入口，`tenant:storage:provision/switch`权限叠加部署平台操作者身份；缺物理凭据时开通任务保留NEEDS_REVIEW，HTTP返回租户状态错误且GET可查，普通provision同键拒绝自动重试。端点策略审查命令`backend/target/p10-s7d2-policy-review.log`20/20通过，新增10条策略映射；普通门禁随HTTP最终测试通过。首轮完整HTTP`backend/target/p10-s7d2-http.log`为22项中1失败：未配置凭据时IllegalStateException落500而非原生业务状态，已在控制器转换为`TenantErrorCode.STATE`。首轮清理专用库受其他本线残余测试进程争用，终止本轮自有孤儿进程后在独立`sma_test_p10_s5f_20261112`重跑；`backend/target/p10-s7d2-isolated.log`为22/22、0失败/错误/跳过、BUILD SUCCESS，覆盖真实HTTP平台身份/权限、失败回执、同键重放、PENDING不可切库、架构/模块/普通端点策略。完整启动迁移耗时13分钟，外部物理凭据/复制SPI仍缺，未声称成功生产开通或切换。下一S7d-3。
+
+S7d-3进行中（2026-11-12）：首次非默认平台租户用common公开`PlatformTenantQuery`将IAM首位管理员、权限目录及Config内置种子显式放入配置ID，目录仍先原子占位；已有平台库更换ID不自动迁移。根reactor独立`sma_test_p10_s5f_20261112`库的`backend/target/p10-s7d3-isolated.log`为22/22、0失败/错误/跳过、BUILD SUCCESS，真实全模块启动证实ID=42目录、回环域名、管理员和平台权限，ID=1不产生目录/权限/参数/字典行；README、运行说明与规则已补充边界。完整默认配置回归首轮`backend/target/p10-s7d3-full.log`编译后安全专项新增两个Defense控制器，随后才更新端点基线，编译快照缺4个新端点而普通门禁失败；保留日志并停止本轮自有测试进程，未改安全专项。当前源码复验`backend/target/p10-s7d3-policy.log`又遇并行P08握手适配器先于SocketHub修改落盘，主源码编译缺`beginHandshake`/`HANDSHAKE_ATTRIBUTE`/`Handshake`；该轮也未通过。待并行文件收敛，从当前一致源码重跑普通门禁和根reactor完整回归；此之前S7d/S7不标完成，也不进入X2。
+
+S7d-3当前源码复验（同日）：P08 SocketHub落盘后，根reactor聚焦`backend/target/p10-s7d3-policy2.log`的架构17、端点1、模块2、平台身份2共22/22、0跳过、BUILD SUCCESS。完整默认配置第二轮`backend/target/p10-s7d3-full2.log`在专用P10库执行，应用启动与迁移2/2通过，端点策略、Config分层、IAM及已运行的租户前序模块无新增P10失败；全量途中有三项明确失败：P08 `MailDispatcherDrainTests:67` 两工作线程10秒内未同时进入传输，Common `IdentifierBindingTests:40`旧IdWorker取得Snowflake而非持久号段，安全专项`SecurityEventQueryHttpTests:101`固定预期3条却观察到6条同租户事件。安全专项该类在其独立库5/5通过。测试继续到`IdentityReauthenticationTests`后，主线程在MySQL网络读长时间停滞、JVM工作集约6.5GB；因已有三项失败，保留日志并仅停止本轮自有Surefire进程，不声称全量通过。S7d-3仍待三个跨线夹具/全量隔离问题收敛和根reactor复验，X2继续阻塞。

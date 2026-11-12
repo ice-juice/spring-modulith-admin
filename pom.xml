@@ -6,4 +6,11 @@
   <name>SMA backend and extension services</name>
   <properties><java.version>21</java.version></properties>
   <modules><module>extension-sdk</module><module>extension-protocol</module><module>extension-runtime</module><module>extension-security</module><module>extension-worker</module><module>backend</module></modules>
+  <profiles>
+    <profile>
+      <id>isolated-verification-output</id>
+      <activation><property><name>sma.verify.directory</name></property></activation>
+      <build><directory>${sma.verify.directory}</directory></build>
+    </profile>
+  </profiles>
 </project>

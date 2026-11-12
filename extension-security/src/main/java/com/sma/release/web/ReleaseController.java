@@ -54,6 +54,11 @@ public class ReleaseController {
     @GetMapping("/plugins/{plugin}/artifacts") ApiReply<List<CatalogRecords.Artifact>> artifacts(@RequestHeader("Authorization") String authorization, @PathVariable String plugin, @RequestParam String environment) { return ApiReply.ok(catalog.artifacts(token(authorization), plugin, environment)); }
     @PostMapping("/commands") ApiReply<CatalogRecords.ActionReceipt> command(@RequestHeader("Authorization") String authorization, @RequestBody CatalogRecords.Command command) { return ApiReply.ok(catalog.execute(token(authorization), command)); }
     @GetMapping("/actions/{id}") ApiReply<CatalogRecords.ActionReceipt> action(@RequestHeader("Authorization") String authorization, @PathVariable String id) { return ApiReply.ok(catalog.action(token(authorization), id)); }
+    @GetMapping("/uploads/{upload}") ApiReply<CatalogRecords.UploadStatus> uploadStatus(@RequestHeader("Authorization") String authorization,
+            @PathVariable String upload, jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store");
+        return ApiReply.ok(catalog.uploadStatus(token(authorization), upload));
+    }
     @PutMapping(value="/uploads/{upload}/files/{file}/chunks/{chunk}", consumes="application/octet-stream")
     ApiReply<CatalogRecords.Chunk> chunk(@RequestHeader("Authorization") String authorization, @PathVariable String upload,
             @PathVariable int file, @PathVariable int chunk, HttpServletRequest request) throws IOException {
